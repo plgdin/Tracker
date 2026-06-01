@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Camera, X } from 'lucide-react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 import { db } from '../lib/db';
 import type { Category } from '../lib/db';
 import { useAuthStore } from '../store/authStore';
@@ -21,6 +21,7 @@ export default function AddItem() {
   const [formData, setFormData] = useState({
     name: '',
     expiration_date: '',
+    warning_date: '',
     quantity: 1,
     category: 'Uncategorized',
     notes: ''
@@ -47,6 +48,7 @@ export default function AddItem() {
             setFormData({
               name: itemToEdit.name,
               expiration_date: itemToEdit.expiration_date,
+              warning_date: itemToEdit.warning_date || '',
               quantity: itemToEdit.quantity,
               category: itemToEdit.category,
               notes: itemToEdit.notes || ''
@@ -66,23 +68,43 @@ export default function AddItem() {
   }, [editId]);
 
   useEffect(() => {
+    let html5Qrcode: Html5Qrcode | null = null;
+    
     if (scanning) {
-      const scanner = new Html5QrcodeScanner(
-        "reader",
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        false
-      );
-
-      scanner.render((decodedText: string) => {
-        setBarcode(decodedText);
-        setScanning(false);
-        scanner.clear();
-      }, () => {
-        // Handle scan errors silently
-      });
+      const timer = setTimeout(() => {
+        try {
+          html5Qrcode = new Html5Qrcode("reader");
+          html5Qrcode.start(
+            { facingMode: "environment" },
+            {
+              fps: 10,
+              qrbox: { width: 250, height: 250 }
+            },
+            (decodedText: string) => {
+               setBarcode(decodedText);
+               setScanning(false);
+               if (html5Qrcode) {
+                 html5Qrcode.stop().catch(console.error);
+               }
+            },
+            () => {
+              // Silent camera scan errors
+            }
+          ).catch((err) => {
+            console.error("Camera start failed:", err);
+          });
+        } catch (e) {
+          console.error("Scanner init error:", e);
+        }
+      }, 150);
 
       return () => {
-        scanner.clear().catch(console.error);
+        clearTimeout(timer);
+        if (html5Qrcode) {
+          if (html5Qrcode.isScanning) {
+            html5Qrcode.stop().catch(console.error);
+          }
+        }
       };
     }
   }, [scanning]);
@@ -102,6 +124,7 @@ export default function AddItem() {
     try {
       const dataToSave = {
         ...formData,
+        warning_date: formData.warning_date || undefined,
         barcode: barcode || undefined,
         added_by: profile?.id || undefined
       };
@@ -269,6 +292,18 @@ export default function AddItem() {
                   value={formData.expiration_date}
                   onChange={e => setFormData({ ...formData, expiration_date: e.target.value })}
                   required 
+                />
+              </div>
+
+              {/* Warning Date row */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
+                <span style={{ fontWeight: 600, color: 'var(--color-text-secondary)', fontSize: '0.95rem' }}>Warning Date (Optional)</span>
+                <input 
+                  type="date" 
+                  className="input-field"
+                  style={{ width: 'auto', border: 'none', background: 'transparent', textAlign: 'right', fontWeight: 600, color: 'var(--color-text-primary)', padding: '0.25rem 0.5rem', cursor: 'pointer' }}
+                  value={formData.warning_date}
+                  onChange={e => setFormData({ ...formData, warning_date: e.target.value })}
                 />
               </div>
 

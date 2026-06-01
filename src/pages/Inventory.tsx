@@ -55,11 +55,26 @@ export default function Inventory() {
       const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
       
       const days = getDaysRemaining(item.expiration_date);
+
+      // Determine if item is "Expiring Soon" based on warning_date or dynamic warningDays
+      let isExpiringSoon = false;
+      if (item.warning_date) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const warningDate = new Date(item.warning_date);
+        warningDate.setHours(0, 0, 0, 0);
+        const expiryDate = new Date(item.expiration_date);
+        expiryDate.setHours(0, 0, 0, 0);
+        isExpiringSoon = today.getTime() >= warningDate.getTime() && today.getTime() <= expiryDate.getTime();
+      } else {
+        isExpiringSoon = days >= 0 && days <= warningDays;
+      }
+
       const matchesStatus = 
         statusFilter === 'All' ? true :
         statusFilter === 'Expired' ? days < 0 :
-        statusFilter === 'Expiring Soon' ? (days >= 0 && days <= warningDays) : // dynamic warning period setting!
-        statusFilter === 'Fresh' ? days > warningDays : true;
+        statusFilter === 'Expiring Soon' ? isExpiringSoon :
+        statusFilter === 'Fresh' ? (!isExpiringSoon && days >= 0) : true;
 
       return matchesSearch && matchesCategory && matchesStatus;
     })
@@ -176,6 +191,20 @@ export default function Inventory() {
             if (daysRemaining < 0) daysLabel = 'Expired';
             else if (daysRemaining === 0) daysLabel = 'Today';
 
+            // Determine warning state
+            let isWarning = false;
+            if (item.warning_date) {
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              const warningDate = new Date(item.warning_date);
+              warningDate.setHours(0, 0, 0, 0);
+              const expiryDate = new Date(item.expiration_date);
+              expiryDate.setHours(0, 0, 0, 0);
+              isWarning = today.getTime() >= warningDate.getTime() && today.getTime() <= expiryDate.getTime();
+            } else {
+              isWarning = daysRemaining >= 0 && daysRemaining <= warningDays;
+            }
+
             return (
               <div 
                 key={item.id} 
@@ -185,13 +214,13 @@ export default function Inventory() {
                 <div className="cute-card-qty">{item.quantity}</div>
                 
                 <div className="cute-card-illustration">
-                  <MilkCartonIcon winking={daysRemaining <= warningDays} />
+                  <MilkCartonIcon winking={isWarning} />
                   <span className="cute-card-name">{item.name}</span>
                 </div>
 
                 <div 
                   className={`cute-card-days-band ${
-                    daysRemaining < 0 ? '' : daysRemaining <= warningDays ? 'warning' : 'fresh'
+                    daysRemaining < 0 ? '' : isWarning ? 'warning' : 'fresh'
                   }`}
                 >
                   {daysLabel}

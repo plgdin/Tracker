@@ -40,8 +40,17 @@ export default function Dashboard() {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
-  // Filter items expiring soon based on dynamic warning period
+  // Filter items expiring soon based on dynamic warning period or custom warning date
   const expiringSoonItems = items.filter(item => {
+    if (item.warning_date) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const warningDate = new Date(item.warning_date);
+      warningDate.setHours(0, 0, 0, 0);
+      const expiryDate = new Date(item.expiration_date);
+      expiryDate.setHours(0, 0, 0, 0);
+      return today.getTime() >= warningDate.getTime() && today.getTime() <= expiryDate.getTime();
+    }
     const days = getDaysRemaining(item.expiration_date);
     return days >= 0 && days <= warningDays;
   }).sort((a, b) => new Date(a.expiration_date).getTime() - new Date(b.expiration_date).getTime());
@@ -148,6 +157,20 @@ export default function Dashboard() {
             if (daysRemaining < 0) daysLabel = 'Expired';
             else if (daysRemaining === 0) daysLabel = 'Today';
 
+            // Determine warning state
+            let isWarning = false;
+            if (item.warning_date) {
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              const warningDate = new Date(item.warning_date);
+              warningDate.setHours(0, 0, 0, 0);
+              const expiryDate = new Date(item.expiration_date);
+              expiryDate.setHours(0, 0, 0, 0);
+              isWarning = today.getTime() >= warningDate.getTime() && today.getTime() <= expiryDate.getTime();
+            } else {
+              isWarning = daysRemaining >= 0 && daysRemaining <= 3; // 3 days fallback for winking carton
+            }
+
             return (
               <div 
                 key={item.id} 
@@ -159,14 +182,14 @@ export default function Dashboard() {
                 
                 {/* Illustration with label */}
                 <div className="cute-card-illustration">
-                  <MilkCartonIcon winking={daysRemaining <= 3} />
+                  <MilkCartonIcon winking={isWarning} />
                   <span className="cute-card-name">{item.name}</span>
                 </div>
 
                 {/* Days remaining band with warning color codes */}
                 <div 
                   className={`cute-card-days-band ${
-                    daysRemaining < 0 ? '' : daysRemaining <= 3 ? 'warning' : 'fresh'
+                    daysRemaining < 0 ? '' : isWarning ? 'warning' : 'fresh'
                   }`}
                 >
                   {daysLabel}

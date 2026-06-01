@@ -8,6 +8,7 @@ export interface Item {
   barcode?: string;
   name: string;
   expiration_date: string; // YYYY-MM-DD
+  warning_date?: string; // YYYY-MM-DD
   quantity: number;
   category: string;
   notes?: string;
