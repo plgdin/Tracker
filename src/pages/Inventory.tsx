@@ -77,7 +77,7 @@ export default function Inventory() {
       const days = getDaysRemaining(item.expiration_date);
 
       // Determine if item is "Expiring Soon" based on warning_date or dynamic warningDays
-      let isExpiringSoon = false;
+      let isExpiringSoon: boolean;
       if (item.warning_date) {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -189,7 +189,7 @@ export default function Inventory() {
             else if (daysRemaining === 0) daysLabel = 'Today';
 
             // Determine warning state
-            let isWarning = false;
+            let isWarning: boolean;
             if (item.warning_date) {
               const today = new Date();
               today.setHours(0, 0, 0, 0);

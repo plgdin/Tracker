@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { db } from '../lib/db';
 import type { Category } from '../lib/db';
-import { Tag, AlertCircle, LogIn } from 'lucide-react';
+import { Tag, AlertCircle, LogIn, Eye, EyeOff, Save } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useToastStore } from '../store/toastStore';
+import { supabase } from '../lib/supabase';
 
 export default function Settings() {
   const showToast = useToastStore(state => state.showToast);
@@ -11,6 +12,10 @@ export default function Settings() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [warningDays, setWarningDays] = useState(30);
+  const [newUsername, setNewUsername] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [showSettingsPassword, setShowSettingsPassword] = useState(false);
+  const [isSavingAccount, setIsSavingAccount] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -37,6 +42,51 @@ export default function Settings() {
       showToast(`Warning period updated to ${val} days! 🔔`);
     } catch (err) {
       console.error('Failed to save settings:', err);
+    }
+  };
+
+  const handleUpdateAccount = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!profile) return;
+    setIsSavingAccount(true);
+    
+    try {
+      if (newUsername.trim()) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('name', newUsername.trim())
+          .maybeSingle();
+          
+        if (data && data.id !== profile.id) {
+          showToast('⚠️ Username already exists! Please select a different username.');
+          setIsSavingAccount(false);
+          return;
+        }
+        
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ name: newUsername.trim() })
+          .eq('id', profile.id);
+          
+        if (updateError) throw updateError;
+        useAuthStore.getState().setProfile({ ...profile, name: newUsername.trim() });
+        showToast('Username updated successfully! ✅');
+      }
+      
+      if (newPassword.trim()) {
+        const { error: passError } = await supabase.auth.updateUser({ password: newPassword.trim() });
+        if (passError) throw passError;
+        showToast('Password updated successfully! 🔐');
+      }
+      
+      setNewUsername('');
+      setNewPassword('');
+    } catch (err: unknown) {
+      console.error(err);
+      showToast(`Error: ${(err as Error).message}`);
+    } finally {
+      setIsSavingAccount(false);
     }
   };
 
@@ -76,9 +126,50 @@ export default function Settings() {
       <div className="panel" style={{ marginBottom: '1.5rem' }}>
         <h3 style={{ fontSize: '1rem', marginBottom: '0.75rem' }}>Account</h3>
         {profile ? (
-          <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>
-            Logged in as: <strong style={{ color: 'var(--color-text-primary)' }}>{profile.name}</strong> ({profile.role})
-          </p>
+          <>
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>
+              Logged in as: <strong style={{ color: 'var(--color-text-primary)' }}>{profile.name}</strong> ({profile.role})
+            </p>
+            {profile.role !== 'admin' && (
+              <form onSubmit={handleUpdateAccount} style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                <h4 style={{ fontSize: '0.9rem', marginBottom: '1rem' }}>Update Account Details</h4>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <div className="input-group">
+                    <label className="input-label">New Username</label>
+                    <input
+                      type="text"
+                      className="input-field"
+                      placeholder="Enter new username"
+                      value={newUsername}
+                      onChange={(e) => setNewUsername(e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="input-group">
+                    <label className="input-label">New Password</label>
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type={showSettingsPassword ? "text" : "password"}
+                        className="input-field"
+                        placeholder="Enter new password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        style={{ paddingRight: '2.5rem' }}
+                      />
+                      <button type="button" onClick={() => setShowSettingsPassword(!showSettingsPassword)} style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', padding: 0 }}>
+                        {showSettingsPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <button type="submit" className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginTop: '0.5rem' }} disabled={isSavingAccount || (!newUsername.trim() && !newPassword.trim())}>
+                    <Save size={16} /> {isSavingAccount ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </>
         ) : (
           <div>
             <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '0.75rem' }}>You are not logged in.</p>

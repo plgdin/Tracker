@@ -4,14 +4,26 @@ import { useToastStore } from '../store/toastStore';
 import { db } from '../lib/db';
 import { supabaseEphemeral } from '../lib/supabaseEphemeral';
 import type { Item, AuditLog, Category } from '../lib/db';
-import { Navigate } from 'react-router-dom';
-import { ShieldCheck, Trash2, Lock, Activity, DollarSign, Key, Plus, Users, CheckCircle2, AlertTriangle, Tag, Package, ToggleLeft, ToggleRight } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { ShieldCheck, Trash2, Lock, Activity, DollarSign, Key, Plus, Users, CheckCircle2, AlertTriangle, Tag, Package, ToggleLeft, ToggleRight, Eye, EyeOff } from 'lucide-react';
 
 type TabKey = 'logs' | 'workers' | 'prices' | 'categories' | 'items' | 'security';
+
+interface WorkerData {
+  id: string;
+  email: string;
+  password?: string;
+  permissions?: Record<string, boolean>;
+}
 
 export default function AdminDashboard() {
   const { profile, signOut } = useAuthStore();
   const showToast = useToastStore(s => s.showToast);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [showAccessDenied, setShowAccessDenied] = useState(false);
+  const [showWorkerPassword, setShowWorkerPassword] = useState(false);
+  const [showAdminPassword, setShowAdminPassword] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>('workers');
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [items, setItems] = useState<Item[]>([]);
@@ -23,7 +35,7 @@ export default function AdminDashboard() {
   const [priceEdits, setPriceEdits] = useState<Record<string, string>>({});
   const [newCatName, setNewCatName] = useState('');
   const [newCatColor, setNewCatColor] = useState('#E63946');
-  const [workers, setWorkers] = useState<any[]>(() => {
+  const [workers, setWorkers] = useState<WorkerData[]>(() => {
     return JSON.parse(localStorage.getItem('worker_accounts') || '[]');
   });
   const [workerEmail, setWorkerEmail] = useState('');
@@ -45,7 +57,35 @@ export default function AdminDashboard() {
     })();
   }, [profile]);
 
-  if (profile?.role !== 'admin') return <Navigate to="/" replace />;
+  useEffect(() => {
+    if (profile && profile.role !== 'admin') {
+      if (location.key !== 'default') {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setShowAccessDenied(true);
+      } else {
+        signOut().then(() => navigate('/?error=access_denied', { replace: true }));
+      }
+    }
+  }, [profile, location.key, navigate, signOut]);
+
+  if (showAccessDenied) {
+    return (
+      <div className="container" style={{ paddingBottom: '5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+        <div className="panel" style={{ padding: '2rem', textAlign: 'center', maxWidth: '400px', width: '100%' }}>
+          <AlertTriangle size={48} color="var(--color-primary)" style={{ margin: '0 auto 1rem auto', display: 'block' }} />
+          <h2 style={{ fontSize: '1.25rem', margin: '0 0 0.5rem 0' }}>Access Denied</h2>
+          <p style={{ color: 'var(--color-text-secondary)', margin: '0 0 1.5rem 0', fontSize: '0.9rem' }}>
+            You do not have permission to view the admin dashboard.
+          </p>
+          <button onClick={() => navigate(-1)} className="btn btn-primary" style={{ width: '100%' }}>
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (profile?.role !== 'admin') return null;
 
   const refreshData = async () => {
     const [l, i, c] = await Promise.all([db.getAuditLogs(), db.getItems(), db.getCategories()]);
@@ -61,7 +101,7 @@ export default function AdminDashboard() {
     const em = workerEmail.trim().toLowerCase(), pw = workerPassword.trim();
     if (!em.includes('@')) { alert('Enter a valid email!'); return; }
     if (pw.length < 4) { alert('Password must be ≥4 chars!'); return; }
-    if (workers.some((w: any) => w.email === em)) { alert('Already exists!'); return; }
+    if (workers.some((w) => w.email === em)) { alert('Already exists!'); return; }
 
     // Create a real Supabase Auth user so the worker can log in from any device.
     // Ephemeral client avoids overwriting the admin's current session.
@@ -74,8 +114,8 @@ export default function AdminDashboard() {
           return;
         }
       }
-    } catch (err: any) {
-      alert(err?.message || 'Failed to create worker account.');
+    } catch (err: unknown) {
+      alert((err as Error)?.message || 'Failed to create worker account.');
       return;
     }
     const w = { id: 'w-'+Math.random().toString(36).substr(2,9), email: em, password: pw, permissions: { canEditPrices: false }, created_at: new Date().toISOString() };
@@ -88,14 +128,14 @@ export default function AdminDashboard() {
 
   const handleRemoveWorker = (id: string, email: string) => {
     if (!confirm(`Delete worker ${email}?`)) return;
-    const up = workers.filter((w: any) => w.id !== id); setWorkers(up);
+    const up = workers.filter((w) => w.id !== id); setWorkers(up);
     localStorage.setItem('worker_accounts', JSON.stringify(up));
     db.addAuditLog('Removed Worker', email);
     showToast('Worker removed! 🗑️');
   };
 
   const togglePermission = (workerId: string, perm: string) => {
-    const up = workers.map((w: any) => {
+    const up = workers.map((w) => {
       if (w.id === workerId) {
         const perms = w.permissions || {};
         return { ...w, permissions: { ...perms, [perm]: !perms[perm] } };
@@ -165,7 +205,7 @@ export default function AdminDashboard() {
     showToast('Category deleted! 🗑️');
   };
 
-  const tabs: { key: TabKey; icon: any; label: string }[] = [
+  const tabs: { key: TabKey; icon: React.ElementType; label: string }[] = [
     { key: 'workers', icon: Users, label: 'Workers' },
     { key: 'items', icon: Package, label: 'Items' },
     { key: 'categories', icon: Tag, label: 'Categories' },
@@ -217,7 +257,12 @@ export default function AdminDashboard() {
                   <input type="email" className="input-field" placeholder="worker@gmail.com" value={workerEmail} onChange={e => setWorkerEmail(e.target.value)} required />
                 </div>
                 <div className="input-group"><label className="input-label">Password</label>
-                  <input type="text" className="input-field" placeholder="Set password..." value={workerPassword} onChange={e => setWorkerPassword(e.target.value)} required />
+                  <div style={{ position: 'relative' }}>
+                    <input type={showWorkerPassword ? "text" : "password"} className="input-field" placeholder="Set password..." value={workerPassword} onChange={e => setWorkerPassword(e.target.value)} required style={{ paddingRight: '2.5rem' }} />
+                    <button type="button" onClick={() => setShowWorkerPassword(!showWorkerPassword)} style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', padding: 0 }}>
+                      {showWorkerPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </div>
                 <button type="submit" className="btn btn-primary" style={{ width: '100%' }}><Plus size={16} /> Add Worker</button>
               </form>
@@ -229,7 +274,7 @@ export default function AdminDashboard() {
               </h2>
               {workers.length === 0 ? <p style={{ color: 'var(--color-text-secondary)', textAlign: 'center', padding: '1.5rem' }}>No workers yet.</p> : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  {workers.map((w: any) => (
+                  {workers.map((w) => (
                     <div key={w.id} style={{ padding: '1rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', border: '1px solid rgba(230,57,70,0.05)' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                         <div>
@@ -406,7 +451,12 @@ export default function AdminDashboard() {
                   <input type="text" className="input-field" placeholder="e.g., superadmin" value={newAdminUser} onChange={e => setNewAdminUser(e.target.value)} required />
                 </div>
                 <div className="input-group"><label className="input-label">New Password</label>
-                  <input type="text" className="input-field" placeholder="e.g., myPass123" value={newAdminPass} onChange={e => setNewAdminPass(e.target.value)} required />
+                  <div style={{ position: 'relative' }}>
+                    <input type={showAdminPassword ? "text" : "password"} className="input-field" placeholder="e.g., myPass123" value={newAdminPass} onChange={e => setNewAdminPass(e.target.value)} required style={{ paddingRight: '2.5rem' }} />
+                    <button type="button" onClick={() => setShowAdminPassword(!showAdminPassword)} style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', padding: 0 }}>
+                      {showAdminPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </div>
                 <button type="submit" className="btn btn-primary" style={{ width: '100%' }}><Lock size={16} /> Save (ONCE)</button>
               </form>

@@ -35,6 +35,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.removeItem('worker_session');
     try {
       // Always clear local session even if the network call fails.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await supabase.auth.signOut({ scope: 'local' } as any);
     } catch (e) {
       console.warn('Supabase sign out failed', e);
@@ -71,12 +72,14 @@ export const useAuthStore = create<AuthState>((set) => ({
             // Gate access until approved.
             if (prof.role === 'pending') {
               set({ authNotice: 'Your account is pending admin approval.' });
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               await supabase.auth.signOut({ scope: 'local' } as any);
               set({ user: null, profile: null });
               return;
             }
             if (prof.role === 'disabled') {
               set({ authNotice: 'Your access has been disabled. Contact your admin.' });
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               await supabase.auth.signOut({ scope: 'local' } as any);
               set({ user: null, profile: null });
               return;
@@ -120,7 +123,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (isAdminSession) {
         const adminUser = localStorage.getItem('admin_username') || 'admin';
         set({
-          user: { id: 'admin-id', email: adminUser } as any,
+          user: { id: 'admin-id', email: adminUser } as unknown as User,
           profile: { id: 'admin-id', name: 'Admin', role: 'admin' },
           isLoading: false
         });

@@ -135,7 +135,7 @@ export default function Dashboard() {
             else if (daysRemaining === 0) daysLabel = 'Today';
 
             // Determine warning state
-            let isWarning = false;
+            let isWarning: boolean;
             if (item.warning_date) {
               const today = new Date();
               today.setHours(0, 0, 0, 0);

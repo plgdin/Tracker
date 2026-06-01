@@ -1,17 +1,27 @@
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { supabase } from '../lib/supabase';
+import { Eye, EyeOff } from 'lucide-react';
+import type { User } from '@supabase/supabase-js';
 
 export default function AuthWrapper({ children }: { children: React.ReactNode }) {
   const { user, isLoading, initialize, authNotice, setAuthNotice } = useAuthStore();
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mode, setMode] = useState<'login' | 'signup'>('login');
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     initialize();
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('error') === 'access_denied') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setError('Access denied. You have been logged out.');
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
   }, [initialize]);
 
   if (isLoading) {
@@ -53,7 +63,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
       const adminPassword = trimPassword.length >= 6 ? trimPassword : `${trimPassword}123456`;
 
       try {
-        let user: any = null;
+        let user: User | null = null;
         const authResult = await supabase.auth.signInWithPassword({ email: adminEmail, password: adminPassword });
         
         if (authResult.error) {
@@ -82,11 +92,11 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
           useAuthStore.getState().setUser(user);
           useAuthStore.getState().setProfile({ id: user.id, name: 'Admin', role: 'admin' });
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.warn('Failed to authenticate admin on Supabase, falling back to local fallback mode', err);
         // Clean fallback to standard offline local admin if Supabase is offline/not ready
         localStorage.setItem('admin_session', 'true');
-        useAuthStore.getState().setUser({ id: 'admin-id', email: adminUser } as any);
+        useAuthStore.getState().setUser({ id: 'admin-id', email: adminUser } as unknown as User);
         useAuthStore.getState().setProfile({ id: 'admin-id', name: 'Admin', role: 'admin' });
       } finally {
         setIsSubmitting(false);
@@ -103,7 +113,16 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
 
     try {
       if (mode === 'signup') {
-        const { error } = await supabase.auth.signUp({ email: trimEmail, password: trimPassword });
+        if (!username.trim()) {
+          setError('Username is required for signup.');
+          setIsSubmitting(false);
+          return;
+        }
+        const { error } = await supabase.auth.signUp({ 
+          email: trimEmail, 
+          password: trimPassword,
+          options: { data: { full_name: username.trim() } }
+        });
         if (error) throw error;
         setError('Sign up successful. Wait for admin approval, then log in.');
         setMode('login');
@@ -112,8 +131,8 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
 
       const { error } = await supabase.auth.signInWithPassword({ email: trimEmail, password: trimPassword });
       if (error) throw error;
-    } catch (err: any) {
-      setError(err.message || 'Could not sign in.');
+    } catch (err: unknown) {
+      setError((err as Error).message || 'Could not sign in.');
     } finally {
       setIsSubmitting(false);
     }
@@ -148,26 +167,47 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
 
         <form onSubmit={handleAuth} className="auth-form">
           <div className="input-group">
-            <label className="input-label">Username or Email</label>
+            <label className="input-label">{mode === 'signup' ? 'Email' : 'Username or Email'}</label>
             <input
-              type="text"
+              type={mode === 'signup' ? "email" : "text"}
               className="input-field"
-              placeholder="Enter Username or Email"
+              placeholder={mode === 'signup' ? "Enter your email" : "Enter Username or Email"}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
+          
+          {mode === 'signup' && (
+            <div className="input-group">
+              <label className="input-label">Username</label>
+              <input
+                type="text"
+                className="input-field"
+                placeholder="Choose a username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required={mode === 'signup'}
+              />
+            </div>
+          )}
+
           <div className="input-group">
             <label className="input-label">Password</label>
-            <input
-              type="password"
-              className="input-field"
-              placeholder="Enter password..."
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showPassword ? "text" : "password"}
+                className="input-field"
+                placeholder="Enter password..."
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                style={{ paddingRight: '2.5rem' }}
+              />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', padding: 0 }}>
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
           <button type="submit" className="btn btn-primary auth-submit" disabled={isSubmitting}>
             {isSubmitting ? 'Logging in...' : 'Log In'}

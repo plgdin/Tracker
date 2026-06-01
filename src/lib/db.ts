@@ -42,7 +42,7 @@ export interface AuditLog {
     item_name: string;
     previous_price?: number;
     new_price?: number;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   created_at: string;
 }
@@ -72,7 +72,7 @@ const getUseSupabase = async (): Promise<boolean> => {
 };
 
 // Race promise helper to prevent infinite loading screens on database hang/timeout
-const withTimeout = (promiseLike: any, timeoutMs = 2500): Promise<any> => {
+const withTimeout = <T>(promiseLike: PromiseLike<T>, timeoutMs = 2500): Promise<T> => {
   return Promise.race([
     Promise.resolve(promiseLike),
     new Promise<never>((_, reject) => 
@@ -421,6 +421,7 @@ export const db = {
           dbSupabase.from('audit_logs').select('*').order('created_at', { ascending: false })
         );
         if (!error && data) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           return data.map((log: any) => ({
             id: log.id,
             worker_email: log.details?.worker_email || 'worker@example.com',
@@ -436,7 +437,7 @@ export const db = {
     return getLocal<AuditLog[]>('tracker_audit_logs', []);
   },
 
-  async addAuditLog(action: string, itemName: string, details: any = {}): Promise<AuditLog> {
+  async addAuditLog(action: string, itemName: string, details: Record<string, unknown> = {}): Promise<AuditLog> {
     const userState = useAuthStore.getState();
     const email = userState.user?.email || localStorage.getItem('admin_username') || 'admin';
     const newLog: AuditLog = {

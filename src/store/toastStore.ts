@@ -7,7 +7,7 @@ interface ToastState {
 }
 
 export const useToastStore = create<ToastState>((set) => {
-  let activeTimeout: any = null;
+  let activeTimeout: ReturnType<typeof setTimeout> | null = null;
 
   return {
     message: null,
