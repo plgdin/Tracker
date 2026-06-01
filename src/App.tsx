@@ -7,12 +7,14 @@ import ShoppingList from './pages/ShoppingList';
 import Settings from './pages/Settings';
 import AddItem from './pages/AddItem';
 import AdminDashboard from './pages/AdminDashboard';
+import Toast from './components/Toast';
 import './index.css';
 
 function App() {
   return (
     <BrowserRouter>
       <AuthWrapper>
+        <Toast />
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Dashboard />} />

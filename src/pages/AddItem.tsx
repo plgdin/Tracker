@@ -5,8 +5,10 @@ import { Html5QrcodeScanner } from 'html5-qrcode';
 import { db } from '../lib/db';
 import type { Category } from '../lib/db';
 import { useAuthStore } from '../store/authStore';
+import { useToastStore } from '../store/toastStore';
 
 export default function AddItem() {
+  const showToast = useToastStore(state => state.showToast);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const editId = searchParams.get('edit');
@@ -106,8 +108,10 @@ export default function AddItem() {
 
       if (editId) {
         await db.updateItem(editId, dataToSave);
+        showToast('Product updated successfully! 🍓');
       } else {
         await db.addItem(dataToSave);
+        showToast('Product added successfully! 🍓');
       }
       navigate(-1);
     } catch (err) {

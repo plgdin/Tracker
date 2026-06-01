@@ -3,8 +3,10 @@ import { db, supabase } from '../lib/db';
 import type { Category } from '../lib/db';
 import { Plus, Trash2, Tag, Database, Cloud, AlertCircle } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
+import { useToastStore } from '../store/toastStore';
 
 export default function Settings() {
+  const showToast = useToastStore(state => state.showToast);
   const { profile, signOut } = useAuthStore();
   const [categories, setCategories] = useState<Category[]>([]);
   const [newCatName, setNewCatName] = useState('');
@@ -35,6 +37,7 @@ export default function Settings() {
     setWarningDays(val);
     try {
       await db.saveSettings({ warning_period_days: val });
+      showToast(`Warning period updated to ${val} days! 🔔`);
     } catch (err) {
       console.error('Failed to save settings:', err);
     }
@@ -53,6 +56,7 @@ export default function Settings() {
       });
       setCategories([...categories, added]);
       setNewCatName('');
+      showToast('Category created successfully! 🎨');
     } catch (err) {
       console.error('Failed to add category:', err);
     } finally {
