@@ -1,12 +1,18 @@
 import { useEffect, useState } from 'react';
 import { db } from '../lib/db';
 import type { Item, Category } from '../lib/db';
-import { Search } from 'lucide-react';
+import { Search, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../store/authStore';
+import { useToastStore } from '../store/toastStore';
 import MilkCarton from '../components/MilkCarton';
 
 export default function Inventory() {
   const navigate = useNavigate();
+  const { profile } = useAuthStore();
+  const showToast = useToastStore(state => state.showToast);
+  const isAdmin = profile?.role === 'admin';
+
   const [items, setItems] = useState<Item[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [warningDays, setWarningDays] = useState(30);
@@ -45,6 +51,19 @@ export default function Inventory() {
     expiry.setHours(0, 0, 0, 0);
     const diffTime = expiry.getTime() - today.getTime();
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  };
+
+  const handleDeleteItem = async (e: React.MouseEvent, item: Item) => {
+    e.stopPropagation();
+    if (!confirm(`Delete "${item.name}"? This cannot be undone.`)) return;
+    try {
+      await db.deleteItem(item.id);
+      await db.addAuditLog('Deleted Product', item.name);
+      setItems(items.filter(i => i.id !== item.id));
+      showToast('Item deleted! 🗑️');
+    } catch (err) {
+      console.error('Delete failed:', err);
+    }
   };
 
   // Filtered & Sorted Items
@@ -188,12 +207,55 @@ export default function Inventory() {
                 key={item.id} 
                 className="cute-card"
                 onClick={() => navigate(`/add-item?edit=${item.id}`)}
+                style={{ position: 'relative' }}
               >
                 <div className="cute-card-qty">{item.quantity}</div>
+
+                {/* Admin-only delete button */}
+                {isAdmin && (
+                  <button
+                    onClick={(e) => handleDeleteItem(e, item)}
+                    style={{
+                      position: 'absolute',
+                      top: '6px',
+                      left: '6px',
+                      background: 'rgba(230, 57, 70, 0.9)',
+                      border: 'none',
+                      borderRadius: '50%',
+                      width: '28px',
+                      height: '28px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white',
+                      cursor: 'pointer',
+                      zIndex: 5,
+                      boxShadow: '0 2px 6px rgba(230, 57, 70, 0.3)',
+                      transition: 'transform 0.15s ease'
+                    }}
+                    title="Delete item"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                )}
                 
                 <div className="cute-card-illustration">
                   <MilkCarton daysRemaining={daysRemaining} size={50} />
                   <span className="cute-card-name">{item.name}</span>
+                  {item.price !== undefined && (
+                    <span style={{ 
+                      fontSize: '0.75rem', 
+                      color: 'var(--color-primary)', 
+                      fontWeight: 'bold', 
+                      backgroundColor: 'rgba(230, 57, 70, 0.08)',
+                      padding: '0.1rem 0.4rem',
+                      borderRadius: '8px',
+                      marginTop: '0.15rem',
+                      display: 'inline-block'
+                    }}>
+                      ${item.price.toFixed(2)}
+                    </span>
+                  )}
                 </div>
 
                 <div 

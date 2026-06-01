@@ -71,6 +71,11 @@ CREATE POLICY "Authenticated users can insert items" ON items FOR INSERT WITH CH
 CREATE POLICY "Authenticated users can update items" ON items FOR UPDATE USING (auth.role() = 'authenticated');
 CREATE POLICY "Authenticated users can delete items" ON items FOR DELETE USING (auth.role() = 'authenticated');
 
+CREATE POLICY "Authenticated users can read categories" ON categories FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can insert categories" ON categories FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can update categories" ON categories FOR UPDATE USING (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can delete categories" ON categories FOR DELETE USING (auth.role() = 'authenticated');
+
 CREATE POLICY "Authenticated users can read audit_logs" ON audit_logs FOR SELECT USING (auth.role() = 'authenticated');
 CREATE POLICY "Authenticated users can insert audit_logs" ON audit_logs FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 

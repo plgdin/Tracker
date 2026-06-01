@@ -74,7 +74,7 @@ export default function Dashboard() {
           <SettingsIcon size={24} />
         </button>
         <div style={{ textAlign: 'center' }}>
-          <h1 style={{ margin: 0 }}>Fresh things</h1>
+          <h1 style={{ margin: 0, fontFamily: "'Playfair Display', serif", fontWeight: 800, letterSpacing: '-0.5px', fontSize: '1.75rem' }}>Bake N Joy</h1>
           {profile?.name && (
             <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.8rem', marginTop: '0.1rem' }}>
               Welcome back, {profile.name}
@@ -161,6 +161,20 @@ export default function Dashboard() {
                 <div className="cute-card-illustration">
                   <MilkCarton daysRemaining={daysRemaining} size={50} />
                   <span className="cute-card-name">{item.name}</span>
+                  {item.price !== undefined && (
+                    <span style={{ 
+                      fontSize: '0.75rem', 
+                      color: 'var(--color-primary)', 
+                      fontWeight: 'bold', 
+                      backgroundColor: 'rgba(230, 57, 70, 0.08)',
+                      padding: '0.1rem 0.4rem',
+                      borderRadius: '8px',
+                      marginTop: '0.15rem',
+                      display: 'inline-block'
+                    }}>
+                      ${item.price.toFixed(2)}
+                    </span>
+                  )}
                 </div>
 
                 {/* Days remaining band with warning color codes */}

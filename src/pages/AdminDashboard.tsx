@@ -1,78 +1,402 @@
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '../store/authStore';
-import { supabase } from '../lib/supabase';
+import { useToastStore } from '../store/toastStore';
+import { db } from '../lib/db';
+import type { Item, AuditLog, Category } from '../lib/db';
 import { Navigate } from 'react-router-dom';
-import { ShieldCheck, User } from 'lucide-react';
+import { ShieldCheck, Trash2, Lock, Activity, DollarSign, Key, Plus, Users, CheckCircle2, AlertTriangle, Tag, Package, ToggleLeft, ToggleRight } from 'lucide-react';
+
+type TabKey = 'logs' | 'workers' | 'prices' | 'categories' | 'items' | 'security';
 
 export default function AdminDashboard() {
-  const { profile } = useAuthStore();
-  const [logs, setLogs] = useState<any[]>([]);
+  const { profile, signOut } = useAuthStore();
+  const showToast = useToastStore(s => s.showToast);
+  const [activeTab, setActiveTab] = useState<TabKey>('workers');
+  const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [items, setItems] = useState<Item[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [workers, setWorkers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [workerEmail, setWorkerEmail] = useState('');
+  const [workerPassword, setWorkerPassword] = useState('');
+  const [newAdminUser, setNewAdminUser] = useState('');
+  const [newAdminPass, setNewAdminPass] = useState('');
+  const [adminChanged, setAdminChanged] = useState(false);
+  const [priceEdits, setPriceEdits] = useState<Record<string, string>>({});
+  const [newCatName, setNewCatName] = useState('');
+  const [newCatColor, setNewCatColor] = useState('#E63946');
 
   useEffect(() => {
     if (profile?.role !== 'admin') return;
-
-    const fetchLogs = async () => {
-      const { data } = await supabase
-        .from('audit_logs')
-        .select(`
-          id,
-          action,
-          details,
-          created_at,
-          worker:worker_id(name)
-        `)
-        .order('created_at', { ascending: false })
-        .limit(20);
-      
-      if (data) setLogs(data);
-      setLoading(false);
-    };
-
-    fetchLogs();
+    (async () => {
+      setLoading(true);
+      try {
+        const [l, i, c] = await Promise.all([db.getAuditLogs(), db.getItems(), db.getCategories()]);
+        setLogs(l); setItems(i); setCategories(c);
+        const p: Record<string,string> = {};
+        i.forEach(it => { p[it.id] = it.price !== undefined ? String(it.price) : ''; });
+        setPriceEdits(p);
+        setWorkers(JSON.parse(localStorage.getItem('worker_accounts') || '[]'));
+        setAdminChanged(localStorage.getItem('admin_changed') === 'true');
+      } catch(e) { console.error(e); }
+      finally { setLoading(false); }
+    })();
   }, [profile]);
 
-  if (profile?.role !== 'admin') {
-    return <Navigate to="/" replace />;
-  }
+  if (profile?.role !== 'admin') return <Navigate to="/" replace />;
+
+  const refreshData = async () => {
+    const [l, i, c] = await Promise.all([db.getAuditLogs(), db.getItems(), db.getCategories()]);
+    setLogs(l); setItems(i); setCategories(c);
+    const p: Record<string,string> = {};
+    i.forEach(it => { p[it.id] = it.price !== undefined ? String(it.price) : ''; });
+    setPriceEdits(p);
+  };
+
+  // Workers
+  const handleAddWorker = (e: React.FormEvent) => {
+    e.preventDefault();
+    const em = workerEmail.trim().toLowerCase(), pw = workerPassword.trim();
+    if (!em.includes('@')) { alert('Enter a valid email!'); return; }
+    if (pw.length < 4) { alert('Password must be ≥4 chars!'); return; }
+    if (workers.some((w: any) => w.email === em)) { alert('Already exists!'); return; }
+    const w = { id: 'w-'+Math.random().toString(36).substr(2,9), email: em, password: pw, permissions: { canEditPrices: false }, created_at: new Date().toISOString() };
+    const up = [...workers, w]; setWorkers(up);
+    localStorage.setItem('worker_accounts', JSON.stringify(up));
+    db.addAuditLog('Added Worker', em);
+    setWorkerEmail(''); setWorkerPassword('');
+    showToast('Worker added! 👥');
+  };
+
+  const handleRemoveWorker = (id: string, email: string) => {
+    if (!confirm(`Delete worker ${email}?`)) return;
+    const up = workers.filter((w: any) => w.id !== id); setWorkers(up);
+    localStorage.setItem('worker_accounts', JSON.stringify(up));
+    db.addAuditLog('Removed Worker', email);
+    showToast('Worker removed! 🗑️');
+  };
+
+  const togglePermission = (workerId: string, perm: string) => {
+    const up = workers.map((w: any) => {
+      if (w.id === workerId) {
+        const perms = w.permissions || {};
+        return { ...w, permissions: { ...perms, [perm]: !perms[perm] } };
+      }
+      return w;
+    });
+    setWorkers(up);
+    localStorage.setItem('worker_accounts', JSON.stringify(up));
+    showToast('Permission updated! ✅');
+  };
+
+  // Security
+  const handleCustomizeAdmin = (e: React.FormEvent) => {
+    e.preventDefault();
+    const u = newAdminUser.trim(), p = newAdminPass.trim();
+    if (u.length < 3 || p.length < 4) { alert('Username ≥3 chars, password ≥4 chars!'); return; }
+    if (!confirm('You can only change admin credentials ONCE. Proceed?')) return;
+    localStorage.setItem('admin_username', u);
+    localStorage.setItem('admin_password', p);
+    localStorage.setItem('admin_changed', 'true');
+    setAdminChanged(true);
+    db.addAuditLog('Changed Admin Credentials', u);
+    showToast('Credentials changed! Re-login required... 🔑');
+    setTimeout(() => signOut(), 1500);
+  };
+
+  // Prices
+  const handleUpdatePrice = async (id: string, name: string) => {
+    const v = priceEdits[id], parsed = v ? parseFloat(v) : undefined;
+    if (parsed !== undefined && (isNaN(parsed) || parsed < 0)) { alert('Invalid price!'); return; }
+    const orig = items.find(i => i.id === id);
+    await db.updateItem(id, { price: parsed });
+    await db.addAuditLog('Updated Price', name, { previous_price: orig?.price, new_price: parsed });
+    await refreshData();
+    showToast('Price updated! 💰');
+  };
+
+  // Items delete
+  const handleDeleteItem = async (id: string, name: string) => {
+    if (!confirm(`Delete "${name}"? Cannot undo.`)) return;
+    await db.deleteItem(id);
+    await db.addAuditLog('Deleted Product', name);
+    await refreshData();
+    showToast('Item deleted! 🗑️');
+  };
+
+  // Categories
+  const handleAddCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCatName.trim()) return;
+    await db.addCategory({ name: newCatName.trim(), color: newCatColor, icon: 'Tag' });
+    await db.addAuditLog('Added Category', newCatName.trim());
+    setNewCatName('');
+    await refreshData();
+    showToast('Category added! 🎨');
+  };
+
+  const handleDeleteCategory = async (id: string, name: string) => {
+    if (!confirm(`Delete category "${name}"?`)) return;
+    const deleted = await db.deleteCategory(id);
+    if (!deleted) {
+      showToast('Category could not be deleted. Check Supabase category permissions.');
+      return;
+    }
+    await db.addAuditLog('Deleted Category', name);
+    await refreshData();
+    showToast('Category deleted! 🗑️');
+  };
+
+  const tabs: { key: TabKey; icon: any; label: string }[] = [
+    { key: 'workers', icon: Users, label: 'Workers' },
+    { key: 'items', icon: Package, label: 'Items' },
+    { key: 'categories', icon: Tag, label: 'Categories' },
+    { key: 'prices', icon: DollarSign, label: 'Prices' },
+    { key: 'logs', icon: Activity, label: 'Logs' },
+    { key: 'security', icon: Key, label: 'Security' },
+  ];
+
+  const colors = ['#E63946','#E07A5F','#F2CC8F','#81B29A','#3D5A80','#98C1D9','#EE6C4D','#6366F1'];
 
   return (
-    <div>
-      <header style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <ShieldCheck size={28} color="var(--color-primary)" />
-        <h1 style={{ margin: 0 }}>Admin Dashboard</h1>
+    <div className="container" style={{ paddingBottom: '5rem' }}>
+      <header style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'center' }}>
+        <div style={{ backgroundColor: 'var(--color-primary)', color: 'white', padding: '0.5rem', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(230,57,70,0.2)' }}>
+          <ShieldCheck size={26} />
+        </div>
+        <div>
+          <h1 style={{ margin: 0, fontSize: '1.5rem' }}>Admin Panel</h1>
+          <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', margin: 0 }}>Manage workers, items, categories & settings</p>
+        </div>
       </header>
-      
-      <div className="glass-panel" style={{ marginBottom: '2rem' }}>
-        <h2>Recent Activity (Audit Logs)</h2>
-        
-        {loading ? (
-          <p style={{ color: 'var(--color-text-secondary)', marginTop: '1rem' }}>Loading logs...</p>
-        ) : logs.length === 0 ? (
-          <p style={{ color: 'var(--color-text-secondary)', marginTop: '1rem' }}>No recent activity.</p>
-        ) : (
-          <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {logs.map((log) => (
-              <div key={log.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
-                <div style={{ padding: '0.5rem', background: 'var(--color-bg-dark)', borderRadius: '50%', color: 'var(--color-text-light)' }}>
-                  <User size={20} />
+
+      {/* Tabs */}
+      <div className="panel" style={{ padding: '0.4rem', marginBottom: '1.5rem', display: 'flex', gap: '0.2rem', overflowX: 'auto', borderRadius: '16px' }}>
+        {tabs.map(t => (
+          <button key={t.key} onClick={() => setActiveTab(t.key)}
+            className={`btn ${activeTab === t.key ? 'btn-primary' : 'btn-outline'}`}
+            style={{ flex: 1, padding: '0.45rem 0.5rem', fontSize: '0.7rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', border: 'none', borderRadius: '12px', whiteSpace: 'nowrap' }}>
+            <t.icon size={13} /> {t.label}
+          </button>
+        ))}
+      </div>
+
+      {loading ? (
+        <div className="panel" style={{ textAlign: 'center', padding: '3rem' }}>
+          <p style={{ color: 'var(--color-text-secondary)' }}>Loading...</p>
+        </div>
+      ) : (<>
+
+        {/* WORKERS TAB */}
+        {activeTab === 'workers' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div className="panel" style={{ padding: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Plus size={18} color="var(--color-primary)" /> Add Worker Account
+              </h2>
+              <form onSubmit={handleAddWorker} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div className="input-group"><label className="input-label">Email</label>
+                  <input type="email" className="input-field" placeholder="worker@gmail.com" value={workerEmail} onChange={e => setWorkerEmail(e.target.value)} required />
                 </div>
-                <div>
-                  <p style={{ fontWeight: 600, margin: 0 }}>
-                    {log.worker?.name || 'Unknown Worker'} <span style={{ fontWeight: 'normal', color: 'var(--color-text-secondary)' }}>{log.action}</span>
-                  </p>
-                  <p style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)', margin: '0.25rem 0 0 0' }}>
-                    {log.details?.item_name && `Item: ${log.details.item_name}`}
-                  </p>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', margin: '0.25rem 0 0 0' }}>
-                    {new Date(log.created_at).toLocaleString()}
-                  </p>
+                <div className="input-group"><label className="input-label">Password</label>
+                  <input type="text" className="input-field" placeholder="Set password..." value={workerPassword} onChange={e => setWorkerPassword(e.target.value)} required />
                 </div>
-              </div>
-            ))}
+                <button type="submit" className="btn btn-primary" style={{ width: '100%' }}><Plus size={16} /> Add Worker</button>
+              </form>
+            </div>
+
+            <div className="panel" style={{ padding: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Users size={18} color="var(--color-primary)" /> Workers ({workers.length})
+              </h2>
+              {workers.length === 0 ? <p style={{ color: 'var(--color-text-secondary)', textAlign: 'center', padding: '1.5rem' }}>No workers yet.</p> : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {workers.map((w: any) => (
+                    <div key={w.id} style={{ padding: '1rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', border: '1px solid rgba(230,57,70,0.05)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <div>
+                          <p style={{ margin: 0, fontWeight: 700, fontSize: '0.85rem' }}>📧 {w.email}</p>
+                          <p style={{ margin: '0.15rem 0 0', fontSize: '0.7rem', color: 'var(--color-text-secondary)' }}>Pass: <strong>{w.password}</strong></p>
+                        </div>
+                        <button onClick={() => handleRemoveWorker(w.id, w.email)} style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer', padding: '0.5rem' }}>
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                      {/* Permissions toggles */}
+                      <div style={{ borderTop: '1px solid rgba(230,57,70,0.06)', paddingTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                        <p style={{ margin: 0, fontSize: '0.7rem', fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Permissions</p>
+                        {[
+                          { key: 'canEditPrices', label: '💰 Edit Prices' },
+                          { key: 'canAddItems', label: '📦 Add Items' },
+                          { key: 'canEditItems', label: '✏️ Edit Items' },
+                        ].map(p => {
+                          const on = w.permissions?.[p.key] ?? false;
+                          return (
+                            <div key={p.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ fontSize: '0.8rem' }}>{p.label}</span>
+                              <button onClick={() => togglePermission(w.id, p.key)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: on ? 'rgb(46,204,113)' : 'var(--color-text-secondary)', padding: '0.15rem' }}>
+                                {on ? <ToggleRight size={22} /> : <ToggleLeft size={22} />}
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
-      </div>
+
+        {/* ITEMS TAB */}
+        {activeTab === 'items' && (
+          <div className="panel" style={{ padding: '1.5rem' }}>
+            <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Package size={18} color="var(--color-primary)" /> All Products ({items.length})
+            </h2>
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '1rem' }}>Admin can delete any product here. Workers cannot delete items.</p>
+            {items.length === 0 ? <p style={{ color: 'var(--color-text-secondary)', textAlign: 'center', padding: '2rem' }}>No products yet.</p> : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {items.map(item => (
+                  <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', border: '1px solid rgba(230,57,70,0.05)' }}>
+                    <div style={{ flex: 1 }}>
+                      <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>📦 {item.name}</span>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', display: 'block' }}>{item.category} · Qty: {item.quantity} {item.price !== undefined && `· $${item.price.toFixed(2)}`}</span>
+                    </div>
+                    <button onClick={() => handleDeleteItem(item.id, item.name)} style={{ border: 'none', background: 'rgba(230,57,70,0.08)', color: 'var(--color-primary)', cursor: 'pointer', padding: '0.4rem 0.75rem', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.75rem', fontWeight: 600 }}>
+                      <Trash2 size={14} /> Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* CATEGORIES TAB */}
+        {activeTab === 'categories' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div className="panel" style={{ padding: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Tag size={18} color="var(--color-primary)" /> Categories ({categories.length})
+              </h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.25rem' }}>
+                {categories.map(cat => (
+                  <div key={cat.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.6rem 1rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', border: `1.5px solid ${cat.color}20` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: cat.color, flexShrink: 0 }}></span>
+                      <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>{cat.name}</span>
+                    </div>
+                    <button onClick={() => handleDeleteCategory(cat.id, cat.name)} style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer', padding: '0.3rem' }}>
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <form onSubmit={handleAddCategory} style={{ borderTop: '1px solid rgba(230,57,70,0.08)', paddingTop: '1.25rem' }}>
+                <h3 style={{ fontSize: '0.9rem', margin: '0 0 0.75rem 0', fontWeight: 700 }}>➕ Add New Category</h3>
+                <div className="input-group"><label className="input-label">Name</label>
+                  <input type="text" className="input-field" placeholder="e.g., Snacks" value={newCatName} onChange={e => setNewCatName(e.target.value)} required />
+                </div>
+                <div className="input-group" style={{ marginTop: '0.75rem' }}><label className="input-label" style={{ marginBottom: '0.5rem' }}>Color</label>
+                  <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                    {colors.map(c => (
+                      <button key={c} type="button" onClick={() => setNewCatColor(c)} style={{ width: '26px', height: '26px', borderRadius: '50%', background: c, border: newCatColor === c ? '2px solid white' : 'none', boxShadow: newCatColor === c ? `0 0 0 2px ${c}` : 'none', cursor: 'pointer' }} />
+                    ))}
+                    <input type="color" value={newCatColor} onChange={e => setNewCatColor(e.target.value)} style={{ width: '30px', height: '30px', border: 'none', background: 'transparent', cursor: 'pointer' }} />
+                  </div>
+                </div>
+                <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }}><Plus size={16} /> Add Category</button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* PRICES TAB */}
+        {activeTab === 'prices' && (
+          <div className="panel" style={{ padding: '1.5rem' }}>
+            <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <DollarSign size={18} color="var(--color-primary)" /> Price Manager
+            </h2>
+            {items.length === 0 ? <p style={{ color: 'var(--color-text-secondary)', textAlign: 'center', padding: '2rem' }}>No products.</p> : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {items.map(item => (
+                  <div key={item.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', gap: '0.5rem' }}>
+                    <div style={{ flex: 1 }}>
+                      <span style={{ fontWeight: 700, fontSize: '0.85rem', display: 'block' }}>🏷️ {item.name}</span>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)' }}>{item.category}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <div style={{ position: 'relative', width: '85px' }}>
+                        <span style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', fontWeight: 'bold', fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>$</span>
+                        <input type="number" step="0.01" placeholder="0.00" className="input-field" style={{ paddingLeft: '1.2rem', height: '34px', fontSize: '0.8rem' }} value={priceEdits[item.id] || ''} onChange={e => setPriceEdits({ ...priceEdits, [item.id]: e.target.value })} />
+                      </div>
+                      <button onClick={() => handleUpdatePrice(item.id, item.name)} className="btn btn-primary" style={{ padding: '0 0.6rem', height: '34px', fontSize: '0.75rem', borderRadius: '10px' }}>Save</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* LOGS TAB */}
+        {activeTab === 'logs' && (
+          <div className="panel" style={{ padding: '1.5rem' }}>
+            <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Activity size={18} color="var(--color-primary)" /> Activity Logs
+            </h2>
+            {logs.length === 0 ? <p style={{ color: 'var(--color-text-secondary)', textAlign: 'center', padding: '2rem' }}>No activity yet.</p> : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                {logs.map(log => (
+                  <div key={log.id} style={{ padding: '0.75rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', borderLeft: '3px solid var(--color-primary)', fontSize: '0.8rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                      <strong>👤 {log.worker_email}</strong>
+                      <span style={{ fontSize: '0.65rem', color: 'var(--color-text-secondary)' }}>{new Date(log.created_at).toLocaleString()}</span>
+                    </div>
+                    <div><span style={{ color: 'var(--color-primary)', fontWeight: 600 }}>{log.action}</span> — 📦 {log.details?.item_name}
+                      {log.details?.previous_price !== undefined && ` ($${log.details.previous_price} → $${log.details.new_price})`}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* SECURITY TAB */}
+        {activeTab === 'security' && (
+          <div className="panel" style={{ padding: '1.5rem' }}>
+            <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Key size={18} color="var(--color-primary)" /> Admin Credentials
+            </h2>
+            {adminChanged ? (
+              <div style={{ padding: '1.5rem', borderRadius: '16px', backgroundColor: 'rgba(46,204,113,0.08)', border: '1.5px solid rgb(46,204,113)', textAlign: 'center' }}>
+                <CheckCircle2 size={32} color="rgb(46,204,113)" style={{ marginBottom: '0.5rem' }} />
+                <strong style={{ display: 'block' }}>Credentials customized! 🔒</strong>
+                <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', margin: '0.25rem 0 0' }}>Default "admin/admin" is permanently blocked.</p>
+              </div>
+            ) : (
+              <form onSubmit={handleCustomizeAdmin} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div style={{ padding: '0.75rem', backgroundColor: 'rgba(230,57,70,0.05)', border: '1px solid var(--color-primary)', borderRadius: '12px', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <AlertTriangle size={20} color="var(--color-primary)" style={{ flexShrink: 0 }} />
+                  <p style={{ margin: 0, fontSize: '0.7rem', fontWeight: 600 }}>One-time only! Save your new credentials safely.</p>
+                </div>
+                <div className="input-group"><label className="input-label">New Username</label>
+                  <input type="text" className="input-field" placeholder="e.g., superadmin" value={newAdminUser} onChange={e => setNewAdminUser(e.target.value)} required />
+                </div>
+                <div className="input-group"><label className="input-label">New Password</label>
+                  <input type="text" className="input-field" placeholder="e.g., myPass123" value={newAdminPass} onChange={e => setNewAdminPass(e.target.value)} required />
+                </div>
+                <button type="submit" className="btn btn-primary" style={{ width: '100%' }}><Lock size={16} /> Save (ONCE)</button>
+              </form>
+            )}
+          </div>
+        )}
+
+      </>)}
     </div>
   );
 }

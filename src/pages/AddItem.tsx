@@ -25,7 +25,8 @@ export default function AddItem() {
     warning_date: '',
     quantity: 1,
     category: 'Uncategorized',
-    notes: ''
+    notes: '',
+    price: ''
   });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -53,7 +54,8 @@ export default function AddItem() {
               warning_date: itemToEdit.warning_date || '',
               quantity: itemToEdit.quantity,
               category: itemToEdit.category,
-              notes: itemToEdit.notes || ''
+              notes: itemToEdit.notes || '',
+              price: itemToEdit.price !== undefined ? String(itemToEdit.price) : ''
             });
             if (itemToEdit.barcode) {
               setBarcode(itemToEdit.barcode);
@@ -125,8 +127,13 @@ export default function AddItem() {
     setSaving(true);
     try {
       const dataToSave = {
-        ...formData,
+        name: formData.name,
+        expiration_date: formData.expiration_date,
         warning_date: formData.warning_date || undefined,
+        quantity: formData.quantity,
+        category: formData.category,
+        notes: formData.notes || undefined,
+        price: formData.price ? parseFloat(formData.price) : undefined,
         barcode: barcode || undefined,
         added_by: profile?.id || undefined
       };
@@ -287,6 +294,19 @@ export default function AddItem() {
                 onChange={e => setFormData({ ...formData, notes: e.target.value })}
               />
               <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginTop: '0.35rem' }}>Any storage instructions, brand details, or custom reminders.</p>
+            </div>
+
+            <div className="input-group">
+              <label className="input-label">💰 Product Price (Optional)</label>
+              <input 
+                type="number" 
+                step="0.01" 
+                className="input-field" 
+                placeholder="e.g., 3.49"
+                value={formData.price}
+                onChange={e => setFormData({ ...formData, price: e.target.value })}
+              />
+              <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginTop: '0.35rem' }}>Optional price of the product to track purchase budgets.</p>
             </div>
 
             {/* List items with right alignment as seen in Screenshot 4 */}

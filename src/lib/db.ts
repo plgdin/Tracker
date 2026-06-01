@@ -1,4 +1,5 @@
 import { supabase as supabaseClient } from './supabase';
+import { useAuthStore } from '../store/authStore';
 // Types
 export interface Item {
   id: string;
@@ -11,6 +12,7 @@ export interface Item {
   quantity: number;
   category: string;
   notes?: string;
+  price?: number; // Price field for products
   image_url?: string;
   created_at: string;
 }
@@ -29,6 +31,19 @@ export interface ShoppingItem {
   user_id?: string;
   item_name: string;
   is_purchased: boolean;
+  created_at: string;
+}
+
+export interface AuditLog {
+  id: string;
+  worker_email: string;
+  action: string;
+  details: {
+    item_name: string;
+    previous_price?: number;
+    new_price?: number;
+    [key: string]: any;
+  };
   created_at: string;
 }
 
@@ -78,6 +93,17 @@ const setLocal = <T>(key: string, value: T): void => {
   localStorage.setItem(key, JSON.stringify(value));
 };
 
+const getLocalCategories = (): Category[] => getLocal<Category[]>('tracker_categories', DEFAULT_CATEGORIES);
+
+const hasLocalCategories = (): boolean => localStorage.getItem('tracker_categories') !== null;
+
+const deleteLocalCategory = (id: string): boolean => {
+  const categories = getLocalCategories();
+  const filtered = categories.filter(c => c.id !== id);
+  setLocal('tracker_categories', filtered);
+  return filtered.length !== categories.length;
+};
+
 // Main DB operations with fallback
 export const db = {
   // Items
@@ -105,6 +131,8 @@ export const db = {
       created_at: new Date().toISOString()
     };
 
+    let result = newItem;
+
     if (dbSupabase) {
       try {
         const { data: userData } = await withTimeout(dbSupabase.auth.getUser());
@@ -116,19 +144,26 @@ export const db = {
             .single()
         );
         if (error) throw error;
-        return data;
+        result = data;
       } catch (e) {
         console.warn('Supabase insert failed, saving to LocalStorage', e);
       }
     }
 
-    const items = getLocal<Item[]>('tracker_items', []);
-    items.push(newItem);
-    setLocal('tracker_items', items);
-    return newItem;
+    if (result === newItem) {
+      const items = getLocal<Item[]>('tracker_items', []);
+      items.push(newItem);
+      setLocal('tracker_items', items);
+    }
+
+    // Auto-log addition to audit logs
+    await db.addAuditLog('Added Product', result.name);
+    return result;
   },
 
   async updateItem(id: string, updates: Partial<Item>): Promise<Item> {
+    let result: Item | null = null;
+
     if (dbSupabase) {
       try {
         const { data, error } = await withTimeout(
@@ -140,18 +175,26 @@ export const db = {
             .single()
         );
         if (error) throw error;
-        return data;
+        result = data;
       } catch (e) {
         console.warn('Supabase update failed, updating LocalStorage', e);
       }
     }
 
-    const items = getLocal<Item[]>('tracker_items', []);
-    const idx = items.findIndex(i => i.id === id);
-    if (idx !== -1) {
-      items[idx] = { ...items[idx], ...updates };
-      setLocal('tracker_items', items);
-      return items[idx];
+    if (!result) {
+      const items = getLocal<Item[]>('tracker_items', []);
+      const idx = items.findIndex(i => i.id === id);
+      if (idx !== -1) {
+        items[idx] = { ...items[idx], ...updates };
+        setLocal('tracker_items', items);
+        result = items[idx];
+      }
+    }
+
+    if (result) {
+      // Auto-log update to audit logs
+      await db.addAuditLog('Updated Product', result.name, { updates });
+      return result;
     }
     throw new Error('Item not found');
   },
@@ -181,12 +224,13 @@ export const db = {
           dbSupabase.from('categories').select('*').order('name', { ascending: true })
         );
         if (error) throw error;
-        return data && data.length > 0 ? data : DEFAULT_CATEGORIES;
+        if (data && data.length > 0) return data;
+        return hasLocalCategories() ? getLocalCategories() : DEFAULT_CATEGORIES;
       } catch (e) {
         console.warn('Supabase categories fetch failed, falling back to LocalStorage', e);
       }
     }
-    return getLocal<Category[]>('tracker_categories', DEFAULT_CATEGORIES);
+    return getLocalCategories();
   },
 
   async addCategory(category: Omit<Category, 'id' | 'created_at'>): Promise<Category> {
@@ -213,7 +257,7 @@ export const db = {
       }
     }
 
-    const categories = getLocal<Category[]>('tracker_categories', DEFAULT_CATEGORIES);
+    const categories = getLocalCategories();
     categories.push(newCategory);
     setLocal('tracker_categories', categories);
     return newCategory;
@@ -222,18 +266,24 @@ export const db = {
   async deleteCategory(id: string): Promise<boolean> {
     if (dbSupabase) {
       try {
-        const { error } = await withTimeout(dbSupabase.from('categories').delete().eq('id', id));
+        const { data, error } = await withTimeout(
+          dbSupabase.from('categories').delete().eq('id', id).select('id')
+        );
         if (error) throw error;
-        return true;
+        if (data && data.length > 0) {
+          if (hasLocalCategories()) {
+            deleteLocalCategory(id);
+          } else {
+            setLocal('tracker_categories', []);
+          }
+          return true;
+        }
       } catch (e) {
         console.warn('Supabase category delete failed, removing from LocalStorage', e);
       }
     }
 
-    const categories = getLocal<Category[]>('tracker_categories', DEFAULT_CATEGORIES);
-    const filtered = categories.filter(c => c.id !== id);
-    setLocal('tracker_categories', filtered);
-    return true;
+    return deleteLocalCategory(id);
   },
 
   // Shopping List
@@ -338,5 +388,60 @@ export const db = {
   async saveSettings(settings: AppSettings): Promise<AppSettings> {
     setLocal('tracker_settings', settings);
     return settings;
+  },
+
+  // Audit Logs
+  async getAuditLogs(): Promise<AuditLog[]> {
+    if (dbSupabase) {
+      try {
+        const { data, error } = await withTimeout(
+          dbSupabase.from('audit_logs').select('*').order('created_at', { ascending: false })
+        );
+        if (!error && data) {
+          return data.map((log: any) => ({
+            id: log.id,
+            worker_email: log.details?.worker_email || 'worker@example.com',
+            action: log.action,
+            details: log.details || {},
+            created_at: log.created_at
+          }));
+        }
+      } catch (e) {
+        console.warn('Supabase audit logs fetch failed', e);
+      }
+    }
+    return getLocal<AuditLog[]>('tracker_audit_logs', []);
+  },
+
+  async addAuditLog(action: string, itemName: string, details: any = {}): Promise<AuditLog> {
+    const userState = useAuthStore.getState();
+    const email = userState.user?.email || localStorage.getItem('admin_username') || 'admin';
+    const newLog: AuditLog = {
+      id: generateId(),
+      worker_email: email,
+      action,
+      details: { item_name: itemName, ...details },
+      created_at: new Date().toISOString()
+    };
+
+    if (dbSupabase) {
+      try {
+        const { data: userData } = await withTimeout(dbSupabase.auth.getUser());
+        await withTimeout(
+          dbSupabase.from('audit_logs').insert([{
+            worker_id: userData?.user?.id,
+            action,
+            details: { item_name: itemName, worker_email: email, ...details }
+          }])
+        );
+      } catch (e) {
+        console.warn('Supabase audit log insert failed', e);
+      }
+    }
+
+    const logs = getLocal<AuditLog[]>('tracker_audit_logs', []);
+    logs.unshift(newLog);
+    setLocal('tracker_audit_logs', logs.slice(0, 100));
+    return newLog;
   }
 };

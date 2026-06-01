@@ -6,8 +6,8 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
   const { user, isLoading, initialize } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     initialize();
@@ -24,35 +24,95 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsSubmitting(true);
+    
+    const trimEmail = email.trim().toLowerCase();
+    const trimPassword = password.trim();
+
+    // 1. Check custom admin credentials
+    const storedAdminUser = localStorage.getItem('admin_username');
+    const storedAdminPass = localStorage.getItem('admin_password');
+    const hasCustomAdmin = localStorage.getItem('admin_changed') === 'true' && !!storedAdminUser && !!storedAdminPass;
+    const adminUser = hasCustomAdmin ? storedAdminUser! : 'admin';
+    const adminPass = hasCustomAdmin ? storedAdminPass! : 'admin';
+    const normalizedAdminUser = adminUser.toLowerCase();
+
+    // If it has been changed, reject 'admin'/'admin'
+    if (hasCustomAdmin && trimEmail === 'admin' && trimPassword === 'admin') {
+      setError('Invalid admin credentials.');
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (trimEmail === normalizedAdminUser && trimPassword === adminPass) {
+      localStorage.setItem('admin_session', 'true');
+      useAuthStore.getState().setUser({ id: 'admin-id', email: adminUser } as any);
+      useAuthStore.getState().setProfile({ id: 'admin-id', name: 'Admin', role: 'admin' });
+      setIsSubmitting(false);
+      return;
+    }
+
+    // 2. Check admin-created worker accounts
+    let workers: any[] = [];
     try {
-      if (isSignUp) {
-        const { error } = await supabase.auth.signUp({ email, password });
-        if (error) throw error;
-        alert('Check your email for the login link or proceed if auto-login is enabled.');
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-      }
+      workers = JSON.parse(localStorage.getItem('worker_accounts') || '[]');
+    } catch {
+      localStorage.removeItem('worker_accounts');
+    }
+    const matchedWorker = workers.find((w: any) => w.email === trimEmail && w.password === trimPassword);
+    if (matchedWorker) {
+      localStorage.setItem('worker_session', JSON.stringify(matchedWorker));
+      useAuthStore.getState().setUser({ id: matchedWorker.id, email: matchedWorker.email } as any);
+      useAuthStore.getState().setProfile({ id: matchedWorker.id, name: matchedWorker.email.split('@')[0], role: 'worker' });
+      setIsSubmitting(false);
+      return;
+    }
+
+    // 3. Fallback to standard Supabase Auth
+    if (!trimEmail.includes('@')) {
+      setError('Invalid username or password.');
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email: trimEmail, password: trimPassword });
+      if (error) throw error;
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Could not sign in.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
+  const resetLocalAdmin = () => {
+    if (!confirm('Reset local admin credentials to admin/admin?')) return;
+    localStorage.removeItem('admin_username');
+    localStorage.removeItem('admin_password');
+    localStorage.removeItem('admin_changed');
+    localStorage.removeItem('admin_session');
+    localStorage.removeItem('worker_session');
+    setEmail('admin');
+    setPassword('admin');
+    setError('Local admin reset. Use admin / admin to log in.');
+  };
+
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', padding: '1rem' }}>
-      <div className="glass-panel" style={{ width: '100%', maxWidth: '400px' }}>
-        <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-          {isSignUp ? 'Create Account' : 'Welcome Back'}
-        </h2>
+    <div className="auth-shell">
+      <div className="auth-card">
+        <div className="auth-brand-mark">BNJ</div>
+        <h1 className="auth-title">Bake N Joy</h1>
+        <p className="auth-subtitle">Welcome back to your stockroom</p>
         
-        {error && <div className="badge badge-danger" style={{ marginBottom: '1rem', width: '100%', padding: '0.5rem' }}>{error}</div>}
+        {error && <div className="auth-error">{error}</div>}
         
-        <form onSubmit={handleAuth}>
+        <form onSubmit={handleAuth} className="auth-form">
           <div className="input-group">
-            <label className="input-label">Email</label>
+            <label className="input-label">Username or Email</label>
             <input 
-              type="email" 
+              type="text" 
               className="input-field" 
+              placeholder="e.g., admin or name@gmail.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required 
@@ -63,26 +123,20 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
             <input 
               type="password" 
               className="input-field" 
+              placeholder="Enter password..."
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required 
             />
           </div>
-          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }}>
-            {isSignUp ? 'Sign Up' : 'Log In'}
+          <button type="submit" className="btn btn-primary auth-submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Logging in...' : 'Log In'}
           </button>
         </form>
-        
-        <p style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>
-          {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
-          <button 
-            type="button" 
-            onClick={() => setIsSignUp(!isSignUp)}
-            style={{ background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', fontWeight: 'bold' }}
-          >
-            {isSignUp ? 'Log In' : 'Sign Up'}
-          </button>
-        </p>
+
+        <button type="button" className="auth-reset" onClick={resetLocalAdmin}>
+          Reset local admin login
+        </button>
       </div>
     </div>
   );
