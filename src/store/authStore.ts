@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
 
-type Role = 'admin' | 'worker';
+type Role = 'admin' | 'worker' | 'pending' | 'disabled';
 
 interface Profile {
   id: string;
@@ -14,8 +14,10 @@ interface AuthState {
   user: User | null;
   profile: Profile | null;
   isLoading: boolean;
+  authNotice: string;
   setUser: (user: User | null) => void;
   setProfile: (profile: Profile | null) => void;
+  setAuthNotice: (notice: string) => void;
   signOut: () => Promise<void>;
   initialize: () => Promise<void>;
 }
@@ -24,8 +26,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   profile: null,
   isLoading: true,
+  authNotice: '',
   setUser: (user) => set({ user }),
   setProfile: (profile) => set({ profile }),
+  setAuthNotice: (authNotice) => set({ authNotice }),
   signOut: async () => {
     localStorage.removeItem('admin_session');
     localStorage.removeItem('worker_session');
@@ -53,7 +57,7 @@ export const useAuthStore = create<AuthState>((set) => ({
           if (!error && !profile) {
             const { data: created, error: insertError } = await supabase
               .from('profiles')
-              .insert([{ id: user.id, name: user.email?.split('@')[0] ?? null, role: 'worker' }])
+              .insert([{ id: user.id, name: user.email?.split('@')[0] ?? null, role: 'pending' }])
               .select('*')
               .maybeSingle();
             if (!insertError && created) {
@@ -63,7 +67,21 @@ export const useAuthStore = create<AuthState>((set) => ({
           }
 
           if (!error && profile) {
-            set({ profile: profile as Profile });
+            const prof = profile as Profile;
+            // Gate access until approved.
+            if (prof.role === 'pending') {
+              set({ authNotice: 'Your account is pending admin approval.' });
+              await supabase.auth.signOut({ scope: 'local' } as any);
+              set({ user: null, profile: null });
+              return;
+            }
+            if (prof.role === 'disabled') {
+              set({ authNotice: 'Your access has been disabled. Contact your admin.' });
+              await supabase.auth.signOut({ scope: 'local' } as any);
+              set({ user: null, profile: null });
+              return;
+            }
+            set({ profile: prof });
           } else if (error) {
             console.warn('Profile fetch failed', error);
           }
@@ -84,23 +102,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         return;
       }
 
-      // 2. Check local worker session
-      const localWorkerStr = localStorage.getItem('worker_session');
-      if (localWorkerStr) {
-        try {
-          const worker = JSON.parse(localWorkerStr);
-          set({
-            user: { id: worker.id, email: worker.email } as any,
-            profile: { id: worker.id, name: worker.email.split('@')[0], role: 'worker' },
-            isLoading: false
-          });
-          return;
-        } catch (e) {
-          localStorage.removeItem('worker_session');
-        }
-      }
-      
-      // 3. Check Supabase session if available.
+      // 2. Check Supabase session if available.
       const { data: { session } } = await supabase.auth.getSession();
       
       if (session?.user) {

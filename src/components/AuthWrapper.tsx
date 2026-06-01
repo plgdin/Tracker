@@ -3,11 +3,12 @@ import { useAuthStore } from '../store/authStore';
 import { supabase } from '../lib/supabase';
 
 export default function AuthWrapper({ children }: { children: React.ReactNode }) {
-  const { user, isLoading, initialize } = useAuthStore();
+  const { user, isLoading, initialize, authNotice, setAuthNotice } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mode, setMode] = useState<'login' | 'signup'>('login');
 
   useEffect(() => {
     initialize();
@@ -24,6 +25,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setAuthNotice('');
     setIsSubmitting(true);
 
     const trimEmail = email.trim().toLowerCase();
@@ -52,23 +54,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
       return;
     }
 
-    // 2. Check admin-created worker accounts
-    let workers: any[] = [];
-    try {
-      workers = JSON.parse(localStorage.getItem('worker_accounts') || '[]');
-    } catch {
-      localStorage.removeItem('worker_accounts');
-    }
-    const matchedWorker = workers.find((w: any) => w.email === trimEmail && w.password === trimPassword);
-    if (matchedWorker) {
-      localStorage.setItem('worker_session', JSON.stringify(matchedWorker));
-      useAuthStore.getState().setUser({ id: matchedWorker.id, email: matchedWorker.email } as any);
-      useAuthStore.getState().setProfile({ id: matchedWorker.id, name: matchedWorker.email.split('@')[0], role: 'worker' });
-      setIsSubmitting(false);
-      return;
-    }
-
-    // 3. Fallback to standard Supabase Auth
+    // 2. Supabase Auth (login/signup)
     if (!trimEmail.includes('@')) {
       setError('Invalid username or password.');
       setIsSubmitting(false);
@@ -76,6 +62,14 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
     }
 
     try {
+      if (mode === 'signup') {
+        const { error } = await supabase.auth.signUp({ email: trimEmail, password: trimPassword });
+        if (error) throw error;
+        setError('Sign up successful. Wait for admin approval, then log in.');
+        setMode('login');
+        return;
+      }
+
       const { error } = await supabase.auth.signInWithPassword({ email: trimEmail, password: trimPassword });
       if (error) throw error;
     } catch (err: any) {
@@ -85,25 +79,32 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
     }
   };
 
-  const resetLocalAdmin = () => {
-    if (!confirm('Reset local admin credentials to admin/admin?')) return;
-    localStorage.removeItem('admin_username');
-    localStorage.removeItem('admin_password');
-    localStorage.removeItem('admin_changed');
-    localStorage.removeItem('admin_session');
-    localStorage.removeItem('worker_session');
-    setEmail('admin');
-    setPassword('admin');
-    setError('Local admin reset. Use admin / admin to log in.');
-  };
-
   return (
     <div className="auth-shell">
       <div className="auth-card">
         <h1 className="auth-title">Bake N Joy</h1>
         <p className="auth-subtitle">Welcome back to your stockroom</p>
 
-        {error && <div className="auth-error">{error}</div>}
+        {(authNotice || error) && <div className="auth-error">{authNotice || error}</div>}
+
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+          <button
+            type="button"
+            className={`btn ${mode === 'login' ? 'btn-primary' : 'btn-outline'}`}
+            style={{ flex: 1, minHeight: 40, padding: '0.55rem 1rem', fontSize: '0.9rem' }}
+            onClick={() => { setMode('login'); setError(''); setAuthNotice(''); }}
+          >
+            Log In
+          </button>
+          <button
+            type="button"
+            className={`btn ${mode === 'signup' ? 'btn-primary' : 'btn-outline'}`}
+            style={{ flex: 1, minHeight: 40, padding: '0.55rem 1rem', fontSize: '0.9rem' }}
+            onClick={() => { setMode('signup'); setError(''); setAuthNotice(''); }}
+          >
+            Sign Up
+          </button>
+        </div>
 
         <form onSubmit={handleAuth} className="auth-form">
           <div className="input-group">
@@ -133,9 +134,6 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
           </button>
         </form>
 
-        <button type="button" className="auth-reset" onClick={resetLocalAdmin}>
-          Reset local admin login
-        </button>
       </div>
     </div>
   );

@@ -4,7 +4,7 @@
 CREATE TABLE profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     name TEXT,
-    role TEXT CHECK (role IN ('admin', 'worker')) DEFAULT 'worker',
+    role TEXT CHECK (role IN ('admin', 'worker', 'pending', 'disabled')) DEFAULT 'pending',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -65,6 +65,14 @@ ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Enable read access for authenticated users" ON profiles FOR SELECT USING (auth.role() = 'authenticated');
 CREATE POLICY "Enable update for users based on id" ON profiles FOR UPDATE USING (auth.uid() = id);
 CREATE POLICY "Enable insert for authenticated users only" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
+
+-- Allow admins to approve/disable users. This is a simple demo policy.
+CREATE POLICY "Admins can update all profiles" ON profiles FOR UPDATE USING (
+  EXISTS (
+    SELECT 1 FROM profiles p
+    WHERE p.id = auth.uid() AND p.role = 'admin'
+  )
+);
 
 CREATE POLICY "Authenticated users can read items" ON items FOR SELECT USING (auth.role() = 'authenticated');
 CREATE POLICY "Authenticated users can insert items" ON items FOR INSERT WITH CHECK (auth.role() = 'authenticated');

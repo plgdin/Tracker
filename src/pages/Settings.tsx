@@ -87,7 +87,6 @@ export default function Settings() {
               style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
               onClick={() => {
                 localStorage.removeItem('admin_session');
-                localStorage.removeItem('worker_session');
                 window.location.reload();
               }}
             >
