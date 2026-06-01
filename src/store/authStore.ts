@@ -90,7 +90,32 @@ export const useAuthStore = create<AuthState>((set) => ({
         }
       };
 
-      // 1. Check local admin session
+      // 1. Check Supabase session first if available.
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session?.user) {
+        try {
+          const { data: prof } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .maybeSingle();
+          
+          if (prof && prof.role === 'admin') {
+            localStorage.setItem('admin_session', 'true');
+            set({
+              user: session.user,
+              profile: prof as Profile,
+              isLoading: false
+            });
+            return;
+          }
+        } catch (e) {
+          console.warn('Failed to fetch admin profile from Supabase', e);
+        }
+      }
+
+      // 2. Check local admin session
       const isAdminSession = localStorage.getItem('admin_session') === 'true';
       if (isAdminSession) {
         const adminUser = localStorage.getItem('admin_username') || 'admin';
@@ -102,12 +127,9 @@ export const useAuthStore = create<AuthState>((set) => ({
         return;
       }
 
-      // 2. Check Supabase session if available.
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      // 3. Check Supabase session for workers
       if (session?.user) {
         set({ user: session.user });
-        
         await ensureProfile(session.user);
       }
 

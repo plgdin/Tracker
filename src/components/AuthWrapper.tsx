@@ -47,10 +47,50 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
     }
 
     if (trimEmail === normalizedAdminUser && trimPassword === adminPass) {
-      localStorage.setItem('admin_session', 'true');
-      useAuthStore.getState().setUser({ id: 'admin-id', email: adminUser } as any);
-      useAuthStore.getState().setProfile({ id: 'admin-id', name: 'Admin', role: 'admin' });
-      setIsSubmitting(false);
+      setIsSubmitting(true);
+      const adminEmail = `${normalizedAdminUser}@example.com`;
+      // Ensure password has minimum 6 characters required by Supabase auth
+      const adminPassword = trimPassword.length >= 6 ? trimPassword : `${trimPassword}123456`;
+
+      try {
+        let user: any = null;
+        const authResult = await supabase.auth.signInWithPassword({ email: adminEmail, password: adminPassword });
+        
+        if (authResult.error) {
+          // If the user doesn't exist yet on Supabase auth, create it
+          if (authResult.error.message.includes('Invalid login credentials') || authResult.error.message.includes('not found')) {
+            const signUpResult = await supabase.auth.signUp({ email: adminEmail, password: adminPassword });
+            if (signUpResult.error) throw signUpResult.error;
+            user = signUpResult.data.user;
+          } else {
+            throw authResult.error;
+          }
+        } else {
+          user = authResult.data.user;
+        }
+
+        if (user) {
+          // Establish the Admin profile in Supabase database
+          await supabase.from('profiles').upsert({
+            id: user.id,
+            name: 'Admin',
+            role: 'admin',
+            created_at: new Date().toISOString()
+          });
+          
+          localStorage.setItem('admin_session', 'true');
+          useAuthStore.getState().setUser(user);
+          useAuthStore.getState().setProfile({ id: user.id, name: 'Admin', role: 'admin' });
+        }
+      } catch (err: any) {
+        console.warn('Failed to authenticate admin on Supabase, falling back to local fallback mode', err);
+        // Clean fallback to standard offline local admin if Supabase is offline/not ready
+        localStorage.setItem('admin_session', 'true');
+        useAuthStore.getState().setUser({ id: 'admin-id', email: adminUser } as any);
+        useAuthStore.getState().setProfile({ id: 'admin-id', name: 'Admin', role: 'admin' });
+      } finally {
+        setIsSubmitting(false);
+      }
       return;
     }
 

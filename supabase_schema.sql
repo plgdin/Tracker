@@ -19,6 +19,7 @@ CREATE TABLE items (
     quantity INTEGER DEFAULT 1,
     category TEXT DEFAULT 'Uncategorized',
     notes TEXT,
+    price NUMERIC,
     image_url TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

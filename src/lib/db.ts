@@ -60,6 +60,17 @@ const isSupabaseConfigured =
 export const dbSupabase = isSupabaseConfigured ? supabaseClient : null;
 export const supabase = dbSupabase;
 
+// Synchronously/asynchronously verify if we have a valid authenticated user session with Supabase
+const getUseSupabase = async (): Promise<boolean> => {
+  if (!dbSupabase) return false;
+  try {
+    const { data: { session } } = await dbSupabase.auth.getSession();
+    return !!session;
+  } catch {
+    return false;
+  }
+};
+
 // Race promise helper to prevent infinite loading screens on database hang/timeout
 const withTimeout = (promiseLike: any, timeoutMs = 2500): Promise<any> => {
   return Promise.race([
@@ -108,7 +119,8 @@ const deleteLocalCategory = (id: string): boolean => {
 export const db = {
   // Items
   async getItems(): Promise<Item[]> {
-    if (dbSupabase) {
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
       try {
         const { data, error } = await withTimeout(
           dbSupabase.from('items').select('*').order('expiration_date', { ascending: true })
@@ -132,8 +144,9 @@ export const db = {
     };
 
     let result = newItem;
+    const useSupabase = await getUseSupabase();
 
-    if (dbSupabase) {
+    if (useSupabase && dbSupabase) {
       try {
         const { data: userData } = await withTimeout(dbSupabase.auth.getUser());
         const { data, error } = await withTimeout(
@@ -163,8 +176,9 @@ export const db = {
 
   async updateItem(id: string, updates: Partial<Item>): Promise<Item> {
     let result: Item | null = null;
+    const useSupabase = await getUseSupabase();
 
-    if (dbSupabase) {
+    if (useSupabase && dbSupabase) {
       try {
         const { data, error } = await withTimeout(
           dbSupabase
@@ -200,7 +214,8 @@ export const db = {
   },
 
   async deleteItem(id: string): Promise<boolean> {
-    if (dbSupabase) {
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
       try {
         const { error } = await withTimeout(dbSupabase.from('items').delete().eq('id', id));
         if (error) throw error;
@@ -218,7 +233,8 @@ export const db = {
 
   // Categories
   async getCategories(): Promise<Category[]> {
-    if (dbSupabase) {
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
       try {
         const { data, error } = await withTimeout(
           dbSupabase.from('categories').select('*').order('name', { ascending: true })
@@ -239,8 +255,9 @@ export const db = {
       id: generateId(),
       created_at: new Date().toISOString()
     };
+    const useSupabase = await getUseSupabase();
 
-    if (dbSupabase) {
+    if (useSupabase && dbSupabase) {
       try {
         const { data: userData } = await withTimeout(dbSupabase.auth.getUser());
         const { data, error } = await withTimeout(
@@ -264,7 +281,8 @@ export const db = {
   },
 
   async deleteCategory(id: string): Promise<boolean> {
-    if (dbSupabase) {
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
       try {
         const { data, error } = await withTimeout(
           dbSupabase.from('categories').delete().eq('id', id).select('id')
@@ -288,7 +306,8 @@ export const db = {
 
   // Shopping List
   async getShoppingList(): Promise<ShoppingItem[]> {
-    if (dbSupabase) {
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
       try {
         const { data, error } = await withTimeout(
           dbSupabase.from('shopping_list').select('*').order('created_at', { ascending: false })
@@ -311,8 +330,9 @@ export const db = {
       is_purchased: false,
       created_at: new Date().toISOString()
     };
+    const useSupabase = await getUseSupabase();
 
-    if (dbSupabase) {
+    if (useSupabase && dbSupabase) {
       try {
         const { data: userData } = await withTimeout(dbSupabase.auth.getUser());
         const { data, error } = await withTimeout(
@@ -336,7 +356,8 @@ export const db = {
   },
 
   async toggleShoppingItem(id: string, isPurchased: boolean): Promise<ShoppingItem> {
-    if (dbSupabase) {
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
       try {
         const { data, error } = await withTimeout(
           dbSupabase
@@ -364,7 +385,8 @@ export const db = {
   },
 
   async deleteShoppingItem(id: string): Promise<boolean> {
-    if (dbSupabase) {
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
       try {
         const { error } = await withTimeout(dbSupabase.from('shopping_list').delete().eq('id', id));
         if (error) throw error;
@@ -392,7 +414,8 @@ export const db = {
 
   // Audit Logs
   async getAuditLogs(): Promise<AuditLog[]> {
-    if (dbSupabase) {
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
       try {
         const { data, error } = await withTimeout(
           dbSupabase.from('audit_logs').select('*').order('created_at', { ascending: false })
@@ -424,7 +447,8 @@ export const db = {
       created_at: new Date().toISOString()
     };
 
-    if (dbSupabase) {
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
       try {
         const { data: userData } = await withTimeout(dbSupabase.auth.getUser());
         await withTimeout(

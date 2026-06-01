@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useToastStore } from '../store/toastStore';
 import { db } from '../lib/db';
-import { supabase } from '../lib/supabase';
+import { supabaseEphemeral } from '../lib/supabaseEphemeral';
 import type { Item, AuditLog, Category } from '../lib/db';
 import { Navigate } from 'react-router-dom';
 import { ShieldCheck, Trash2, Lock, Activity, DollarSign, Key, Plus, Users, CheckCircle2, AlertTriangle, Tag, Package, ToggleLeft, ToggleRight } from 'lucide-react';
@@ -16,7 +16,6 @@ export default function AdminDashboard() {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [newAdminUser, setNewAdminUser] = useState('');
   const [newAdminPass, setNewAdminPass] = useState('');
@@ -24,6 +23,11 @@ export default function AdminDashboard() {
   const [priceEdits, setPriceEdits] = useState<Record<string, string>>({});
   const [newCatName, setNewCatName] = useState('');
   const [newCatColor, setNewCatColor] = useState('#E63946');
+  const [workers, setWorkers] = useState<any[]>(() => {
+    return JSON.parse(localStorage.getItem('worker_accounts') || '[]');
+  });
+  const [workerEmail, setWorkerEmail] = useState('');
+  const [workerPassword, setWorkerPassword] = useState('');
 
   useEffect(() => {
     if (profile?.role !== 'admin') return;
@@ -36,16 +40,6 @@ export default function AdminDashboard() {
         i.forEach(it => { p[it.id] = it.price !== undefined ? String(it.price) : ''; });
         setPriceEdits(p);
         setAdminChanged(localStorage.getItem('admin_changed') === 'true');
-
-        try {
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('id,name,role,created_at')
-            .order('created_at', { ascending: false });
-          if (!error && data) setUsers(data);
-        } catch (e) {
-          console.warn('Failed to load user list', e);
-        }
       } catch(e) { console.error(e); }
       finally { setLoading(false); }
     })();
@@ -59,15 +53,6 @@ export default function AdminDashboard() {
     const p: Record<string,string> = {};
     i.forEach(it => { p[it.id] = it.price !== undefined ? String(it.price) : ''; });
     setPriceEdits(p);
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id,name,role,created_at')
-        .order('created_at', { ascending: false });
-      if (!error && data) setUsers(data);
-    } catch (e) {
-      console.warn('Failed to load user list', e);
-    }
   };
 
   // Access
