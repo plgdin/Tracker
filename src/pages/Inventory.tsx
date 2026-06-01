@@ -74,7 +74,7 @@ export default function Inventory() {
         return a.name.localeCompare(b.name);
       }
       if (sortBy === 'name-desc') {
-        return b.name.localeCompare(b.name);
+        return b.name.localeCompare(a.name);
       }
       return 0;
     });

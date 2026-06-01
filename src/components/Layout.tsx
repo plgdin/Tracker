@@ -1,7 +1,10 @@
 import { Outlet, NavLink } from 'react-router-dom';
-import { Home, List, ShoppingCart, Settings } from 'lucide-react';
+import { Home, List, ShoppingCart, Settings, Shield } from 'lucide-react';
+import { useAuthStore } from '../store/authStore';
 
 export default function Layout() {
+  const { profile } = useAuthStore();
+
   return (
     <div className="app-layout">
       <main className="main-content container">
@@ -38,6 +41,15 @@ export default function Layout() {
           <Settings size={24} />
           <span>Settings</span>
         </NavLink>
+        {profile?.role === 'admin' && (
+          <NavLink 
+            to="/admin" 
+            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+          >
+            <Shield size={24} />
+            <span>Admin</span>
+          </NavLink>
+        )}
       </nav>
     </div>
   );

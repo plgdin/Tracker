@@ -2,17 +2,16 @@ import { useEffect, useState } from 'react';
 import { db, supabase } from '../lib/db';
 import type { Category } from '../lib/db';
 import { Plus, Trash2, Tag, Database, Cloud, AlertCircle } from 'lucide-react';
+import { useAuthStore } from '../store/authStore';
 
 export default function Settings() {
+  const { profile, signOut } = useAuthStore();
   const [categories, setCategories] = useState<Category[]>([]);
   const [newCatName, setNewCatName] = useState('');
   const [newCatColor, setNewCatColor] = useState('#6366F1');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [warningDays, setWarningDays] = useState(7);
-
-  // Supabase status
-  const [session, setSession] = useState<any>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -22,11 +21,6 @@ export default function Settings() {
 
         const settings = await db.getSettings();
         setWarningDays(settings.warning_period_days);
-
-        if (supabase) {
-          const { data } = await supabase.auth.getSession();
-          setSession(data.session);
-        }
       } catch (err) {
         console.error('Error fetching settings:', err);
       } finally {
@@ -85,52 +79,52 @@ export default function Settings() {
     }
   };
 
-  const presetColors = ['#6366F1', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#3B82F6', '#14B8A6'];
+  const presetColors = ['#E07A5F', '#F2CC8F', '#81B29A', '#3D5A80', '#98C1D9', '#EE6C4D', '#293241', '#F4F1DE'];
 
   return (
-    <div>
-      <header style={{ marginBottom: '2rem' }}>
+    <div className="container" style={{ paddingBottom: '3rem' }}>
+      <header style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
         <h1>Settings</h1>
-        <p style={{ color: 'var(--color-text-secondary)' }}>Manage your preferences and categories</p>
+        <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>Manage your preferences and categories</p>
       </header>
 
       {/* Database Mode Card */}
-      <div className="glass-panel" style={{ marginBottom: '1.5rem' }}>
-        <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+      <div className="panel" style={{ marginBottom: '1.5rem' }}>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', fontSize: '1rem' }}>
           <Database size={20} style={{ color: 'var(--color-primary)' }} />
           Database Connection Status
         </h3>
         
         {supabase ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--color-success)', background: 'rgba(16, 185, 129, 0.08)', padding: '0.75rem 1rem', borderRadius: '8px', fontSize: '0.9rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--color-success)', background: 'rgba(16, 185, 129, 0.08)', padding: '0.75rem 1rem', borderRadius: '12px', fontSize: '0.9rem' }}>
             <Cloud size={20} />
             <div>
-              <p style={{ fontWeight: 'bold' }}>Supabase Cloud Online</p>
-              <p style={{ fontSize: '0.8rem', opacity: 0.8 }}>Data is synchronized with your cloud database.</p>
+              <p style={{ fontWeight: 'bold', margin: 0 }}>Supabase Cloud Online</p>
+              <p style={{ fontSize: '0.75rem', opacity: 0.8, margin: 0 }}>Data is synchronized with your cloud database.</p>
             </div>
           </div>
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--color-warning)', background: 'rgba(245, 158, 11, 0.08)', padding: '0.75rem 1rem', borderRadius: '8px', fontSize: '0.9rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--color-primary)', background: 'rgba(224, 122, 95, 0.08)', padding: '0.75rem 1rem', borderRadius: '12px', fontSize: '0.9rem' }}>
             <Database size={20} />
             <div>
-              <p style={{ fontWeight: 'bold' }}>Local Storage Mode (Offline)</p>
-              <p style={{ fontSize: '0.8rem', opacity: 0.8 }}>No Supabase credentials found in `.env`. Data is saved locally in your browser.</p>
+              <p style={{ fontWeight: 'bold', margin: 0 }}>Local Storage Mode (Offline)</p>
+              <p style={{ fontSize: '0.75rem', opacity: 0.8, margin: 0 }}>No Supabase credentials found in `.env`. Data is saved locally in your browser.</p>
             </div>
           </div>
         )}
       </div>
 
       {/* Warning Notification Period Card */}
-      <div className="glass-panel" style={{ marginBottom: '1.5rem' }}>
-        <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+      <div className="panel" style={{ marginBottom: '1.5rem' }}>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', fontSize: '1rem' }}>
           <AlertCircle size={20} style={{ color: 'var(--color-primary)' }} />
           Warning Notification Period
         </h3>
-        <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '1rem' }}>
+        <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.8rem', marginBottom: '1rem' }}>
           Choose how early you want to receive warnings and countdown alerts for expiring items.
         </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          <label className="input-label">Notify me before:</label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <label className="input-label" style={{ fontSize: '0.85rem' }}>Notify me before:</label>
           <select 
             className="input-field"
             value={warningDays}
@@ -146,21 +140,18 @@ export default function Settings() {
       </div>
 
       {/* Account Info */}
-      <div className="glass-panel" style={{ marginBottom: '1.5rem' }}>
-        <h3>Account</h3>
-        {session ? (
+      <div className="panel" style={{ marginBottom: '1.5rem' }}>
+        <h3 style={{ fontSize: '1rem', marginBottom: '0.75rem' }}>Account</h3>
+        {profile ? (
           <div>
-            <p style={{ color: 'var(--color-text-secondary)', marginBottom: '1rem' }}>Logged in as: <strong style={{ color: 'var(--color-text-primary)' }}>{session.user?.email}</strong></p>
-            <button className="btn btn-danger" onClick={async () => {
-              if (supabase) {
-                await supabase.auth.signOut();
-                window.location.reload();
-              }
-            }}>Sign Out</button>
+            <p style={{ color: 'var(--color-text-secondary)', marginBottom: '1rem', fontSize: '0.85rem' }}>
+              Logged in as: <strong style={{ color: 'var(--color-text-primary)' }}>{profile.name}</strong> ({profile.role})
+            </p>
+            <button className="btn btn-primary" style={{ background: 'var(--color-primary)' }} onClick={() => signOut()}>Log Out</button>
           </div>
         ) : (
           <div>
-            <p style={{ color: 'var(--color-text-secondary)', marginBottom: '1rem' }}>You are currently utilizing guest mode.</p>
+            <p style={{ color: 'var(--color-text-secondary)', marginBottom: '1rem', fontSize: '0.85rem' }}>You are currently utilizing guest mode.</p>
             {supabase && (
               <button className="btn btn-primary" onClick={() => {
                 const email = prompt('Enter your email:');
@@ -178,8 +169,8 @@ export default function Settings() {
       </div>
 
       {/* Custom Categories Manager */}
-      <div className="glass-panel">
-        <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+      <div className="panel">
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', fontSize: '1rem' }}>
           <Tag size={20} style={{ color: 'var(--color-primary)' }} />
           Product Categories
         </h3>
@@ -204,10 +195,10 @@ export default function Settings() {
                 }}
               >
                 <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: cat.color }}></span>
-                <span>{cat.name}</span>
+                <span style={{ fontWeight: 500 }}>{cat.name}</span>
                 {!cat.id.startsWith('cat-') && (
                   <button 
-                    style={{ background: 'transparent', border: 'none', color: 'var(--color-danger)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}
+                    style={{ background: 'transparent', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}
                     onClick={() => handleDeleteCategory(cat.id)}
                   >
                     <Trash2 size={12} />
@@ -219,11 +210,11 @@ export default function Settings() {
         </div>
 
         {/* Add Category Form */}
-        <form onSubmit={handleAddCategory} style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem' }}>
-          <h4 style={{ fontSize: '0.95rem', marginBottom: '0.75rem' }}>Add Custom Category</h4>
+        <form onSubmit={handleAddCategory} style={{ borderTop: '1px solid rgba(141, 131, 126, 0.08)', paddingTop: '1.5rem' }}>
+          <h4 style={{ fontSize: '0.9rem', marginBottom: '0.75rem', fontWeight: 600 }}>Add Custom Category</h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div className="input-group" style={{ marginBottom: 0 }}>
-              <label className="input-label">Category Name</label>
+              <label className="input-label" style={{ fontSize: '0.8rem' }}>Category Name</label>
               <input 
                 type="text" 
                 placeholder="e.g., Snacks" 
@@ -236,7 +227,7 @@ export default function Settings() {
             </div>
 
             <div className="input-group" style={{ marginBottom: 0 }}>
-              <label className="input-label" style={{ marginBottom: '0.5rem' }}>Category Color</label>
+              <label className="input-label" style={{ marginBottom: '0.5rem', fontSize: '0.8rem' }}>Category Color</label>
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
                 {presetColors.map(color => (
                   <button
@@ -264,7 +255,7 @@ export default function Settings() {
               </div>
             </div>
 
-            <button type="submit" className="btn btn-outline" style={{ alignSelf: 'flex-start', marginTop: '0.5rem' }} disabled={saving}>
+            <button type="submit" className="btn btn-outline" style={{ alignSelf: 'flex-start', marginTop: '0.5rem', padding: '0.5rem 1rem', borderRadius: '12px' }} disabled={saving}>
               <Plus size={16} />
               Add Category
             </button>

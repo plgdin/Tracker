@@ -1,14 +1,21 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Camera, X } from 'lucide-react';
+import { Html5QrcodeScanner } from 'html5-qrcode';
 import { db } from '../lib/db';
 import type { Category } from '../lib/db';
+import { useAuthStore } from '../store/authStore';
 
 export default function AddItem() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const editId = searchParams.get('edit');
 
+  const { profile } = useAuthStore();
   const [categories, setCategories] = useState<Category[]>([]);
+  const [scanning, setScanning] = useState(false);
+  const [barcode, setBarcode] = useState('');
+  
   const [formData, setFormData] = useState({
     name: '',
     expiration_date: '',
@@ -42,6 +49,9 @@ export default function AddItem() {
               category: itemToEdit.category,
               notes: itemToEdit.notes || ''
             });
+            if (itemToEdit.barcode) {
+              setBarcode(itemToEdit.barcode);
+            }
           }
         }
       } catch (err) {
@@ -52,6 +62,28 @@ export default function AddItem() {
     }
     loadData();
   }, [editId]);
+
+  useEffect(() => {
+    if (scanning) {
+      const scanner = new Html5QrcodeScanner(
+        "reader",
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        false
+      );
+
+      scanner.render((decodedText: string) => {
+        setBarcode(decodedText);
+        setScanning(false);
+        scanner.clear();
+      }, () => {
+        // Handle scan errors silently
+      });
+
+      return () => {
+        scanner.clear().catch(console.error);
+      };
+    }
+  }, [scanning]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,10 +98,16 @@ export default function AddItem() {
 
     setSaving(true);
     try {
+      const dataToSave = {
+        ...formData,
+        barcode: barcode || undefined,
+        added_by: profile?.id || undefined
+      };
+
       if (editId) {
-        await db.updateItem(editId, formData);
+        await db.updateItem(editId, dataToSave);
       } else {
-        await db.addItem(formData);
+        await db.addItem(dataToSave);
       }
       navigate(-1);
     } catch (err) {
@@ -144,8 +182,38 @@ export default function AddItem() {
             </div>
           </div>
 
+          {/* Barcode scanner panel if active */}
+          {scanning && (
+            <div className="panel" style={{ marginBottom: '1.5rem', padding: '1rem' }}>
+              <div id="reader" style={{ width: '100%', marginBottom: '1rem' }}></div>
+              <button type="button" className="btn btn-outline" style={{ width: '100%' }} onClick={() => setScanning(false)}>
+                <X size={16} /> Cancel Scan
+              </button>
+            </div>
+          )}
+
           {/* Form details */}
           <div className="panel" style={{ padding: '1.5rem' }}>
+            
+            {/* Barcode row */}
+            {!scanning && (
+              <div className="input-group">
+                <label className="input-label">Barcode (Optional)</label>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <input 
+                    type="text" 
+                    className="input-field" 
+                    placeholder="Scan or enter barcode" 
+                    value={barcode}
+                    onChange={(e) => setBarcode(e.target.value)}
+                  />
+                  <button type="button" className="btn btn-primary" style={{ padding: '0.5rem 1rem', borderRadius: '12px' }} onClick={() => setScanning(true)}>
+                    <Camera size={20} />
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="input-group">
               <label className="input-label">Product Name</label>
               <input 

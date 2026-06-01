@@ -4,6 +4,8 @@ import { createClient } from '@supabase/supabase-js';
 export interface Item {
   id: string;
   user_id?: string;
+  added_by?: string;
+  barcode?: string;
   name: string;
   expiration_date: string; // YYYY-MM-DD
   quantity: number;

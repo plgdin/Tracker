@@ -3,9 +3,11 @@ import { Plus, X, Settings as SettingsIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../lib/db';
 import type { Item } from '../lib/db';
+import { useAuthStore } from '../store/authStore';
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { profile } = useAuthStore();
   const [items, setItems] = useState<Item[]>([]);
   const [warningDays, setWarningDays] = useState(7);
   const [loading, setLoading] = useState(true);
@@ -85,7 +87,14 @@ export default function Dashboard() {
         <button className="header-icon-btn" onClick={() => navigate('/settings')}>
           <SettingsIcon size={24} />
         </button>
-        <h1>Fresh things</h1>
+        <div style={{ textAlign: 'center' }}>
+          <h1 style={{ margin: 0 }}>Fresh things</h1>
+          {profile?.name && (
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.8rem', marginTop: '0.1rem' }}>
+              Welcome back, {profile.name}
+            </p>
+          )}
+        </div>
         <div style={{ width: 40 }} /> {/* Spacer to align title */}
       </header>
 
@@ -130,7 +139,7 @@ export default function Dashboard() {
         </div>
       ) : (
         /* Grid of Cards matching the screens */
-        <div className="items-grid">
+        <div className="items-grid" style={{ paddingBottom: '6rem' }}>
           {expiringSoonItems.map(item => {
             const daysRemaining = getDaysRemaining(item.expiration_date);
             

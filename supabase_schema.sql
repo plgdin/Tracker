@@ -1,9 +1,19 @@
--- Expiry Date Tracker Database Schema
+-- Expiry Date Tracker Database Schema (V2 with Roles & Audit Logs)
 
--- 1. Create items table
+-- 1. Create profiles table (links to auth.users)
+CREATE TABLE profiles (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    name TEXT,
+    role TEXT CHECK (role IN ('admin', 'worker')) DEFAULT 'worker',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 2. Create items table
 CREATE TABLE items (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE, -- owner/workspace
+    added_by UUID REFERENCES profiles(id) ON DELETE SET NULL, -- the worker who added it
+    barcode TEXT,
     name TEXT NOT NULL,
     expiration_date DATE NOT NULL,
     quantity INTEGER DEFAULT 1,
@@ -13,17 +23,17 @@ CREATE TABLE items (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 2. Create categories table
+-- 3. Create categories table
 CREATE TABLE categories (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
-    color TEXT DEFAULT '#4F46E5', -- Indigo
+    color TEXT DEFAULT '#4F46E5',
     icon TEXT DEFAULT 'tag',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 3. Create shopping_list table
+-- 4. Create shopping_list table
 CREATE TABLE shopping_list (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -32,34 +42,53 @@ CREATE TABLE shopping_list (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 4. Enable Row Level Security (RLS)
+-- 5. Create audit_logs table
+CREATE TABLE audit_logs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE, -- workspace
+    worker_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+    action TEXT NOT NULL, -- e.g., 'added_item', 'deleted_item'
+    details JSONB, -- stores item name, etc.
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 6. Enable Row Level Security (RLS)
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE shopping_list ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 
--- 5. Create Policies
--- Items Policies
-CREATE POLICY "Users can view their own items" ON items FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can insert their own items" ON items FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can update their own items" ON items FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY "Users can delete their own items" ON items FOR DELETE USING (auth.uid() = user_id);
+-- 7. Create Policies (Simplified for demo: assumes all authenticated users can read/write their workspace data)
+-- For a real production app, you would lock down deletes/audit logs to admins only.
 
--- Categories Policies
-CREATE POLICY "Users can view their own categories" ON categories FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can insert their own categories" ON categories FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can update their own categories" ON categories FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY "Users can delete their own categories" ON categories FOR DELETE USING (auth.uid() = user_id);
+CREATE POLICY "Enable read access for authenticated users" ON profiles FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Enable update for users based on id" ON profiles FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Enable insert for authenticated users only" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
 
--- Shopping List Policies
-CREATE POLICY "Users can view their own shopping list" ON shopping_list FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can insert their own shopping list" ON shopping_list FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can update their own shopping list" ON shopping_list FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY "Users can delete their own shopping list" ON shopping_list FOR DELETE USING (auth.uid() = user_id);
+CREATE POLICY "Authenticated users can read items" ON items FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can insert items" ON items FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can update items" ON items FOR UPDATE USING (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can delete items" ON items FOR DELETE USING (auth.role() = 'authenticated');
 
--- 6. Setup Storage for item images
-INSERT INTO storage.buckets (id, name, public) VALUES ('item-images', 'item-images', true);
+CREATE POLICY "Authenticated users can read audit_logs" ON audit_logs FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can insert audit_logs" ON audit_logs FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
-CREATE POLICY "Anyone can view item images" ON storage.objects FOR SELECT USING ( bucket_id = 'item-images' );
-CREATE POLICY "Users can upload their own item images" ON storage.objects FOR INSERT WITH CHECK ( bucket_id = 'item-images' AND auth.uid() = owner );
-CREATE POLICY "Users can update their own item images" ON storage.objects FOR UPDATE USING ( bucket_id = 'item-images' AND auth.uid() = owner );
-CREATE POLICY "Users can delete their own item images" ON storage.objects FOR DELETE USING ( bucket_id = 'item-images' AND auth.uid() = owner );
+-- 8. Setup Storage for item images
+-- INSERT INTO storage.buckets (id, name, public) VALUES ('item-images', 'item-images', true) ON CONFLICT DO NOTHING;
+
+-- Trigger to create profile on signup
+CREATE OR REPLACE FUNCTION public.handle_new_user() 
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, name, role)
+  VALUES (new.id, new.raw_user_meta_data->>'full_name', 'worker');
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger the function every time a user is created
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
