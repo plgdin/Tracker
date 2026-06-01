@@ -12,6 +12,7 @@ type TabKey = 'logs' | 'workers' | 'prices' | 'categories' | 'items' | 'security
 interface WorkerData {
   id: string;
   email: string;
+  name?: string;
   password?: string;
   permissions?: Record<string, boolean>;
 }
@@ -38,6 +39,7 @@ export default function AdminDashboard() {
   const [workers, setWorkers] = useState<WorkerData[]>(() => {
     return JSON.parse(localStorage.getItem('worker_accounts') || '[]');
   });
+  const [pendingWorkers, setPendingWorkers] = useState<{id: string, name: string, email: string, created_at: string}[]>([]);
   const [workerEmail, setWorkerEmail] = useState('');
   const [workerPassword, setWorkerPassword] = useState('');
 
@@ -46,8 +48,18 @@ export default function AdminDashboard() {
     (async () => {
       setLoading(true);
       try {
-        const [l, i, c] = await Promise.all([db.getAuditLogs(), db.getItems(), db.getCategories()]);
-        setLogs(l); setItems(i); setCategories(c);
+        const [l, i, c, pw, wList] = await Promise.all([db.getAuditLogs(), db.getItems(), db.getCategories(), db.getPendingWorkers(), db.getWorkers()]);
+        
+        // Merge Supabase workers with local storage (to preserve passwords of admin-created ones)
+        const localWorkers: WorkerData[] = JSON.parse(localStorage.getItem('worker_accounts') || '[]');
+        const mergedWorkers = wList.map(fw => {
+          const localMatch = localWorkers.find(lw => lw.email === fw.email);
+          return { ...fw, ...localMatch, id: fw.id, email: fw.email || localMatch?.email, name: fw.name || localMatch?.name, password: localMatch?.password || 'User Managed' };
+        });
+
+        setLogs(l); setItems(i); setCategories(c); setPendingWorkers(pw);
+        if (mergedWorkers.length > 0) setWorkers(mergedWorkers);
+
         const p: Record<string,string> = {};
         i.forEach(it => { p[it.id] = it.price !== undefined ? String(it.price) : ''; });
         setPriceEdits(p);
@@ -88,8 +100,17 @@ export default function AdminDashboard() {
   if (profile?.role !== 'admin') return null;
 
   const refreshData = async () => {
-    const [l, i, c] = await Promise.all([db.getAuditLogs(), db.getItems(), db.getCategories()]);
-    setLogs(l); setItems(i); setCategories(c);
+    const [l, i, c, pw, wList] = await Promise.all([db.getAuditLogs(), db.getItems(), db.getCategories(), db.getPendingWorkers(), db.getWorkers()]);
+    
+    const localWorkers: WorkerData[] = JSON.parse(localStorage.getItem('worker_accounts') || '[]');
+    const mergedWorkers = wList.map(fw => {
+      const localMatch = localWorkers.find(lw => lw.email === fw.email);
+      return { ...fw, ...localMatch, id: fw.id, email: fw.email || localMatch?.email, name: fw.name || localMatch?.name, password: localMatch?.password || 'User Managed' };
+    });
+
+    setLogs(l); setItems(i); setCategories(c); setPendingWorkers(pw);
+    if (mergedWorkers.length > 0 || wList.length === 0) setWorkers(mergedWorkers);
+
     const p: Record<string,string> = {};
     i.forEach(it => { p[it.id] = it.price !== undefined ? String(it.price) : ''; });
     setPriceEdits(p);
@@ -106,13 +127,29 @@ export default function AdminDashboard() {
     // Create a real Supabase Auth user so the worker can log in from any device.
     // Ephemeral client avoids overwriting the admin's current session.
     try {
-      const { error } = await supabaseEphemeral.auth.signUp({ email: em, password: pw });
+      const { data: signUpData, error } = await supabaseEphemeral.auth.signUp({ 
+        email: em, 
+        password: pw,
+        options: { data: { full_name: em.split('@')[0], is_admin_created: true } }
+      });
       if (error) {
         const msg = String(error.message || '').toLowerCase();
         if (!msg.includes('already registered')) {
           alert(error.message);
           return;
         }
+      }
+
+      // If the user was newly created, immediately approve them (bypass pending state)
+      // so they can log in right away without waiting for admin approval
+      if (signUpData?.user?.id) {
+        await db.approveWorker(signUpData.user.id);
+      } else {
+        // User already exists — look them up and approve
+        const { data: existingProfile } = await import('../lib/supabase').then(m =>
+          m.supabase.from('profiles').select('id').eq('email', em).maybeSingle()
+        );
+        if (existingProfile?.id) await db.approveWorker(existingProfile.id);
       }
     } catch (err: unknown) {
       alert((err as Error)?.message || 'Failed to create worker account.');
@@ -124,14 +161,46 @@ export default function AdminDashboard() {
     await db.addAuditLog('Added Worker', em);
     setWorkerEmail(''); setWorkerPassword('');
     showToast('Worker added! 👥');
+    refreshData();
   };
 
-  const handleRemoveWorker = (id: string, email: string) => {
+  const handleRemoveWorker = async (id: string, email: string) => {
     if (!confirm(`Delete worker ${email}?`)) return;
+    
+    // Attempt to delete from Supabase profiles
+    const success = await db.rejectWorker(id);
+    if (!success) {
+      alert("Failed to delete worker. Make sure you are logged into Supabase as an admin. Check the browser console for details.");
+      return;
+    }
+    
     const up = workers.filter((w) => w.id !== id); setWorkers(up);
     localStorage.setItem('worker_accounts', JSON.stringify(up));
     db.addAuditLog('Removed Worker', email);
     showToast('Worker removed! 🗑️');
+    
+    refreshData();
+  };
+
+  const handleApprovePending = async (id: string, email: string) => {
+    if (await db.approveWorker(id)) {
+      showToast(`Worker ${email} approved! ✅`);
+      db.addAuditLog('Approved Worker', email);
+      refreshData();
+    } else {
+      showToast(`Failed to approve ${email} ❌`);
+    }
+  };
+
+  const handleRejectPending = async (id: string, email: string) => {
+    if (!confirm(`Reject signup request from ${email}?`)) return;
+    if (await db.rejectWorker(id)) {
+      showToast(`Worker ${email} rejected! 🗑️`);
+      db.addAuditLog('Rejected Worker', email);
+      refreshData();
+    } else {
+      showToast(`Failed to reject ${email} ❌`);
+    }
   };
 
   const togglePermission = (workerId: string, perm: string) => {
@@ -144,6 +213,10 @@ export default function AdminDashboard() {
     });
     setWorkers(up);
     localStorage.setItem('worker_accounts', JSON.stringify(up));
+    
+    const workerEmail = workers.find(w => w.id === workerId)?.email || 'Unknown';
+    db.addAuditLog('Updated Worker Permission', workerEmail, { permission: perm, new_value: up.find(w => w.id === workerId)?.permissions?.[perm] });
+    
     showToast('Permission updated! ✅');
   };
 
@@ -268,6 +341,40 @@ export default function AdminDashboard() {
               </form>
             </div>
 
+
+            <div className="panel" style={{ padding: '1.5rem', border: '1px solid var(--color-primary)', backgroundColor: 'rgba(230,57,70,0.03)' }}>
+              <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-primary)' }}>
+                <AlertTriangle size={18} /> Pending Access Requests ({pendingWorkers.length})
+              </h2>
+              {pendingWorkers.length === 0 ? (
+                <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', textAlign: 'center', padding: '1rem 0', margin: 0 }}>
+                  ✅ No pending signup requests right now.
+                </p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {pendingWorkers.map((pw) => (
+                    <div key={pw.id} style={{ padding: '1rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <p style={{ margin: 0, fontWeight: 700, fontSize: '0.85rem' }}>👤 {pw.name || '(no username)'}</p>
+                        <p style={{ margin: '0.15rem 0 0', fontSize: '0.7rem', color: 'var(--color-text-secondary)' }}>📧 {pw.email}</p>
+                        <p style={{ margin: '0.15rem 0 0', fontSize: '0.65rem', color: 'var(--color-text-secondary)' }}>Requested: {new Date(pw.created_at).toLocaleDateString()}</p>
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button onClick={() => handleApprovePending(pw.id, pw.email)} style={{ padding: '0.4rem 0.75rem', borderRadius: '8px', border: 'none', backgroundColor: 'var(--color-primary)', color: 'white', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
+                          ✓ Accept
+                        </button>
+                        <button onClick={() => handleRejectPending(pw.id, pw.email)} style={{ padding: '0.4rem 0.75rem', borderRadius: '8px', border: '1px solid var(--color-primary)', backgroundColor: 'transparent', color: 'var(--color-primary)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
+                          ✕ Reject
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+
+
             <div className="panel" style={{ padding: '1.5rem' }}>
               <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Users size={18} color="var(--color-primary)" /> Workers ({workers.length})
@@ -278,7 +385,8 @@ export default function AdminDashboard() {
                     <div key={w.id} style={{ padding: '1rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', border: '1px solid rgba(230,57,70,0.05)' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                         <div>
-                          <p style={{ margin: 0, fontWeight: 700, fontSize: '0.85rem' }}>📧 {w.email}</p>
+                          <p style={{ margin: 0, fontWeight: 700, fontSize: '0.85rem' }}>{w.name ? `👤 ${w.name}` : `📧 ${w.email}`}</p>
+                          <p style={{ margin: '0.15rem 0 0', fontSize: '0.7rem', color: 'var(--color-text-secondary)' }}>{w.name ? `📧 ${w.email}` : ''}</p>
                           <p style={{ margin: '0.15rem 0 0', fontSize: '0.7rem', color: 'var(--color-text-secondary)' }}>Pass: <strong>{w.password}</strong></p>
                         </div>
                         <button onClick={() => handleRemoveWorker(w.id, w.email)} style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer', padding: '0.5rem' }}>
@@ -419,8 +527,15 @@ export default function AdminDashboard() {
                       <strong>👤 {log.worker_email}</strong>
                       <span style={{ fontSize: '0.65rem', color: 'var(--color-text-secondary)' }}>{new Date(log.created_at).toLocaleString()}</span>
                     </div>
-                    <div><span style={{ color: 'var(--color-primary)', fontWeight: 600 }}>{log.action}</span> — 📦 {log.details?.item_name}
-                      {log.details?.previous_price !== undefined && ` ($${log.details.previous_price} → $${log.details.new_price})`}
+                    <div><span style={{ color: 'var(--color-primary)', fontWeight: 600 }}>{log.action}</span>
+                      {log.action === 'Updated Worker Permission' ? (
+                        ` — 🛡️ ${log.details?.permission} turned ${log.details?.new_value ? 'ON' : 'OFF'} for ${log.details?.item_name}`
+                      ) : (
+                        <>
+                          {log.details?.item_name && ` — 📦 ${log.details.item_name}`}
+                          {log.details?.previous_price !== undefined && ` ($${log.details.previous_price} → $${log.details.new_price})`}
+                        </>
+                      )}
                     </div>
                   </div>
                 ))}

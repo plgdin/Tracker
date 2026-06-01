@@ -7,6 +7,7 @@ type Role = 'admin' | 'worker' | 'pending' | 'disabled';
 interface Profile {
   id: string;
   name: string;
+  email?: string;
   role: Role;
 }
 
@@ -20,12 +21,69 @@ interface AuthState {
   setAuthNotice: (notice: string) => void;
   signOut: () => Promise<void>;
   initialize: () => Promise<void>;
+  isInitialized: boolean;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+const ensureProfile = async (user: User, set: (s: Partial<AuthState>) => void) => {
+  try {
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (!error && !profile) {
+      // No profile row — create one as pending
+      const { data: created, error: insertError } = await supabase
+        .from('profiles')
+        .insert([{ id: user.id, name: user.email?.split('@')[0] ?? null, role: 'pending' }])
+        .select('*')
+        .maybeSingle();
+      if (!insertError && created) {
+        set({ authNotice: '⏳ Your access request has been submitted. Please wait for the admin to approve your account before logging in.' });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await supabase.auth.signOut({ scope: 'local' } as any);
+        set({ user: null, profile: null });
+      } else {
+        console.warn('Profile insert failed', insertError);
+        set({ authNotice: '⏳ Your request is pending. The admin has not approved your account yet. Please try again later.' });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await supabase.auth.signOut({ scope: 'local' } as any);
+        set({ user: null, profile: null });
+      }
+      return;
+    }
+
+    if (!error && profile) {
+      const prof = profile as Profile;
+      if (prof.role === 'pending') {
+        set({ authNotice: '⏳ Your access request is pending. The admin has not approved your account yet.' });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await supabase.auth.signOut({ scope: 'local' } as any);
+        set({ user: null, profile: null });
+        return;
+      }
+      if (prof.role === 'disabled') {
+        set({ authNotice: '🚫 Your access has been disabled. Please contact the admin.' });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await supabase.auth.signOut({ scope: 'local' } as any);
+        set({ user: null, profile: null });
+        return;
+      }
+      set({ user, profile: prof });
+    } else if (error) {
+      console.warn('Profile fetch failed', error);
+    }
+  } catch (e) {
+    console.warn('Profile ensure failed', e);
+  }
+};
+
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   profile: null,
   isLoading: true,
+  isInitialized: false,
   authNotice: '',
   setUser: (user) => set({ user }),
   setProfile: (profile) => set({ profile }),
@@ -34,7 +92,6 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.removeItem('admin_session');
     localStorage.removeItem('worker_session');
     try {
-      // Always clear local session even if the network call fails.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await supabase.auth.signOut({ scope: 'local' } as any);
     } catch (e) {
@@ -43,111 +100,41 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ user: null, profile: null });
   },
   initialize: async () => {
-    set({ isLoading: true });
+    if (get().isInitialized) return;
+    set({ isLoading: true, isInitialized: true });
 
+    // Wipe ALL legacy localStorage keys
+    localStorage.removeItem('admin_session');
+    localStorage.removeItem('admin_username');
+    localStorage.removeItem('admin_password');
+    localStorage.removeItem('admin_changed');
+    localStorage.removeItem('worker_session');
+
+    // ─── STEP 1: Resolve the current session on page load ────────────────────
     try {
-      const ensureProfile = async (user: User) => {
-        try {
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .maybeSingle();
-
-          // If profile row doesn't exist yet, create it (allowed by policy: auth.uid() = id).
-          if (!error && !profile) {
-            const { data: created, error: insertError } = await supabase
-              .from('profiles')
-              .insert([{ id: user.id, name: user.email?.split('@')[0] ?? null, role: 'pending' }])
-              .select('*')
-              .maybeSingle();
-            if (!insertError && created) {
-              set({ profile: created as Profile });
-              return;
-            }
-          }
-
-          if (!error && profile) {
-            const prof = profile as Profile;
-            // Gate access until approved.
-            if (prof.role === 'pending') {
-              set({ authNotice: 'Your account is pending admin approval.' });
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              await supabase.auth.signOut({ scope: 'local' } as any);
-              set({ user: null, profile: null });
-              return;
-            }
-            if (prof.role === 'disabled') {
-              set({ authNotice: 'Your access has been disabled. Contact your admin.' });
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              await supabase.auth.signOut({ scope: 'local' } as any);
-              set({ user: null, profile: null });
-              return;
-            }
-            set({ profile: prof });
-          } else if (error) {
-            console.warn('Profile fetch failed', error);
-          }
-        } catch (e) {
-          console.warn('Profile ensure failed', e);
-        }
-      };
-
-      // 1. Check Supabase session first if available.
       const { data: { session } } = await supabase.auth.getSession();
-      
       if (session?.user) {
-        try {
-          const { data: prof } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .maybeSingle();
-          
-          if (prof && prof.role === 'admin') {
-            localStorage.setItem('admin_session', 'true');
-            set({
-              user: session.user,
-              profile: prof as Profile,
-              isLoading: false
-            });
-            return;
-          }
-        } catch (e) {
-          console.warn('Failed to fetch admin profile from Supabase', e);
-        }
+        await ensureProfile(session.user, set);
       }
+    } catch (e) {
+      console.warn('Auth session check failed', e);
+    } finally {
+      set({ isLoading: false });
 
-      // 2. Check local admin session
-      const isAdminSession = localStorage.getItem('admin_session') === 'true';
-      if (isAdminSession) {
-        const adminUser = localStorage.getItem('admin_username') || 'admin';
-        set({
-          user: { id: 'admin-id', email: adminUser } as unknown as User,
-          profile: { id: 'admin-id', name: 'Admin', role: 'admin' },
-          isLoading: false
-        });
-        return;
-      }
-
-      // 3. Check Supabase session for workers
-      if (session?.user) {
-        set({ user: session.user });
-        await ensureProfile(session.user);
-      }
-
+      // ─── STEP 2: Register listener AFTER initial load ─────────────────────
+      // Registering BEFORE getSession() causes Supabase to immediately fire the
+      // current auth state as a callback, racing with getSession and keeping
+      // isLoading stuck at true. Registering here in finally guarantees:
+      //   • isLoading is already false before any future auth events fire
+      //   • The listener is always registered (no early-returns can skip it)
+      //   • Login and logout events are captured reliably going forward
       supabase.auth.onAuthStateChange(async (_event, session) => {
         if (session?.user) {
-          set({ user: session.user });
-          await ensureProfile(session.user);
+          await ensureProfile(session.user, set);
         } else {
           set({ user: null, profile: null });
         }
       });
-    } catch (e) {
-      console.warn('Auth initialization failed; local login is still available', e);
-    } finally {
-      set({ isLoading: false });
     }
   }
 }));

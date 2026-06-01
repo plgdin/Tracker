@@ -742,6 +742,13 @@ p {
   animation: shakeIn 0.28s ease both;
 }
 
+/* Success / notice variant — green */
+.auth-notice {
+  background: #D1FAE5;
+  color: #065F46;
+  animation: none;
+}
+
 .auth-reset {
   width: 100%;
   margin-top: 1rem;

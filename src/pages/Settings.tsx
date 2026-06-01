@@ -39,6 +39,7 @@ export default function Settings() {
     setWarningDays(val);
     try {
       await db.saveSettings({ warning_period_days: val });
+      db.addAuditLog('Updated Warning Period', `Global Setting: ${val} days`);
       showToast(`Warning period updated to ${val} days! 🔔`);
     } catch (err) {
       console.error('Failed to save settings:', err);
@@ -48,47 +49,76 @@ export default function Settings() {
   const handleUpdateAccount = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profile) return;
+
+    const trimUser = newUsername.trim();
+    const trimPass = newPassword.trim();
+    if (!trimUser && !trimPass) return;
+
     setIsSavingAccount(true);
-    
+
+    // Helper: race a promise against a timeout so it can never hang forever
+    // Uses PromiseLike so Supabase query builders (which aren't full Promises) are accepted
+    const withTimeout = <T,>(p: PromiseLike<T>, ms: number, msg: string): Promise<T> =>
+      Promise.race([Promise.resolve(p), new Promise<T>((_, rej) => setTimeout(() => rej(new Error(msg)), ms))]);
+
+
     try {
-      if (newUsername.trim()) {
-        const { data } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('name', newUsername.trim())
-          .maybeSingle();
-          
-        if (data && data.id !== profile.id) {
-          showToast('⚠️ Username already exists! Please select a different username.');
-          setIsSavingAccount(false);
+      // ── 1. Username update ──────────────────────────────────────────────────
+      if (trimUser) {
+        // Check uniqueness
+        const { data: existing } = await withTimeout(
+          supabase.from('profiles').select('id').eq('name', trimUser).maybeSingle(),
+          8000, 'Username check timed out. Please try again.'
+        );
+        if (existing && existing.id !== profile.id) {
+          showToast('⚠️ Username already taken! Choose a different one.');
           return;
         }
-        
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({ name: newUsername.trim() })
-          .eq('id', profile.id);
-          
-        if (updateError) throw updateError;
-        useAuthStore.getState().setProfile({ ...profile, name: newUsername.trim() });
-        showToast('Username updated successfully! ✅');
+        const { error: usernameErr } = await withTimeout(
+          supabase.from('profiles').update({ name: trimUser }).eq('id', profile.id),
+          8000, 'Username update timed out. Please try again.'
+        );
+        if (usernameErr) throw usernameErr;
+        useAuthStore.getState().setProfile({ ...profile, name: trimUser });
+        db.addAuditLog('Changed Username', trimUser, { previous_username: profile.name });
+        showToast('Username updated! ✅');
       }
-      
-      if (newPassword.trim()) {
-        const { error: passError } = await supabase.auth.updateUser({ password: newPassword.trim() });
-        if (passError) throw passError;
-        showToast('Password updated successfully! 🔐');
+
+      // ── 2. Password update ──────────────────────────────────────────────────
+      if (trimPass) {
+        if (trimPass.length < 6) {
+          showToast('⚠️ Password must be at least 6 characters.');
+          return;
+        }
+
+        // Verify the session is still active before attempting
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          showToast('❌ Your session has expired. Please log in again.');
+          return;
+        }
+
+        const { error: passErr } = await withTimeout(
+          supabase.auth.updateUser({ password: trimPass }),
+          12000, 'Password update timed out. Check your connection and try again.'
+        );
+
+        if (passErr) throw passErr;
+        db.addAuditLog('Changed Password', profile.email || profile.name);
+        showToast('Password updated! 🔐 Use your new password next time you log in.');
       }
-      
+
       setNewUsername('');
       setNewPassword('');
     } catch (err: unknown) {
-      console.error(err);
-      showToast(`Error: ${(err as Error).message}`);
+      const msg = (err as Error).message || 'Something went wrong. Please try again.';
+      console.error('Account update failed:', err);
+      showToast(`❌ ${msg}`);
     } finally {
       setIsSavingAccount(false);
     }
   };
+
 
   return (
     <div className="container" style={{ paddingBottom: '3rem' }}>

@@ -352,6 +352,7 @@ export const db = {
     const shoppingList = getLocal<ShoppingItem[]>('tracker_shopping_list', []);
     shoppingList.unshift(newItem);
     setLocal('tracker_shopping_list', shoppingList);
+    await db.addAuditLog('Added Shopping Item', itemName);
     return newItem;
   },
 
@@ -379,6 +380,7 @@ export const db = {
     if (idx !== -1) {
       shoppingList[idx].is_purchased = isPurchased;
       setLocal('tracker_shopping_list', shoppingList);
+      await db.addAuditLog(isPurchased ? 'Checked Shopping Item' : 'Unchecked Shopping Item', shoppingList[idx].item_name);
       return shoppingList[idx];
     }
     throw new Error('Shopping item not found');
@@ -397,8 +399,12 @@ export const db = {
     }
 
     const shoppingList = getLocal<ShoppingItem[]>('tracker_shopping_list', []);
+    const itemToDelete = shoppingList.find(i => i.id === id);
     const filtered = shoppingList.filter(i => i.id !== id);
     setLocal('tracker_shopping_list', filtered);
+    if (itemToDelete) {
+      await db.addAuditLog('Deleted Shopping Item', itemToDelete.item_name);
+    }
     return true;
   },
 
@@ -468,5 +474,71 @@ export const db = {
     logs.unshift(newLog);
     setLocal('tracker_audit_logs', logs.slice(0, 100));
     return newLog;
+  },
+
+  // Worker Management
+  async getWorkers(): Promise<{ id: string; name: string; email: string; created_at: string }[]> {
+    if (!dbSupabase) return [];
+    try {
+      const { data, error } = await withTimeout(
+        dbSupabase.from('profiles').select('id, name, email, created_at').eq('role', 'worker').order('created_at', { ascending: false })
+      );
+      if (error) throw error;
+      return data || [];
+    } catch (e) {
+      console.warn('Failed to fetch workers', e);
+      return [];
+    }
+  },
+
+  async getPendingWorkers(): Promise<{ id: string; name: string; email: string; created_at: string }[]> {
+    if (!dbSupabase) return [];
+    try {
+      const { data, error } = await withTimeout(
+        dbSupabase.from('profiles').select('id, name, email, created_at').eq('role', 'pending').order('created_at', { ascending: false })
+      );
+      if (error) throw error;
+      return data || [];
+    } catch (e) {
+      console.warn('Failed to fetch pending workers', e);
+      return [];
+    }
+  },
+
+  async approveWorker(id: string): Promise<boolean> {
+    if (!dbSupabase) return false;
+    try {
+      const { error } = await withTimeout(
+        dbSupabase.from('profiles').update({ role: 'worker' }).eq('id', id)
+      );
+      if (error) throw error;
+      return true;
+    } catch (e) {
+      console.warn('Failed to approve worker', e);
+      return false;
+    }
+  },
+
+  async rejectWorker(id: string): Promise<boolean> {
+    if (!dbSupabase) return false;
+    try {
+      // Call the RPC which deletes from auth.users (cascades to profiles)
+      // so the worker can no longer log in at all
+      const { error } = await withTimeout(
+        dbSupabase.rpc('delete_user_completely', { target_user_id: id })
+      );
+      if (error) {
+        console.warn('RPC delete failed, falling back to profile-only delete', error);
+        // Fallback: at least remove the profile row so they can't access the app
+        const { error: fallbackError } = await withTimeout(
+          dbSupabase.from('profiles').delete().eq('id', id)
+        );
+        if (fallbackError) throw fallbackError;
+      }
+      return true;
+    } catch (e) {
+      console.warn('Failed to delete worker', e);
+      return false;
+    }
   }
 };
