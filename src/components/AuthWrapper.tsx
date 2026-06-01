@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { supabase } from '../lib/supabase';
 import { Eye, EyeOff } from 'lucide-react';
-import type { User } from '@supabase/supabase-js';
 
 export default function AuthWrapper({ children }: { children: React.ReactNode }) {
   const { user, isLoading, initialize, authNotice, setAuthNotice } = useAuthStore();

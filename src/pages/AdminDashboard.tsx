@@ -54,7 +54,7 @@ export default function AdminDashboard() {
         const localWorkers: WorkerData[] = JSON.parse(localStorage.getItem('worker_accounts') || '[]');
         const mergedWorkers = wList.map(fw => {
           const localMatch = localWorkers.find(lw => lw.email === fw.email);
-          return { ...fw, ...localMatch, id: fw.id, email: fw.email || localMatch?.email, name: fw.name || localMatch?.name, password: localMatch?.password || 'User Managed' };
+          return { ...fw, ...localMatch, id: fw.id, email: fw.email || localMatch?.email || '', name: fw.name || localMatch?.name, password: localMatch?.password || 'User Managed' };
         });
 
         setLogs(l); setItems(i); setCategories(c); setPendingWorkers(pw);
@@ -105,7 +105,7 @@ export default function AdminDashboard() {
     const localWorkers: WorkerData[] = JSON.parse(localStorage.getItem('worker_accounts') || '[]');
     const mergedWorkers = wList.map(fw => {
       const localMatch = localWorkers.find(lw => lw.email === fw.email);
-      return { ...fw, ...localMatch, id: fw.id, email: fw.email || localMatch?.email, name: fw.name || localMatch?.name, password: localMatch?.password || 'User Managed' };
+      return { ...fw, ...localMatch, id: fw.id, email: fw.email || localMatch?.email || '', name: fw.name || localMatch?.name, password: localMatch?.password || 'User Managed' };
     });
 
     setLogs(l); setItems(i); setCategories(c); setPendingWorkers(pw);
