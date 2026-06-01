@@ -8,7 +8,7 @@ export default function Inventory() {
   const navigate = useNavigate();
   const [items, setItems] = useState<Item[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [warningDays, setWarningDays] = useState(7);
+  const [warningDays, setWarningDays] = useState(30);
   const [loading, setLoading] = useState(true);
 
   // Search & Filter state

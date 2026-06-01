@@ -311,7 +311,7 @@ export const db = {
 
   // Settings
   async getSettings(): Promise<AppSettings> {
-    return getLocal<AppSettings>('tracker_settings', { warning_period_days: 7 });
+    return getLocal<AppSettings>('tracker_settings', { warning_period_days: 30 });
   },
 
   async saveSettings(settings: AppSettings): Promise<AppSettings> {

@@ -13,7 +13,7 @@ export default function Settings() {
   const [newCatColor, setNewCatColor] = useState('#6366F1');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [warningDays, setWarningDays] = useState(7);
+  const [warningDays, setWarningDays] = useState(30);
 
   useEffect(() => {
     async function loadData() {

@@ -9,7 +9,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { profile } = useAuthStore();
   const [items, setItems] = useState<Item[]>([]);
-  const [warningDays, setWarningDays] = useState(7);
+  const [warningDays, setWarningDays] = useState(30);
   const [loading, setLoading] = useState(true);
   const [showBanner, setShowBanner] = useState(true);
 

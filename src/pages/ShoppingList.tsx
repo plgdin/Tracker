@@ -7,7 +7,7 @@ export default function ShoppingList() {
   const [shoppingItems, setShoppingItems] = useState<ShoppingItem[]>([]);
   const [expiredItems, setExpiredItems] = useState<Item[]>([]);
   const [newItemName, setNewItemName] = useState('');
-  const [warningDays, setWarningDays] = useState(7);
+  const [warningDays, setWarningDays] = useState(30);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
 
