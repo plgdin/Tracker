@@ -3,6 +3,7 @@ import { db } from '../lib/db';
 import type { Item, Category } from '../lib/db';
 import { Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import MilkCarton from '../components/MilkCarton';
 
 export default function Inventory() {
   const navigate = useNavigate();
@@ -93,29 +94,6 @@ export default function Inventory() {
       }
       return 0;
     });
-
-  // Cartoon Cute Milk Carton SVG Component
-  const MilkCartonIcon = ({ winking = false }) => (
-    <svg viewBox="0 0 60 70" width="40" height="45" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M15 52V28L30 18L45 28V52C45 54.2 43.2 56 41 56H19C16.8 56 15 54.2 15 52Z" fill="#FFFDF9" stroke="#5C5552" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M15 28H45" stroke="#5C5552" strokeWidth="2.5" />
-      <path d="M30 18V28" stroke="#5C5552" strokeWidth="2" strokeDasharray="3 3" />
-      <path d="M30 18L15 28" stroke="#5C5552" strokeWidth="2.5" />
-      <path d="M30 18L45 28" stroke="#5C5552" strokeWidth="2.5" />
-      {winking ? (
-        <>
-          <path d="M22 36L25 38L22 40" stroke="#5C5552" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-          <circle cx="35" cy="38" r="2" fill="#5C5552" />
-        </>
-      ) : (
-        <>
-          <circle cx="23" cy="38" r="2.2" fill="#5C5552" />
-          <circle cx="35" cy="38" r="2.2" fill="#5C5552" />
-        </>
-      )}
-      <path d="M26 43C27 44.5 29 44.5 30 43" stroke="#5C5552" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
 
   return (
     <div className="container">
@@ -214,7 +192,7 @@ export default function Inventory() {
                 <div className="cute-card-qty">{item.quantity}</div>
                 
                 <div className="cute-card-illustration">
-                  <MilkCartonIcon winking={isWarning} />
+                  <MilkCarton daysRemaining={daysRemaining} size={50} />
                   <span className="cute-card-name">{item.name}</span>
                 </div>
 

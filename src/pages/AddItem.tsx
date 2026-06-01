@@ -6,6 +6,7 @@ import { db } from '../lib/db';
 import type { Category } from '../lib/db';
 import { useAuthStore } from '../store/authStore';
 import { useToastStore } from '../store/toastStore';
+import MilkCarton from '../components/MilkCarton';
 
 export default function AddItem() {
   const showToast = useToastStore(state => state.showToast);
@@ -28,6 +29,7 @@ export default function AddItem() {
   });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -136,7 +138,10 @@ export default function AddItem() {
         await db.addItem(dataToSave);
         showToast('Product added successfully! 🍓');
       }
-      navigate(-1);
+      setSuccess(true);
+      setTimeout(() => {
+        navigate(-1);
+      }, 1400);
     } catch (err) {
       console.error('Error saving item:', err);
       alert('Failed to save item. Please try again.');
@@ -151,27 +156,6 @@ export default function AddItem() {
       setFormData({ ...formData, quantity: nextQty });
     }
   };
-
-  // Cute winking milk carton cartoon SVG
-  const MilkCartonIllustration = () => (
-    <svg viewBox="0 0 60 70" width="80" height="90" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M15 52V28L30 18L45 28V52C45 54.2 43.2 56 41 56H19C16.8 56 15 54.2 15 52Z" fill="#FCF8F2" stroke="#5C5552" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M15 28H45" stroke="#5C5552" strokeWidth="2.5" />
-      <path d="M30 18V28" stroke="#5C5552" strokeWidth="2" strokeDasharray="3 3" />
-      <path d="M30 18L15 28" stroke="#5C5552" strokeWidth="2.5" />
-      <path d="M30 18L45 28" stroke="#5C5552" strokeWidth="2.5" />
-      
-      {/* Eye expressions */}
-      <circle cx="23" cy="38" r="2.2" fill="#5C5552" />
-      <circle cx="35" cy="38" r="2.2" fill="#5C5552" />
-      
-      <circle cx="19" cy="42" r="2.5" fill="#F4A261" opacity="0.6" />
-      <circle cx="39" cy="42" r="2.5" fill="#F4A261" opacity="0.6" />
-      
-      {/* Smiling Mouth */}
-      <path d="M26 43C27 45.2 29 45.2 30 43" stroke="#5C5552" strokeWidth="2.5" strokeLinecap="round" />
-    </svg>
-  );
 
   return (
     <div className="container" style={{ paddingBottom: '3rem' }}>
@@ -191,14 +175,14 @@ export default function AddItem() {
               width: '120px', 
               height: '120px', 
               borderRadius: '24px', 
-              backgroundColor: '#FAF5EE', 
+              backgroundColor: 'var(--color-bg-light)', 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
               marginBottom: '1rem',
-              border: '1.5px dashed rgba(141, 131, 126, 0.2)'
+              border: '1.5px dashed rgba(230, 57, 70, 0.2)'
             }}>
-              <MilkCartonIllustration />
+              <MilkCarton winking={!success} thumbsUp={success} size={90} />
             </div>
 
             {/* Quantity Selector matching screens */}

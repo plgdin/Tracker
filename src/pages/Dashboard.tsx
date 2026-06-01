@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../lib/db';
 import type { Item } from '../lib/db';
 import { useAuthStore } from '../store/authStore';
+import MilkCarton from '../components/MilkCarton';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -12,6 +13,16 @@ export default function Dashboard() {
   const [warningDays, setWarningDays] = useState(30);
   const [loading, setLoading] = useState(true);
   const [showBanner, setShowBanner] = useState(true);
+  const [bannerWink, setBannerWink] = useState(false);
+
+  // Winks the warning carton periodically on the home page!
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBannerWink(true);
+      setTimeout(() => setBannerWink(false), 800);
+    }, 3500); // Winks every 3.5 seconds
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     async function loadData() {
@@ -55,40 +66,6 @@ export default function Dashboard() {
     return days >= 0 && days <= warningDays;
   }).sort((a, b) => new Date(a.expiration_date).getTime() - new Date(b.expiration_date).getTime());
 
-  // Cartoon Cute Milk Carton SVG Component
-  const MilkCartonIcon = ({ winking = false }) => (
-    <svg viewBox="0 0 60 70" width="45" height="50" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* Cartoon carton body */}
-      <path d="M15 52V28L30 18L45 28V52C45 54.2 43.2 56 41 56H19C16.8 56 15 54.2 15 52Z" fill="#FFFDF9" stroke="#5C5552" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-      {/* Top creasing details */}
-      <path d="M15 28H45" stroke="#5C5552" strokeWidth="2.5" />
-      <path d="M30 18V28" stroke="#5C5552" strokeWidth="2" strokeDasharray="3 3" />
-      <path d="M30 18L15 28" stroke="#5C5552" strokeWidth="2.5" />
-      <path d="M30 18L45 28" stroke="#5C5552" strokeWidth="2.5" />
-      
-      {/* Cute face */}
-      {winking ? (
-        <>
-          {/* Wink eye left */}
-          <path d="M22 36L25 38L22 40" stroke="#5C5552" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-          {/* Dot eye right */}
-          <circle cx="35" cy="38" r="2" fill="#5C5552" />
-        </>
-      ) : (
-        <>
-          {/* Standard dots for eyes */}
-          <circle cx="23" cy="38" r="2.2" fill="#5C5552" />
-          <circle cx="35" cy="38" r="2.2" fill="#5C5552" />
-        </>
-      )}
-      {/* Cheeks */}
-      <circle cx="19" cy="42" r="2" fill="#F4A261" opacity="0.6" />
-      <circle cx="39" cy="42" r="2" fill="#F4A261" opacity="0.6" />
-      {/* Smiling Mouth */}
-      <path d="M26 43C27 44.5 29 44.5 30 43" stroke="#5C5552" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
-
   return (
     <div className="container">
       {/* Header */}
@@ -112,7 +89,7 @@ export default function Dashboard() {
         <div className="notification-banner">
           <div className="notification-content">
             <div className="notification-icon-wrapper">
-              <MilkCartonIcon winking={expiringSoonItems.length > 0} />
+              <MilkCarton winking={bannerWink} size={45} />
             </div>
             <span>
               {expiringSoonItems.length} item(s) will expire in {warningDays} days.
@@ -135,7 +112,7 @@ export default function Dashboard() {
         /* Empty State */
         <div className="empty-state">
           <div className="empty-state-illustration">
-            <MilkCartonIcon winking={true} />
+            <MilkCarton winking={true} size={70} />
           </div>
           <p className="empty-state-text">Let's add your first item!</p>
           <div className="empty-state-arrow">↓</div>
@@ -182,7 +159,7 @@ export default function Dashboard() {
                 
                 {/* Illustration with label */}
                 <div className="cute-card-illustration">
-                  <MilkCartonIcon winking={isWarning} />
+                  <MilkCarton daysRemaining={daysRemaining} size={50} />
                   <span className="cute-card-name">{item.name}</span>
                 </div>
 
