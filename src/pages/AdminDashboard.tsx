@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useToastStore } from '../store/toastStore';
 import { db } from '../lib/db';
+import { supabaseEphemeral } from '../lib/supabaseEphemeral';
 import type { Item, AuditLog, Category } from '../lib/db';
 import { Navigate } from 'react-router-dom';
 import { ShieldCheck, Trash2, Lock, Activity, DollarSign, Key, Plus, Users, CheckCircle2, AlertTriangle, Tag, Package, ToggleLeft, ToggleRight } from 'lucide-react';
@@ -54,16 +55,32 @@ export default function AdminDashboard() {
   };
 
   // Workers
-  const handleAddWorker = (e: React.FormEvent) => {
+  const handleAddWorker = async (e: React.FormEvent) => {
     e.preventDefault();
     const em = workerEmail.trim().toLowerCase(), pw = workerPassword.trim();
     if (!em.includes('@')) { alert('Enter a valid email!'); return; }
     if (pw.length < 4) { alert('Password must be ≥4 chars!'); return; }
     if (workers.some((w: any) => w.email === em)) { alert('Already exists!'); return; }
+
+    // Create a real Supabase Auth user so the worker can log in from any device.
+    // Ephemeral client avoids overwriting the admin's current session.
+    try {
+      const { error } = await supabaseEphemeral.auth.signUp({ email: em, password: pw });
+      if (error) {
+        const msg = String(error.message || '').toLowerCase();
+        if (!msg.includes('already registered')) {
+          alert(error.message);
+          return;
+        }
+      }
+    } catch (err: any) {
+      alert(err?.message || 'Failed to create worker account.');
+      return;
+    }
     const w = { id: 'w-'+Math.random().toString(36).substr(2,9), email: em, password: pw, permissions: { canEditPrices: false }, created_at: new Date().toISOString() };
     const up = [...workers, w]; setWorkers(up);
     localStorage.setItem('worker_accounts', JSON.stringify(up));
-    db.addAuditLog('Added Worker', em);
+    await db.addAuditLog('Added Worker', em);
     setWorkerEmail(''); setWorkerPassword('');
     showToast('Worker added! 👥');
   };
