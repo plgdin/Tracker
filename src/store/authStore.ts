@@ -30,7 +30,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.removeItem('admin_session');
     localStorage.removeItem('worker_session');
     try {
-      await supabase.auth.signOut();
+      // Always clear local session even if the network call fails.
+      await supabase.auth.signOut({ scope: 'local' } as any);
     } catch (e) {
       console.warn('Supabase sign out failed', e);
     }
@@ -40,6 +41,37 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true });
 
     try {
+      const ensureProfile = async (user: User) => {
+        try {
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .maybeSingle();
+
+          // If profile row doesn't exist yet, create it (allowed by policy: auth.uid() = id).
+          if (!error && !profile) {
+            const { data: created, error: insertError } = await supabase
+              .from('profiles')
+              .insert([{ id: user.id, name: user.email?.split('@')[0] ?? null, role: 'worker' }])
+              .select('*')
+              .maybeSingle();
+            if (!insertError && created) {
+              set({ profile: created as Profile });
+              return;
+            }
+          }
+
+          if (!error && profile) {
+            set({ profile: profile as Profile });
+          } else if (error) {
+            console.warn('Profile fetch failed', error);
+          }
+        } catch (e) {
+          console.warn('Profile ensure failed', e);
+        }
+      };
+
       // 1. Check local admin session
       const isAdminSession = localStorage.getItem('admin_session') === 'true';
       if (isAdminSession) {
@@ -74,28 +106,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (session?.user) {
         set({ user: session.user });
         
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-          
-        if (profile) {
-          set({ profile: profile as Profile });
-        }
+        await ensureProfile(session.user);
       }
 
       supabase.auth.onAuthStateChange(async (_event, session) => {
         if (session?.user) {
           set({ user: session.user });
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          if (profile) {
-            set({ profile: profile as Profile });
-          }
+          await ensureProfile(session.user);
         } else {
           set({ user: null, profile: null });
         }

@@ -25,7 +25,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
     e.preventDefault();
     setError('');
     setIsSubmitting(true);
-    
+
     const trimEmail = email.trim().toLowerCase();
     const trimPassword = password.trim();
 
@@ -100,33 +100,32 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
   return (
     <div className="auth-shell">
       <div className="auth-card">
-        <div className="auth-brand-mark">BNJ</div>
         <h1 className="auth-title">Bake N Joy</h1>
         <p className="auth-subtitle">Welcome back to your stockroom</p>
-        
+
         {error && <div className="auth-error">{error}</div>}
-        
+
         <form onSubmit={handleAuth} className="auth-form">
           <div className="input-group">
             <label className="input-label">Username or Email</label>
-            <input 
-              type="text" 
-              className="input-field" 
-              placeholder="e.g., admin or name@gmail.com"
+            <input
+              type="text"
+              className="input-field"
+              placeholder="Enter Username or Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required 
+              required
             />
           </div>
           <div className="input-group">
             <label className="input-label">Password</label>
-            <input 
-              type="password" 
-              className="input-field" 
+            <input
+              type="password"
+              className="input-field"
               placeholder="Enter password..."
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required 
+              required
             />
           </div>
           <button type="submit" className="btn btn-primary auth-submit" disabled={isSubmitting}>
