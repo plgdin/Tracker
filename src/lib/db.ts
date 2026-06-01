@@ -1,5 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
-
+import { supabase as supabaseClient } from './supabase';
 // Types
 export interface Item {
   id: string;
@@ -37,18 +36,24 @@ export interface AppSettings {
   warning_period_days: number;
 }
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
 const isSupabaseConfigured = 
-  supabaseUrl && 
-  supabaseUrl !== 'https://placeholder.supabase.co' && 
-  supabaseAnonKey && 
-  supabaseAnonKey !== 'placeholder-key';
+  import.meta.env.VITE_SUPABASE_URL && 
+  import.meta.env.VITE_SUPABASE_URL !== 'https://placeholder.supabase.co' && 
+  import.meta.env.VITE_SUPABASE_ANON_KEY && 
+  import.meta.env.VITE_SUPABASE_ANON_KEY !== 'placeholder-key';
 
-export const supabase = isSupabaseConfigured 
-  ? createClient(supabaseUrl, supabaseAnonKey) 
-  : null;
+export const dbSupabase = isSupabaseConfigured ? supabaseClient : null;
+export const supabase = dbSupabase;
+
+// Race promise helper to prevent infinite loading screens on database hang/timeout
+const withTimeout = (promiseLike: any, timeoutMs = 2500): Promise<any> => {
+  return Promise.race([
+    Promise.resolve(promiseLike),
+    new Promise<never>((_, reject) => 
+      setTimeout(() => reject(new Error('Database request timeout')), timeoutMs)
+    )
+  ]);
+};
 
 // Default categories
 const DEFAULT_CATEGORIES: Category[] = [
@@ -77,9 +82,11 @@ const setLocal = <T>(key: string, value: T): void => {
 export const db = {
   // Items
   async getItems(): Promise<Item[]> {
-    if (supabase) {
+    if (dbSupabase) {
       try {
-        const { data, error } = await supabase.from('items').select('*').order('expiration_date', { ascending: true });
+        const { data, error } = await withTimeout(
+          dbSupabase.from('items').select('*').order('expiration_date', { ascending: true })
+        );
         if (error) throw error;
         return data || [];
       } catch (e) {
@@ -98,14 +105,16 @@ export const db = {
       created_at: new Date().toISOString()
     };
 
-    if (supabase) {
+    if (dbSupabase) {
       try {
-        const { data: userData } = await supabase.auth.getUser();
-        const { data, error } = await supabase
-          .from('items')
-          .insert([{ ...item, user_id: userData?.user?.id }])
-          .select()
-          .single();
+        const { data: userData } = await withTimeout(dbSupabase.auth.getUser());
+        const { data, error } = await withTimeout(
+          dbSupabase
+            .from('items')
+            .insert([{ ...item, user_id: userData?.user?.id }])
+            .select()
+            .single()
+        );
         if (error) throw error;
         return data;
       } catch (e) {
@@ -120,14 +129,16 @@ export const db = {
   },
 
   async updateItem(id: string, updates: Partial<Item>): Promise<Item> {
-    if (supabase) {
+    if (dbSupabase) {
       try {
-        const { data, error } = await supabase
-          .from('items')
-          .update(updates)
-          .eq('id', id)
-          .select()
-          .single();
+        const { data, error } = await withTimeout(
+          dbSupabase
+            .from('items')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single()
+        );
         if (error) throw error;
         return data;
       } catch (e) {
@@ -146,9 +157,9 @@ export const db = {
   },
 
   async deleteItem(id: string): Promise<boolean> {
-    if (supabase) {
+    if (dbSupabase) {
       try {
-        const { error } = await supabase.from('items').delete().eq('id', id);
+        const { error } = await withTimeout(dbSupabase.from('items').delete().eq('id', id));
         if (error) throw error;
         return true;
       } catch (e) {
@@ -164,9 +175,11 @@ export const db = {
 
   // Categories
   async getCategories(): Promise<Category[]> {
-    if (supabase) {
+    if (dbSupabase) {
       try {
-        const { data, error } = await supabase.from('categories').select('*').order('name', { ascending: true });
+        const { data, error } = await withTimeout(
+          dbSupabase.from('categories').select('*').order('name', { ascending: true })
+        );
         if (error) throw error;
         return data && data.length > 0 ? data : DEFAULT_CATEGORIES;
       } catch (e) {
@@ -183,14 +196,16 @@ export const db = {
       created_at: new Date().toISOString()
     };
 
-    if (supabase) {
+    if (dbSupabase) {
       try {
-        const { data: userData } = await supabase.auth.getUser();
-        const { data, error } = await supabase
-          .from('categories')
-          .insert([{ ...category, user_id: userData?.user?.id }])
-          .select()
-          .single();
+        const { data: userData } = await withTimeout(dbSupabase.auth.getUser());
+        const { data, error } = await withTimeout(
+          dbSupabase
+            .from('categories')
+            .insert([{ ...category, user_id: userData?.user?.id }])
+            .select()
+            .single()
+        );
         if (error) throw error;
         return data;
       } catch (e) {
@@ -205,9 +220,9 @@ export const db = {
   },
 
   async deleteCategory(id: string): Promise<boolean> {
-    if (supabase) {
+    if (dbSupabase) {
       try {
-        const { error } = await supabase.from('categories').delete().eq('id', id);
+        const { error } = await withTimeout(dbSupabase.from('categories').delete().eq('id', id));
         if (error) throw error;
         return true;
       } catch (e) {
@@ -223,9 +238,11 @@ export const db = {
 
   // Shopping List
   async getShoppingList(): Promise<ShoppingItem[]> {
-    if (supabase) {
+    if (dbSupabase) {
       try {
-        const { data, error } = await supabase.from('shopping_list').select('*').order('created_at', { ascending: false });
+        const { data, error } = await withTimeout(
+          dbSupabase.from('shopping_list').select('*').order('created_at', { ascending: false })
+        );
         if (error) throw error;
         return data || [];
       } catch (e) {
@@ -245,14 +262,16 @@ export const db = {
       created_at: new Date().toISOString()
     };
 
-    if (supabase) {
+    if (dbSupabase) {
       try {
-        const { data: userData } = await supabase.auth.getUser();
-        const { data, error } = await supabase
-          .from('shopping_list')
-          .insert([{ item_name: itemName, is_purchased: false, user_id: userData?.user?.id }])
-          .select()
-          .single();
+        const { data: userData } = await withTimeout(dbSupabase.auth.getUser());
+        const { data, error } = await withTimeout(
+          dbSupabase
+            .from('shopping_list')
+            .insert([{ item_name: itemName, is_purchased: false, user_id: userData?.user?.id }])
+            .select()
+            .single()
+        );
         if (error) throw error;
         return data;
       } catch (e) {
@@ -267,14 +286,16 @@ export const db = {
   },
 
   async toggleShoppingItem(id: string, isPurchased: boolean): Promise<ShoppingItem> {
-    if (supabase) {
+    if (dbSupabase) {
       try {
-        const { data, error } = await supabase
-          .from('shopping_list')
-          .update({ is_purchased: isPurchased })
-          .eq('id', id)
-          .select()
-          .single();
+        const { data, error } = await withTimeout(
+          dbSupabase
+            .from('shopping_list')
+            .update({ is_purchased: isPurchased })
+            .eq('id', id)
+            .select()
+            .single()
+        );
         if (error) throw error;
         return data;
       } catch (e) {
@@ -293,9 +314,9 @@ export const db = {
   },
 
   async deleteShoppingItem(id: string): Promise<boolean> {
-    if (supabase) {
+    if (dbSupabase) {
       try {
-        const { error } = await supabase.from('shopping_list').delete().eq('id', id);
+        const { error } = await withTimeout(dbSupabase.from('shopping_list').delete().eq('id', id));
         if (error) throw error;
         return true;
       } catch (e) {

@@ -161,6 +161,7 @@ export default function AddItem() {
     <div className="container" style={{ paddingBottom: '3rem' }}>
       <header style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
         <h1 style={{ margin: 0 }}>{editId ? 'Edit Item' : 'Add Item'}</h1>
+        <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginTop: '0.25rem' }}>Give your food a living expiry countdown! 🍓</p>
       </header>
 
       {loading ? (
@@ -171,6 +172,43 @@ export default function AddItem() {
         <form onSubmit={handleSubmit}>
           {/* Top Preview Card with Quantity Adjuster */}
           <div className="panel" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '1.5rem 1rem' }}>
+            
+            {/* Interactive Speech Bubble */}
+            <div style={{
+              backgroundColor: 'white',
+              border: '2px solid var(--color-primary)',
+              borderRadius: '16px',
+              padding: '0.5rem 1rem',
+              position: 'relative',
+              marginBottom: '1.25rem',
+              maxWidth: '280px',
+              textAlign: 'center',
+              fontWeight: 700,
+              fontSize: '0.85rem',
+              color: 'var(--color-text-primary)',
+              boxShadow: '0 4px 10px rgba(230, 57, 70, 0.06)'
+            }}>
+              {success ? (
+                "Yay! Successfully saved! 👍 Thumbs up!"
+              ) : formData.name.trim() ? (
+                `Ooo, ${formData.name}! 🍓 That sounds delicious!`
+              ) : (
+                "Hi there! Let's add something tasty to track! 🥛"
+              )}
+              {/* Little triangle tail for speech bubble */}
+              <div style={{
+                position: 'absolute',
+                bottom: '-8px',
+                left: '50%',
+                transform: 'translateX(-50%) rotate(45deg)',
+                width: '12px',
+                height: '12px',
+                backgroundColor: 'white',
+                borderRight: '2px solid var(--color-primary)',
+                borderBottom: '2px solid var(--color-primary)'
+              }}></div>
+            </div>
+
             <div style={{ 
               width: '120px', 
               height: '120px', 
@@ -209,86 +247,98 @@ export default function AddItem() {
             {/* Barcode row */}
             {!scanning && (
               <div className="input-group">
-                <label className="input-label">Barcode (Optional)</label>
+                <label className="input-label">🔍 Scan or Enter Barcode</label>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <input 
                     type="text" 
                     className="input-field" 
-                    placeholder="Scan or enter barcode" 
+                    placeholder="Scan product barcode..." 
                     value={barcode}
                     onChange={(e) => setBarcode(e.target.value)}
                   />
-                  <button type="button" className="btn btn-primary" style={{ padding: '0.5rem 1rem', borderRadius: '12px' }} onClick={() => setScanning(true)}>
+                  <button type="button" className="btn btn-primary" style={{ padding: '0.5rem 1rem', borderRadius: '12px', minHeight: '44px' }} onClick={() => setScanning(true)}>
                     <Camera size={20} />
                   </button>
                 </div>
+                <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginTop: '0.35rem' }}>Use your camera to quickly scan a barcode or enter it manually!</p>
               </div>
             )}
 
             <div className="input-group">
-              <label className="input-label">Product Name</label>
+              <label className="input-label">🏷️ Product Name</label>
               <input 
                 type="text" 
                 className="input-field" 
-                placeholder="e.g., Organic Milk"
+                placeholder="e.g., Organic Whole Milk"
                 value={formData.name}
                 onChange={e => setFormData({ ...formData, name: e.target.value })}
                 required 
               />
+              <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginTop: '0.35rem' }}>Give the item a clear name so carton can recognize it!</p>
             </div>
 
             <div className="input-group">
-              <label className="input-label">Notes</label>
+              <label className="input-label">📝 Special Notes</label>
               <input 
                 type="text" 
                 className="input-field" 
-                placeholder="Optional notes..."
+                placeholder="e.g., Keep in bottom drawer, buy more next time..."
                 value={formData.notes}
                 onChange={e => setFormData({ ...formData, notes: e.target.value })}
               />
+              <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginTop: '0.35rem' }}>Any storage instructions, brand details, or custom reminders.</p>
             </div>
 
             {/* List items with right alignment as seen in Screenshot 4 */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1.5rem', borderTop: '1px solid rgba(141, 131, 126, 0.08)', paddingTop: '1.5rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.5rem', borderTop: '1px solid rgba(230, 57, 70, 0.08)', paddingTop: '1.5rem' }}>
               
               {/* Category row */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontWeight: 600, color: 'var(--color-text-secondary)', fontSize: '0.95rem' }}>Category</span>
-                <select 
-                  className="input-field"
-                  style={{ width: 'auto', border: 'none', background: 'transparent', textAlign: 'right', fontWeight: 600, color: 'var(--color-text-primary)', padding: '0.25rem 0.5rem', cursor: 'pointer' }}
-                  value={formData.category}
-                  onChange={e => setFormData({ ...formData, category: e.target.value })}
-                >
-                  {categories.map(cat => (
-                    <option key={cat.id} value={cat.name}>{cat.name}</option>
-                  ))}
-                </select>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontWeight: 700, color: 'var(--color-text-primary)', fontSize: '0.95rem' }}>📂 Category</span>
+                  <select 
+                    className="input-field"
+                    style={{ width: 'auto', border: 'none', background: 'transparent', textAlign: 'right', fontWeight: 700, color: 'var(--color-primary)', padding: '0.25rem 0.5rem', cursor: 'pointer' }}
+                    value={formData.category}
+                    onChange={e => setFormData({ ...formData, category: e.target.value })}
+                  >
+                    {categories.map(cat => (
+                      <option key={cat.id} value={cat.name}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginTop: '0.15rem', textAlign: 'left' }}>Organize items into shelves to filter them easier later.</p>
               </div>
 
               {/* Expiry Date row */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
-                <span style={{ fontWeight: 600, color: 'var(--color-text-secondary)', fontSize: '0.95rem' }}>Expiry Date</span>
-                <input 
-                  type="date" 
-                  className="input-field"
-                  style={{ width: 'auto', border: 'none', background: 'transparent', textAlign: 'right', fontWeight: 600, color: 'var(--color-text-primary)', padding: '0.25rem 0.5rem', cursor: 'pointer' }}
-                  value={formData.expiration_date}
-                  onChange={e => setFormData({ ...formData, expiration_date: e.target.value })}
-                  required 
-                />
+              <div style={{ borderTop: '1px solid rgba(230, 57, 70, 0.05)', paddingTop: '0.75rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontWeight: 700, color: 'var(--color-text-primary)', fontSize: '0.95rem' }}>📅 Expiry Date</span>
+                  <input 
+                    type="date" 
+                    className="input-field"
+                    style={{ width: 'auto', border: 'none', background: 'transparent', textAlign: 'right', fontWeight: 700, color: 'var(--color-primary)', padding: '0.25rem 0.5rem', cursor: 'pointer' }}
+                    value={formData.expiration_date}
+                    onChange={e => setFormData({ ...formData, expiration_date: e.target.value })}
+                    required 
+                  />
+                </div>
+                <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginTop: '0.15rem', textAlign: 'left' }}>The ultimate expiration date. Countdown alerts start 30 days before!</p>
               </div>
 
               {/* Warning Date row */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
-                <span style={{ fontWeight: 600, color: 'var(--color-text-secondary)', fontSize: '0.95rem' }}>Warning Date (Optional)</span>
-                <input 
-                  type="date" 
-                  className="input-field"
-                  style={{ width: 'auto', border: 'none', background: 'transparent', textAlign: 'right', fontWeight: 600, color: 'var(--color-text-primary)', padding: '0.25rem 0.5rem', cursor: 'pointer' }}
-                  value={formData.warning_date}
-                  onChange={e => setFormData({ ...formData, warning_date: e.target.value })}
-                />
+              <div style={{ borderTop: '1px solid rgba(230, 57, 70, 0.05)', paddingTop: '0.75rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontWeight: 700, color: 'var(--color-text-primary)', fontSize: '0.95rem' }}>⚠️ Custom Warning Date</span>
+                  <input 
+                    type="date" 
+                    className="input-field"
+                    style={{ width: 'auto', border: 'none', background: 'transparent', textAlign: 'right', fontWeight: 700, color: 'var(--color-primary)', padding: '0.25rem 0.5rem', cursor: 'pointer' }}
+                    value={formData.warning_date}
+                    onChange={e => setFormData({ ...formData, warning_date: e.target.value })}
+                  />
+                </div>
+                <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginTop: '0.15rem', textAlign: 'left' }}>Optional: Choose a custom date to get warned even sooner than 30 days.</p>
               </div>
 
             </div>

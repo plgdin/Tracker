@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { db, supabase } from '../lib/db';
+import { db } from '../lib/db';
+import { supabase } from '../lib/supabase';
 import type { Category } from '../lib/db';
 import { Plus, Trash2, Tag, Database, Cloud, AlertCircle } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
