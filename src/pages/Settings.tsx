@@ -86,11 +86,6 @@ export default function Settings() {
 
       // ── 2. Password update ──────────────────────────────────────────────────
       if (trimPass) {
-        if (trimPass.length < 6) {
-          showToast('⚠️ Password must be at least 6 characters.');
-          return;
-        }
-
         // Verify the session is still active before attempting
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
@@ -100,7 +95,7 @@ export default function Settings() {
 
         const { error: passErr } = await withTimeout(
           supabase.auth.updateUser({ password: trimPass }),
-          12000, 'Password update timed out. Check your connection and try again.'
+          45000, 'Password update timed out. Check your connection and try again.'
         );
 
         if (passErr) throw passErr;

@@ -228,7 +228,6 @@ export default function AdminDashboard() {
     if (!u && !p) return;
     
     if (u && u.length < 3) { alert('Username must be at least 3 characters!'); return; }
-    if (p && p.length < 6) { alert('Password must be at least 6 characters!'); return; }
     
     if (!confirm('You are about to change the admin credentials in the database. Proceed?')) return;
     
@@ -267,7 +266,7 @@ export default function AdminDashboard() {
         }
         const { error: passErr } = await withTimeout(
           supabase.auth.updateUser({ password: p }),
-          12000, 'Password update timed out. Check your connection and try again.'
+          45000, 'Password update timed out. Check your connection and try again.'
         );
         if (passErr) throw passErr;
         await db.addAuditLog('Changed Admin Password', profile.email || profile.name);
