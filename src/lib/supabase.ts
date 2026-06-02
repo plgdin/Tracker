@@ -10,18 +10,23 @@ const isPWA = window.matchMedia('(display-mode: standalone)').matches || ('stand
 // This mimics sessionStorage behavior (forgetting credentials on app close) 
 // without suffering from iOS's notoriously buggy standalone sessionStorage.
 if (isPWA) {
-  try {
-    // Collect keys first to avoid mutation issues while iterating
-    const keysToWipe = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith('sb-')) {
-        keysToWipe.push(key);
+  // Use a simple sessionStorage flag to detect if this is a cold start or just a page reload
+  const isColdStart = !window.sessionStorage.getItem('pwa_active');
+  
+  if (isColdStart) {
+    try {
+      const keysToWipe = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('sb-')) {
+          keysToWipe.push(key);
+        }
       }
+      keysToWipe.forEach(k => localStorage.removeItem(k));
+    } catch (e) {
+      console.warn('PWA storage wipe failed', e);
     }
-    keysToWipe.forEach(k => localStorage.removeItem(k));
-  } catch (e) {
-    console.warn('PWA storage wipe failed', e);
+    window.sessionStorage.setItem('pwa_active', 'true');
   }
 }
 
