@@ -59,9 +59,15 @@ export const supabase = dbSupabase;
 // Synchronously/asynchronously verify if we have a valid authenticated user session with Supabase
 const getUseSupabase = async (): Promise<boolean> => {
   if (!dbSupabase) return false;
+  // 1. Instantly check memory state first for peak performance
+  if (useAuthStore.getState().user) return true;
   try {
-    const { data: { session } } = await dbSupabase.auth.getSession();
-    return !!session;
+    // 2. Fall back to getSession but wrap in a 2-second timeout to prevent any hangs
+    const sessionPromise = dbSupabase.auth.getSession().then(({ data }) => !!data.session);
+    return await Promise.race([
+      sessionPromise,
+      new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 2000))
+    ]);
   } catch {
     return false;
   }
@@ -122,7 +128,10 @@ export const db = {
           dbSupabase.from('items').select('*').order('expiration_date', { ascending: true })
         );
         if (error) throw error;
-        return data || [];
+        const result = data || [];
+        // Cache the fresh items in local storage
+        setLocal('tracker_items', result);
+        return result;
       } catch (e) {
         console.warn('Supabase fetch failed, falling back to LocalStorage', e);
       }
@@ -236,8 +245,10 @@ export const db = {
           dbSupabase.from('categories').select('*').order('name', { ascending: true })
         );
         if (error) throw error;
-        if (data && data.length > 0) return data;
-        return hasLocalCategories() ? getLocalCategories() : DEFAULT_CATEGORIES;
+        const result = data && data.length > 0 ? data : (hasLocalCategories() ? getLocalCategories() : DEFAULT_CATEGORIES);
+        // Cache the fresh categories in local storage
+        setLocal('tracker_categories', result);
+        return result;
       } catch (e) {
         console.warn('Supabase categories fetch failed, falling back to LocalStorage', e);
       }

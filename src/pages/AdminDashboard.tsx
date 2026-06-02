@@ -228,6 +228,7 @@ export default function AdminDashboard() {
     if (!u && !p) return;
     
     if (u && u.length < 3) { alert('Username must be at least 3 characters!'); return; }
+    if (p && p.length < 6) { alert('Password must be at least 6 characters!'); return; }
     
     if (!confirm('You are about to change the admin credentials in the database. Proceed?')) return;
     
@@ -258,17 +259,17 @@ export default function AdminDashboard() {
       }
 
       if (p) {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          showToast('❌ Your session has expired. Please log in again.');
-          setIsSavingSecurity(false);
-          return;
-        }
         const { error: passErr } = await withTimeout(
           supabase.auth.updateUser({ password: p }),
           45000, 'Password update timed out. Check your connection and try again.'
         );
-        if (passErr) throw passErr;
+        if (passErr) {
+          // Surface a friendly message for auth errors (e.g. session expired)
+          if (passErr.message.toLowerCase().includes('session') || passErr.message.toLowerCase().includes('auth')) {
+            throw new Error('Session expired. Please log out and log back in, then try again.');
+          }
+          throw passErr;
+        }
         await db.addAuditLog('Changed Admin Password', profile.email || profile.name);
       }
 
@@ -283,7 +284,11 @@ export default function AdminDashboard() {
       showToast('Credentials updated! Re-login required... 🔑');
       setNewAdminUser('');
       setNewAdminPass('');
-      setTimeout(() => signOut(), 1500);
+      setTimeout(() => {
+        signOut().then(() => {
+          window.location.href = '/';
+        });
+      }, 1500);
     } catch (err: unknown) {
       const msg = (err as Error).message || 'Something went wrong. Please try again.';
       console.error('Admin update failed:', err);
@@ -566,13 +571,7 @@ export default function AdminDashboard() {
             <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Key size={18} color="var(--color-primary)" /> Admin Credentials
             </h2>
-            {adminChanged && (
-              <div style={{ padding: '1.5rem', borderRadius: '16px', backgroundColor: 'rgba(46,204,113,0.08)', border: '1.5px solid rgb(46,204,113)', textAlign: 'center', marginBottom: '1.25rem' }}>
-                <CheckCircle2 size={32} color="rgb(46,204,113)" style={{ marginBottom: '0.5rem' }} />
-                <strong style={{ display: 'block' }}>Credentials customized! 🔒</strong>
-                <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', margin: '0.25rem 0 0' }}>Default "admin/admin" is permanently blocked.</p>
-              </div>
-            )}
+
             
             <form onSubmit={handleCustomizeAdmin} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <div style={{ padding: '0.75rem', backgroundColor: 'rgba(230,57,70,0.05)', border: '1px solid var(--color-primary)', borderRadius: '12px', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>

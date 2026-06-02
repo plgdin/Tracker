@@ -8,7 +8,7 @@ export default function Layout() {
 
   const handleLogout = async () => {
     await signOut();
-    navigate('/');
+    window.location.href = '/';
   };
 
   return (
