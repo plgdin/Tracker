@@ -231,6 +231,23 @@ export const db = {
     return true;
   },
 
+  async getItemByBarcode(barcode: string): Promise<Item | null> {
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
+      try {
+        const { data, error } = await withTimeout(
+          dbSupabase.from('items').select('*').eq('barcode', barcode).maybeSingle()
+        );
+        if (error) throw error;
+        if (data) return data;
+      } catch (e) {
+        console.warn('Supabase barcode lookup failed, falling back to LocalStorage', e);
+      }
+    }
+    const items = getLocal<Item[]>('tracker_items', []);
+    return items.find(i => i.barcode === barcode) || null;
+  },
+
   // Categories
   async getCategories(): Promise<Category[]> {
     const useSupabase = await getUseSupabase();

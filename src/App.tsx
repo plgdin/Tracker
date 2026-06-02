@@ -7,6 +7,7 @@ import Settings from './pages/Settings';
 import AddItem from './pages/AddItem';
 import AdminDashboard from './pages/AdminDashboard';
 import ResetPassword from './pages/ResetPassword';
+import BarcodeScanner from './pages/BarcodeScanner';
 import Toast from './components/Toast';
 import './index.css';
 
@@ -24,6 +25,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Layout />}>
                 <Route index element={<Dashboard />} />
+                <Route path="scan" element={<BarcodeScanner />} />
                 <Route path="inventory" element={<Inventory />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="add-item" element={<AddItem />} />

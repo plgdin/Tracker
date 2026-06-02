@@ -17,7 +17,9 @@ export default function AddItem() {
   const { profile } = useAuthStore();
   const [categories, setCategories] = useState<Category[]>([]);
   const [scanning, setScanning] = useState(false);
-  const [barcode, setBarcode] = useState('');
+  // Pre-fill barcode from ?barcode= param (from BarcodeScanner "not found" flow) or ?edit= flow
+  const prefillBarcode = searchParams.get('barcode') || '';
+  const [barcode, setBarcode] = useState(prefillBarcode);
   
   const [formData, setFormData] = useState({
     name: '',
