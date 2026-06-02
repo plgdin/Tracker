@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { Home, List, Settings, Shield, LogOut, ScanLine } from 'lucide-react';
+import { Home, List, Settings, Shield, LogOut } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 
 export default function Layout() {
@@ -71,13 +71,7 @@ export default function Layout() {
           <Home size={24} />
           <span>Dashboard</span>
         </NavLink>
-        <NavLink 
-          to="/scan" 
-          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-        >
-          <ScanLine size={24} />
-          <span>Scan</span>
-        </NavLink>
+
         <NavLink 
           to="/inventory" 
           className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}

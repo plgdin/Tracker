@@ -255,20 +255,7 @@ export default function Inventory() {
                 <div className="cute-card-illustration">
                   <MilkCarton daysRemaining={daysRemaining} size={50} />
                   <span className="cute-card-name">{item.name}</span>
-                  {item.price !== undefined && (
-                    <span style={{ 
-                      fontSize: '0.75rem', 
-                      color: 'var(--color-primary)', 
-                      fontWeight: 'bold', 
-                      backgroundColor: 'rgba(230, 57, 70, 0.08)',
-                      padding: '0.1rem 0.4rem',
-                      borderRadius: '8px',
-                      marginTop: '0.15rem',
-                      display: 'inline-block'
-                    }}>
-                      ₹{item.price.toFixed(2)}
-                    </span>
-                  )}
+
                 </div>
 
                 <div 

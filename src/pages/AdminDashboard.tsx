@@ -5,9 +5,9 @@ import { db } from '../lib/db';
 import { supabaseEphemeral } from '../lib/supabaseEphemeral';
 import type { Item, AuditLog, Category } from '../lib/db';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ShieldCheck, Trash2, Lock, Activity, DollarSign, Key, Plus, Users, CheckCircle2, AlertTriangle, Tag, Package, ToggleLeft, ToggleRight, Eye, EyeOff } from 'lucide-react';
+import { ShieldCheck, Trash2, Lock, Activity, Key, Plus, Users, CheckCircle2, AlertTriangle, Tag, Package, ToggleLeft, ToggleRight, Eye, EyeOff } from 'lucide-react';
 
-type TabKey = 'logs' | 'workers' | 'prices' | 'categories' | 'items' | 'security';
+type TabKey = 'logs' | 'workers' | 'categories' | 'items' | 'security';
 
 interface WorkerData {
   id: string;
@@ -33,7 +33,6 @@ export default function AdminDashboard() {
   const [newAdminUser, setNewAdminUser] = useState('');
   const [newAdminPass, setNewAdminPass] = useState('');
   const [adminChanged, setAdminChanged] = useState(false);
-  const [priceEdits, setPriceEdits] = useState<Record<string, string>>({});
   const [newCatName, setNewCatName] = useState('');
   const [newCatColor, setNewCatColor] = useState('#E63946');
   const [workers, setWorkers] = useState<WorkerData[]>(() => {
@@ -60,9 +59,6 @@ export default function AdminDashboard() {
         setLogs(l); setItems(i); setCategories(c); setPendingWorkers(pw);
         if (mergedWorkers.length > 0) setWorkers(mergedWorkers);
 
-        const p: Record<string,string> = {};
-        i.forEach(it => { p[it.id] = it.price !== undefined ? String(it.price) : ''; });
-        setPriceEdits(p);
         setAdminChanged(localStorage.getItem('admin_changed') === 'true');
       } catch(e) { console.error(e); }
       finally { setLoading(false); }
@@ -111,9 +107,6 @@ export default function AdminDashboard() {
     setLogs(l); setItems(i); setCategories(c); setPendingWorkers(pw);
     if (mergedWorkers.length > 0 || wList.length === 0) setWorkers(mergedWorkers);
 
-    const p: Record<string,string> = {};
-    i.forEach(it => { p[it.id] = it.price !== undefined ? String(it.price) : ''; });
-    setPriceEdits(p);
   };
 
   // Access
@@ -155,7 +148,7 @@ export default function AdminDashboard() {
       alert((err as Error)?.message || 'Failed to create worker account.');
       return;
     }
-    const w = { id: 'w-'+Math.random().toString(36).substr(2,9), email: em, password: pw, permissions: { canEditPrices: false }, created_at: new Date().toISOString() };
+    const w = { id: 'w-'+Math.random().toString(36).substr(2,9), email: em, password: pw, permissions: {}, created_at: new Date().toISOString() };
     const up = [...workers, w]; setWorkers(up);
     localStorage.setItem('worker_accounts', JSON.stringify(up));
     await db.addAuditLog('Added Worker', em);
@@ -235,18 +228,7 @@ export default function AdminDashboard() {
     setTimeout(() => signOut(), 1500);
   };
 
-  // Prices
-  const handleUpdatePrice = async (id: string, name: string) => {
-    const v = priceEdits[id], parsed = v ? parseFloat(v) : undefined;
-    if (parsed !== undefined && (isNaN(parsed) || parsed < 0)) { alert('Invalid price!'); return; }
-    const orig = items.find(i => i.id === id);
-    await db.updateItem(id, { price: parsed });
-    await db.addAuditLog('Updated Price', name, { previous_price: orig?.price, new_price: parsed });
-    await refreshData();
-    showToast('Price updated! 💰');
-  };
 
-  // Items delete
   const handleDeleteItem = async (id: string, name: string) => {
     if (!confirm(`Delete "${name}"? Cannot undo.`)) return;
     await db.deleteItem(id);
@@ -282,7 +264,6 @@ export default function AdminDashboard() {
     { key: 'workers', icon: Users, label: 'Workers' },
     { key: 'items', icon: Package, label: 'Items' },
     { key: 'categories', icon: Tag, label: 'Categories' },
-    { key: 'prices', icon: DollarSign, label: 'Prices' },
     { key: 'logs', icon: Activity, label: 'Logs' },
     { key: 'security', icon: Key, label: 'Security' },
   ];
@@ -397,7 +378,6 @@ export default function AdminDashboard() {
                       <div style={{ borderTop: '1px solid rgba(230,57,70,0.06)', paddingTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                         <p style={{ margin: 0, fontSize: '0.7rem', fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Permissions</p>
                         {[
-                          { key: 'canEditPrices', label: '💰 Edit Prices' },
                           { key: 'canAddItems', label: '📦 Add Items' },
                           { key: 'canEditItems', label: '✏️ Edit Items' },
                         ].map(p => {
@@ -433,7 +413,7 @@ export default function AdminDashboard() {
                   <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', border: '1px solid rgba(230,57,70,0.05)' }}>
                     <div style={{ flex: 1 }}>
                       <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>📦 {item.name}</span>
-                      <span style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', display: 'block' }}>{item.category} · Qty: {item.quantity} {item.price !== undefined && `· ₹${item.price.toFixed(2)}`}</span>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', display: 'block' }}>{item.category} · Qty: {item.quantity}</span>
                     </div>
                     <button onClick={() => handleDeleteItem(item.id, item.name)} style={{ border: 'none', background: 'rgba(230,57,70,0.08)', color: 'var(--color-primary)', cursor: 'pointer', padding: '0.4rem 0.75rem', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.75rem', fontWeight: 600 }}>
                       <Trash2 size={14} /> Delete
@@ -485,35 +465,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* PRICES TAB */}
-        {activeTab === 'prices' && (
-          <div className="panel" style={{ padding: '1.5rem' }}>
-            <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <DollarSign size={18} color="var(--color-primary)" /> Price Manager
-            </h2>
-            {items.length === 0 ? <p style={{ color: 'var(--color-text-secondary)', textAlign: 'center', padding: '2rem' }}>No products.</p> : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {items.map(item => (
-                  <div key={item.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', gap: '0.5rem' }}>
-                    <div style={{ flex: 1 }}>
-                      <span style={{ fontWeight: 700, fontSize: '0.85rem', display: 'block' }}>🏷️ {item.name}</span>
-                      <span style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)' }}>{item.category}</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                      <div style={{ position: 'relative', width: '85px' }}>
-                        <span style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', fontWeight: 'bold', fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>₹</span>
-                        <input type="number" step="0.01" placeholder="0.00" className="input-field" style={{ paddingLeft: '1.2rem', height: '34px', fontSize: '0.8rem' }} value={priceEdits[item.id] || ''} onChange={e => setPriceEdits({ ...priceEdits, [item.id]: e.target.value })} />
-                      </div>
-                      <button onClick={() => handleUpdatePrice(item.id, item.name)} className="btn btn-primary" style={{ padding: '0 0.6rem', height: '34px', fontSize: '0.75rem', borderRadius: '10px' }}>Save</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
 
-        {/* LOGS TAB */}
         {activeTab === 'logs' && (
           <div className="panel" style={{ padding: '1.5rem' }}>
             <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -533,7 +485,6 @@ export default function AdminDashboard() {
                       ) : (
                         <>
                           {log.details?.item_name && ` — 📦 ${log.details.item_name}`}
-                          {log.details?.previous_price !== undefined && ` (₹${log.details.previous_price} → ₹${log.details.new_price})`}
                         </>
                       )}
                     </div>

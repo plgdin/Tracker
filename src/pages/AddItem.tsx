@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Camera, X } from 'lucide-react';
-import { Html5Qrcode } from 'html5-qrcode';
 import { db } from '../lib/db';
 import type { Category } from '../lib/db';
 import { useAuthStore } from '../store/authStore';
@@ -16,10 +14,6 @@ export default function AddItem() {
 
   const { profile } = useAuthStore();
   const [categories, setCategories] = useState<Category[]>([]);
-  const [scanning, setScanning] = useState(false);
-  // Pre-fill barcode from ?barcode= param (from BarcodeScanner "not found" flow) or ?edit= flow
-  const prefillBarcode = searchParams.get('barcode') || '';
-  const [barcode, setBarcode] = useState(prefillBarcode);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -28,7 +22,6 @@ export default function AddItem() {
     quantity: 1,
     category: 'Uncategorized',
     notes: '',
-    price: ''
   });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -57,11 +50,7 @@ export default function AddItem() {
               quantity: itemToEdit.quantity,
               category: itemToEdit.category,
               notes: itemToEdit.notes || '',
-              price: itemToEdit.price !== undefined ? String(itemToEdit.price) : ''
             });
-            if (itemToEdit.barcode) {
-              setBarcode(itemToEdit.barcode);
-            }
           }
         }
       } catch (err) {
@@ -72,48 +61,6 @@ export default function AddItem() {
     }
     loadData();
   }, [editId]);
-
-  useEffect(() => {
-    let html5Qrcode: Html5Qrcode | null = null;
-    
-    if (scanning) {
-      const timer = setTimeout(() => {
-        try {
-          html5Qrcode = new Html5Qrcode("reader");
-          html5Qrcode.start(
-            { facingMode: "environment" },
-            {
-              fps: 10,
-              qrbox: { width: 250, height: 250 }
-            },
-            (decodedText: string) => {
-               setBarcode(decodedText);
-               setScanning(false);
-               if (html5Qrcode) {
-                 html5Qrcode.stop().catch(console.error);
-               }
-            },
-            () => {
-              // Silent camera scan errors
-            }
-          ).catch((err) => {
-            console.error("Camera start failed:", err);
-          });
-        } catch (e) {
-          console.error("Scanner init error:", e);
-        }
-      }, 150);
-
-      return () => {
-        clearTimeout(timer);
-        if (html5Qrcode) {
-          if (html5Qrcode.isScanning) {
-            html5Qrcode.stop().catch(console.error);
-          }
-        }
-      };
-    }
-  }, [scanning]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,8 +82,6 @@ export default function AddItem() {
         quantity: formData.quantity,
         category: formData.category,
         notes: formData.notes || undefined,
-        price: formData.price ? parseFloat(formData.price) : undefined,
-        barcode: barcode || undefined,
         added_by: profile?.id || undefined
       };
 
@@ -240,38 +185,8 @@ export default function AddItem() {
             </div>
           </div>
 
-          {/* Barcode scanner panel if active */}
-          {scanning && (
-            <div className="panel" style={{ marginBottom: '1.5rem', padding: '1rem' }}>
-              <div id="reader" style={{ width: '100%', marginBottom: '1rem' }}></div>
-              <button type="button" className="btn btn-outline" style={{ width: '100%' }} onClick={() => setScanning(false)}>
-                <X size={16} /> Cancel Scan
-              </button>
-            </div>
-          )}
-
           {/* Form details */}
           <div className="panel" style={{ padding: '1.5rem' }}>
-            
-            {/* Barcode row */}
-            {!scanning && (
-              <div className="input-group">
-                <label className="input-label">🔍 Scan or Enter Barcode</label>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <input 
-                    type="text" 
-                    className="input-field" 
-                    placeholder="Scan product barcode..." 
-                    value={barcode}
-                    onChange={(e) => setBarcode(e.target.value)}
-                  />
-                  <button type="button" className="btn btn-primary" style={{ padding: '0.5rem 1rem', borderRadius: '12px', minHeight: '44px' }} onClick={() => setScanning(true)}>
-                    <Camera size={20} />
-                  </button>
-                </div>
-                <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginTop: '0.35rem' }}>Use your camera to quickly scan a barcode or enter it manually!</p>
-              </div>
-            )}
 
             <div className="input-group">
               <label className="input-label">🏷️ Product Name</label>
@@ -296,19 +211,6 @@ export default function AddItem() {
                 onChange={e => setFormData({ ...formData, notes: e.target.value })}
               />
               <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginTop: '0.35rem' }}>Any storage instructions, brand details, or custom reminders.</p>
-            </div>
-
-            <div className="input-group">
-              <label className="input-label">💰 Product Price (Optional)</label>
-              <input 
-                type="number" 
-                step="0.01" 
-                className="input-field" 
-                placeholder="e.g., 3.49"
-                value={formData.price}
-                onChange={e => setFormData({ ...formData, price: e.target.value })}
-              />
-              <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginTop: '0.35rem' }}>Optional price of the product to track purchase budgets.</p>
             </div>
 
             {/* List items with right alignment as seen in Screenshot 4 */}

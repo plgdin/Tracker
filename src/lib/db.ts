@@ -5,14 +5,12 @@ export interface Item {
   id: string;
   user_id?: string;
   added_by?: string;
-  barcode?: string;
   name: string;
   expiration_date: string; // YYYY-MM-DD
   warning_date?: string; // YYYY-MM-DD
   quantity: number;
   category: string;
   notes?: string;
-  price?: number; // Price field for products
   image_url?: string;
   created_at: string;
 }
@@ -40,8 +38,6 @@ export interface AuditLog {
   action: string;
   details: {
     item_name: string;
-    previous_price?: number;
-    new_price?: number;
     [key: string]: unknown;
   };
   created_at: string;
@@ -231,24 +227,7 @@ export const db = {
     return true;
   },
 
-  async getItemByBarcode(barcode: string): Promise<Item | null> {
-    const useSupabase = await getUseSupabase();
-    if (useSupabase && dbSupabase) {
-      try {
-        const { data, error } = await withTimeout(
-          dbSupabase.from('items').select('*').eq('barcode', barcode).maybeSingle()
-        );
-        if (error) throw error;
-        if (data) return data;
-      } catch (e) {
-        console.warn('Supabase barcode lookup failed, falling back to LocalStorage', e);
-      }
-    }
-    const items = getLocal<Item[]>('tracker_items', []);
-    return items.find(i => i.barcode === barcode) || null;
-  },
 
-  // Categories
   async getCategories(): Promise<Category[]> {
     const useSupabase = await getUseSupabase();
     if (useSupabase && dbSupabase) {
