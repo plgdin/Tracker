@@ -393,8 +393,8 @@ export default function AdminDashboard() {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   {pendingWorkers.map((pw) => (
-                    <div key={pw.id} style={{ padding: '1rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>
+                    <div key={pw.id} style={{ padding: '1rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ minWidth: 0, flex: 1, wordBreak: 'break-word' }}>
                         <p style={{ margin: 0, fontWeight: 700, fontSize: '0.85rem' }}>👤 {pw.name || '(no username)'}</p>
                         <p style={{ margin: '0.15rem 0 0', fontSize: '0.7rem', color: 'var(--color-text-secondary)' }}>📧 {pw.email}</p>
                         <p style={{ margin: '0.15rem 0 0', fontSize: '0.65rem', color: 'var(--color-text-secondary)' }}>Requested: {new Date(pw.created_at).toLocaleDateString()}</p>
@@ -423,8 +423,8 @@ export default function AdminDashboard() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   {workers.map((w) => (
                     <div key={w.id} style={{ padding: '1rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', border: '1px solid rgba(230,57,70,0.05)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                        <div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <div style={{ minWidth: 0, flex: 1, wordBreak: 'break-word' }}>
                           <p style={{ margin: 0, fontWeight: 700, fontSize: '0.85rem' }}>{w.name ? `👤 ${w.name}` : `📧 ${w.email}`}</p>
                           <p style={{ margin: '0.15rem 0 0', fontSize: '0.7rem', color: 'var(--color-text-secondary)' }}>{w.name ? `📧 ${w.email}` : ''}</p>
                           <p style={{ margin: '0.15rem 0 0', fontSize: '0.7rem', color: 'var(--color-text-secondary)' }}>Pass: <strong>{w.password}</strong></p>
@@ -469,8 +469,8 @@ export default function AdminDashboard() {
             {items.length === 0 ? <p style={{ color: 'var(--color-text-secondary)', textAlign: 'center', padding: '2rem' }}>No products yet.</p> : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 {items.map(item => (
-                  <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', border: '1px solid rgba(230,57,70,0.05)' }}>
-                    <div style={{ flex: 1 }}>
+                  <div key={item.id} style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', border: '1px solid rgba(230,57,70,0.05)' }}>
+                    <div style={{ minWidth: 0, flex: 1, wordBreak: 'break-word' }}>
                       <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>📦 {item.name}</span>
                       <span style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', display: 'block' }}>{item.category} · Qty: {item.quantity}</span>
                     </div>
@@ -533,8 +533,8 @@ export default function AdminDashboard() {
             {logs.length === 0 ? <p style={{ color: 'var(--color-text-secondary)', textAlign: 'center', padding: '2rem' }}>No activity yet.</p> : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                 {logs.map(log => (
-                  <div key={log.id} style={{ padding: '0.75rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', borderLeft: '3px solid var(--color-primary)', fontSize: '0.8rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                  <div key={log.id} style={{ padding: '0.75rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', borderLeft: '3px solid var(--color-primary)', fontSize: '0.8rem', wordBreak: 'break-word' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
                       <strong>👤 {log.worker_email}</strong>
                       <span style={{ fontSize: '0.65rem', color: 'var(--color-text-secondary)' }}>{new Date(log.created_at).toLocaleString()}</span>
                     </div>
