@@ -27,15 +27,27 @@ export default function Dashboard() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [fetchedItems, fetchedSettings] = await Promise.all([
+        // ── Phase 1: Show cached data instantly so the page never gets stuck
+        // Pull whatever is already in localStorage so loading=false right away
+        const cachedItems = JSON.parse(localStorage.getItem('tracker_items') || '[]') as Item[];
+        const cachedSettings = JSON.parse(localStorage.getItem('tracker_settings') || '{"warning_period_days":30}');
+        if (cachedItems.length > 0) {
+          setItems(cachedItems.sort(
+            (a: Item, b: Item) => new Date(a.expiration_date).getTime() - new Date(b.expiration_date).getTime()
+          ));
+          setWarningDays(cachedSettings.warning_period_days ?? 30);
+        }
+        setLoading(false);
+
+        // ── Phase 2: Silently fetch fresh data from Supabase in the background
+        const [freshItems, freshSettings] = await Promise.all([
           db.getItems(),
           db.getSettings()
         ]);
-        setItems(fetchedItems);
-        setWarningDays(fetchedSettings.warning_period_days);
+        setItems(freshItems);
+        setWarningDays(freshSettings.warning_period_days);
       } catch (err) {
         console.error('Error loading dashboard data:', err);
-      } finally {
         setLoading(false);
       }
     }

@@ -72,7 +72,7 @@ const getUseSupabase = async (): Promise<boolean> => {
 };
 
 // Race promise helper to prevent infinite loading screens on database hang/timeout
-const withTimeout = <T>(promiseLike: PromiseLike<T>, timeoutMs = 2500): Promise<T> => {
+const withTimeout = <T>(promiseLike: PromiseLike<T>, timeoutMs = 8000): Promise<T> => {
   return Promise.race([
     Promise.resolve(promiseLike),
     new Promise<never>((_, reject) => 

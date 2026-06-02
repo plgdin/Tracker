@@ -27,6 +27,20 @@ export default function Inventory() {
   useEffect(() => {
     async function loadData() {
       try {
+        // ── Phase 1: Show cached data instantly
+        const cachedItems = JSON.parse(localStorage.getItem('tracker_items') || '[]') as Item[];
+        const cachedCats = JSON.parse(localStorage.getItem('tracker_categories') || '[]') as Category[];
+        const cachedSettings = JSON.parse(localStorage.getItem('tracker_settings') || '{"warning_period_days":30}');
+        if (cachedItems.length > 0) {
+          setItems(cachedItems.sort(
+            (a: Item, b: Item) => new Date(a.expiration_date).getTime() - new Date(b.expiration_date).getTime()
+          ));
+        }
+        if (cachedCats.length > 0) setCategories(cachedCats);
+        setWarningDays(cachedSettings.warning_period_days ?? 30);
+        setLoading(false);
+
+        // ── Phase 2: Silently fetch fresh data from Supabase
         const [fetchedItems, fetchedCategories, fetchedSettings] = await Promise.all([
           db.getItems(),
           db.getCategories(),
@@ -37,7 +51,6 @@ export default function Inventory() {
         setWarningDays(fetchedSettings.warning_period_days);
       } catch (err) {
         console.error('Error fetching inventory:', err);
-      } finally {
         setLoading(false);
       }
     }
