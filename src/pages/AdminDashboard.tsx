@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabase';
 import { supabaseEphemeral } from '../lib/supabaseEphemeral';
 import type { Item, AuditLog, Category } from '../lib/db';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ShieldCheck, Trash2, Lock, Activity, Key, Plus, Users, CheckCircle2, AlertTriangle, Tag, Package, ToggleLeft, ToggleRight, Eye, EyeOff } from 'lucide-react';
+import { ShieldCheck, Trash2, Lock, Activity, Key, Plus, Users, AlertTriangle, Tag, Package, ToggleLeft, ToggleRight, Eye, EyeOff } from 'lucide-react';
 
 type TabKey = 'logs' | 'workers' | 'categories' | 'items' | 'security';
 
@@ -33,9 +33,6 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [newAdminUser, setNewAdminUser] = useState('');
   const [newAdminPass, setNewAdminPass] = useState('');
-  const [adminChanged, setAdminChanged] = useState(() => {
-    return localStorage.getItem('admin_changed_v2') === 'true';
-  });
   const [isSavingSecurity, setIsSavingSecurity] = useState(false);
   const [newCatName, setNewCatName] = useState('');
   const [newCatColor, setNewCatColor] = useState('#E63946');
@@ -63,7 +60,6 @@ export default function AdminDashboard() {
         setLogs(l); setItems(i); setCategories(c); setPendingWorkers(pw);
         if (mergedWorkers.length > 0) setWorkers(mergedWorkers);
 
-        setAdminChanged(localStorage.getItem('admin_changed_v2') === 'true' || profile?.name !== 'admin');
       } catch(e) { console.error(e); }
       finally { setLoading(false); }
     })();
@@ -273,14 +269,6 @@ export default function AdminDashboard() {
         await db.addAuditLog('Changed Admin Password', profile.email || profile.name);
       }
 
-      const finalUsername = u || profile.name;
-      if (finalUsername === 'admin') {
-        localStorage.removeItem('admin_changed_v2');
-        setAdminChanged(false);
-      } else {
-        localStorage.setItem('admin_changed_v2', 'true');
-        setAdminChanged(true);
-      }
       showToast('Credentials updated! Re-login required... 🔑');
       setNewAdminUser('');
       setNewAdminPass('');

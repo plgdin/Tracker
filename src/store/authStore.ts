@@ -25,8 +25,8 @@ interface AuthState {
 }
 
 const ensureProfile = async (user: User, set: (s: Partial<AuthState>) => void) => {
-  const withTimeout = <T,>(p: Promise<T>, ms: number): Promise<T> =>
-    Promise.race([p, new Promise<T>((_, rej) => setTimeout(() => rej(new Error('Timeout')), ms))]);
+  const withTimeout = <T,>(p: PromiseLike<T>, ms: number): Promise<T> =>
+    Promise.race([Promise.resolve(p), new Promise<T>((_, rej) => setTimeout(() => rej(new Error('Timeout')), ms))]);
 
   try {
     const { data: profile, error } = await withTimeout(
