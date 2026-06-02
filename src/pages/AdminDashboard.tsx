@@ -330,7 +330,7 @@ export default function AdminDashboard() {
   const colors = ['#E63946','#E07A5F','#F2CC8F','#81B29A','#3D5A80','#98C1D9','#EE6C4D','#6366F1'];
 
   return (
-    <div className="container" style={{ paddingBottom: '5rem' }}>
+    <div style={{ paddingBottom: '5rem', width: '100%', minWidth: 0 }}>
       <header style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'center' }}>
         <div style={{ backgroundColor: 'var(--color-primary)', color: 'white', padding: '0.5rem', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(230,57,70,0.2)' }}>
           <ShieldCheck size={26} />
