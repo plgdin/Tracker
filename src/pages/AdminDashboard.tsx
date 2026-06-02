@@ -273,8 +273,14 @@ export default function AdminDashboard() {
         await db.addAuditLog('Changed Admin Password', profile.email || profile.name);
       }
 
-      localStorage.setItem('admin_changed_v2', 'true');
-      setAdminChanged(true);
+      const finalUsername = u || profile.name;
+      if (finalUsername === 'admin') {
+        localStorage.removeItem('admin_changed_v2');
+        setAdminChanged(false);
+      } else {
+        localStorage.setItem('admin_changed_v2', 'true');
+        setAdminChanged(true);
+      }
       showToast('Credentials updated! Re-login required... 🔑');
       setNewAdminUser('');
       setNewAdminPass('');
@@ -561,34 +567,34 @@ export default function AdminDashboard() {
             <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Key size={18} color="var(--color-primary)" /> Admin Credentials
             </h2>
-            {adminChanged ? (
-              <div style={{ padding: '1.5rem', borderRadius: '16px', backgroundColor: 'rgba(46,204,113,0.08)', border: '1.5px solid rgb(46,204,113)', textAlign: 'center' }}>
+            {adminChanged && (
+              <div style={{ padding: '1.5rem', borderRadius: '16px', backgroundColor: 'rgba(46,204,113,0.08)', border: '1.5px solid rgb(46,204,113)', textAlign: 'center', marginBottom: '1.25rem' }}>
                 <CheckCircle2 size={32} color="rgb(46,204,113)" style={{ marginBottom: '0.5rem' }} />
                 <strong style={{ display: 'block' }}>Credentials customized! 🔒</strong>
                 <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', margin: '0.25rem 0 0' }}>Default "admin/admin" is permanently blocked.</p>
               </div>
-            ) : (
-              <form onSubmit={handleCustomizeAdmin} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <div style={{ padding: '0.75rem', backgroundColor: 'rgba(230,57,70,0.05)', border: '1px solid var(--color-primary)', borderRadius: '12px', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                  <AlertTriangle size={20} color="var(--color-primary)" style={{ flexShrink: 0 }} />
-                  <p style={{ margin: 0, fontSize: '0.7rem', fontWeight: 600 }}>One-time only! Save your new credentials safely.</p>
-                </div>
-                <div className="input-group"><label className="input-label">New Username</label>
-                  <input type="text" className="input-field" placeholder="e.g., superadmin" value={newAdminUser} onChange={e => setNewAdminUser(e.target.value)} required />
-                </div>
-                <div className="input-group"><label className="input-label">New Password</label>
-                  <div style={{ position: 'relative' }}>
-                    <input type={showAdminPassword ? "text" : "password"} className="input-field" placeholder="e.g., myPass123" value={newAdminPass} onChange={e => setNewAdminPass(e.target.value)} required style={{ paddingRight: '2.5rem' }} />
-                    <button type="button" onClick={() => setShowAdminPassword(!showAdminPassword)} style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', padding: 0 }}>
-                      {showAdminPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
-                </div>
-                <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={isSavingSecurity}>
-                  <Lock size={16} /> {isSavingSecurity ? 'Saving...' : 'Save (ONCE)'}
-                </button>
-              </form>
             )}
+            
+            <form onSubmit={handleCustomizeAdmin} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div style={{ padding: '0.75rem', backgroundColor: 'rgba(230,57,70,0.05)', border: '1px solid var(--color-primary)', borderRadius: '12px', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <AlertTriangle size={20} color="var(--color-primary)" style={{ flexShrink: 0 }} />
+                <p style={{ margin: 0, fontSize: '0.7rem', fontWeight: 600 }}>Save your new credentials safely in the database.</p>
+              </div>
+              <div className="input-group"><label className="input-label">New Username</label>
+                <input type="text" className="input-field" placeholder="e.g., superadmin" value={newAdminUser} onChange={e => setNewAdminUser(e.target.value)} />
+              </div>
+              <div className="input-group"><label className="input-label">New Password</label>
+                <div style={{ position: 'relative' }}>
+                  <input type={showAdminPassword ? "text" : "password"} className="input-field" placeholder="e.g., myPass123" value={newAdminPass} onChange={e => setNewAdminPass(e.target.value)} style={{ paddingRight: '2.5rem' }} />
+                  <button type="button" onClick={() => setShowAdminPassword(!showAdminPassword)} style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', padding: 0 }}>
+                    {showAdminPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+              <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={isSavingSecurity || (!newAdminUser.trim() && !newAdminPass.trim())}>
+                <Lock size={16} /> {isSavingSecurity ? 'Saving...' : 'Update Credentials'}
+              </button>
+            </form>
           </div>
         )}
 
