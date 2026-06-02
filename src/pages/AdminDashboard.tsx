@@ -58,7 +58,8 @@ export default function AdminDashboard() {
         });
 
         setLogs(l); setItems(i); setCategories(c); setPendingWorkers(pw);
-        if (mergedWorkers.length > 0) setWorkers(mergedWorkers);
+        setWorkers(mergedWorkers);
+        localStorage.setItem('worker_accounts', JSON.stringify(mergedWorkers));
 
       } catch(e) { console.error(e); }
       finally { setLoading(false); }
