@@ -160,7 +160,7 @@ export default function Settings() {
             <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>
               Logged in as: <strong style={{ color: 'var(--color-text-primary)' }}>{profile.name}</strong> ({profile.role})
             </p>
-            {profile.role !== 'admin' && (
+            {profile && (
               <form onSubmit={handleUpdateAccount} style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                 <h4 style={{ fontSize: '0.9rem', marginBottom: '1rem' }}>Update Account Details</h4>
                 

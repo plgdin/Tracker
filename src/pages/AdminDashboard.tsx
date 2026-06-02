@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useToastStore } from '../store/toastStore';
 import { db } from '../lib/db';
+import { supabase } from '../lib/supabase';
 import { supabaseEphemeral } from '../lib/supabaseEphemeral';
 import type { Item, AuditLog, Category } from '../lib/db';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -32,7 +33,10 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [newAdminUser, setNewAdminUser] = useState('');
   const [newAdminPass, setNewAdminPass] = useState('');
-  const [adminChanged, setAdminChanged] = useState(false);
+  const [adminChanged, setAdminChanged] = useState(() => {
+    return localStorage.getItem('admin_changed_v2') === 'true';
+  });
+  const [isSavingSecurity, setIsSavingSecurity] = useState(false);
   const [newCatName, setNewCatName] = useState('');
   const [newCatColor, setNewCatColor] = useState('#E63946');
   const [workers, setWorkers] = useState<WorkerData[]>(() => {
@@ -59,7 +63,7 @@ export default function AdminDashboard() {
         setLogs(l); setItems(i); setCategories(c); setPendingWorkers(pw);
         if (mergedWorkers.length > 0) setWorkers(mergedWorkers);
 
-        setAdminChanged(localStorage.getItem('admin_changed') === 'true');
+        setAdminChanged(localStorage.getItem('admin_changed_v2') === 'true' || profile?.name !== 'admin');
       } catch(e) { console.error(e); }
       finally { setLoading(false); }
     })();
@@ -214,18 +218,74 @@ export default function AdminDashboard() {
   };
 
   // Security
-  const handleCustomizeAdmin = (e: React.FormEvent) => {
+  const handleCustomizeAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const u = newAdminUser.trim(), p = newAdminPass.trim();
-    if (u.length < 3 || p.length < 4) { alert('Username ≥3 chars, password ≥4 chars!'); return; }
-    if (!confirm('You can only change admin credentials ONCE. Proceed?')) return;
-    localStorage.setItem('admin_username', u);
-    localStorage.setItem('admin_password', p);
-    localStorage.setItem('admin_changed', 'true');
-    setAdminChanged(true);
-    db.addAuditLog('Changed Admin Credentials', u);
-    showToast('Credentials changed! Re-login required... 🔑');
-    setTimeout(() => signOut(), 1500);
+    if (!profile) return;
+    
+    const u = newAdminUser.trim();
+    const p = newAdminPass.trim();
+    
+    if (!u && !p) return;
+    
+    if (u && u.length < 3) { alert('Username must be at least 3 characters!'); return; }
+    if (p && p.length < 6) { alert('Password must be at least 6 characters!'); return; }
+    
+    if (!confirm('You are about to change the admin credentials in the database. Proceed?')) return;
+    
+    setIsSavingSecurity(true);
+    
+    const withTimeout = <T,>(p: PromiseLike<T>, ms: number, msg: string): Promise<T> =>
+      Promise.race([Promise.resolve(p), new Promise<T>((_, rej) => setTimeout(() => rej(new Error(msg)), ms))]);
+
+    try {
+      if (u) {
+        // Check uniqueness
+        const { data: existing } = await withTimeout(
+          supabase.from('profiles').select('id').eq('name', u).maybeSingle(),
+          8000, 'Username check timed out. Please try again.'
+        );
+        if (existing && existing.id !== profile.id) {
+          showToast('⚠️ Username already taken! Choose a different one.');
+          setIsSavingSecurity(false);
+          return;
+        }
+        const { error: usernameErr } = await withTimeout(
+          supabase.from('profiles').update({ name: u }).eq('id', profile.id),
+          8000, 'Username update timed out. Please try again.'
+        );
+        if (usernameErr) throw usernameErr;
+        useAuthStore.getState().setProfile({ ...profile, name: u });
+        await db.addAuditLog('Changed Admin Username', u, { previous_username: profile.name });
+      }
+
+      if (p) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          showToast('❌ Your session has expired. Please log in again.');
+          setIsSavingSecurity(false);
+          return;
+        }
+        const { error: passErr } = await withTimeout(
+          supabase.auth.updateUser({ password: p }),
+          12000, 'Password update timed out. Check your connection and try again.'
+        );
+        if (passErr) throw passErr;
+        await db.addAuditLog('Changed Admin Password', profile.email || profile.name);
+      }
+
+      localStorage.setItem('admin_changed_v2', 'true');
+      setAdminChanged(true);
+      showToast('Credentials updated! Re-login required... 🔑');
+      setNewAdminUser('');
+      setNewAdminPass('');
+      setTimeout(() => signOut(), 1500);
+    } catch (err: unknown) {
+      const msg = (err as Error).message || 'Something went wrong. Please try again.';
+      console.error('Admin update failed:', err);
+      showToast(`❌ ${msg}`);
+    } finally {
+      setIsSavingSecurity(false);
+    }
   };
 
 
@@ -524,7 +584,9 @@ export default function AdminDashboard() {
                     </button>
                   </div>
                 </div>
-                <button type="submit" className="btn btn-primary" style={{ width: '100%' }}><Lock size={16} /> Save (ONCE)</button>
+                <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={isSavingSecurity}>
+                  <Lock size={16} /> {isSavingSecurity ? 'Saving...' : 'Save (ONCE)'}
+                </button>
               </form>
             )}
           </div>
