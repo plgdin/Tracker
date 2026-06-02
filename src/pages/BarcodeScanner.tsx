@@ -285,7 +285,7 @@ export default function BarcodeScanner() {
                 ...(foundItem.price !== undefined && foundItem.price !== null ? [{
                   icon: <DollarSign size={16} />,
                   label: 'Price',
-                  value: `$${foundItem.price.toFixed(2)}`
+                  value: `₹${foundItem.price.toFixed(2)}`
                 }] : []),
                 ...(foundItem.notes ? [{
                   icon: <FileText size={16} />,

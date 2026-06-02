@@ -266,7 +266,7 @@ export default function Inventory() {
                       marginTop: '0.15rem',
                       display: 'inline-block'
                     }}>
-                      ${item.price.toFixed(2)}
+                      ₹{item.price.toFixed(2)}
                     </span>
                   )}
                 </div>

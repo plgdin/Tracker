@@ -433,7 +433,7 @@ export default function AdminDashboard() {
                   <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', border: '1px solid rgba(230,57,70,0.05)' }}>
                     <div style={{ flex: 1 }}>
                       <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>📦 {item.name}</span>
-                      <span style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', display: 'block' }}>{item.category} · Qty: {item.quantity} {item.price !== undefined && `· $${item.price.toFixed(2)}`}</span>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', display: 'block' }}>{item.category} · Qty: {item.quantity} {item.price !== undefined && `· ₹${item.price.toFixed(2)}`}</span>
                     </div>
                     <button onClick={() => handleDeleteItem(item.id, item.name)} style={{ border: 'none', background: 'rgba(230,57,70,0.08)', color: 'var(--color-primary)', cursor: 'pointer', padding: '0.4rem 0.75rem', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.75rem', fontWeight: 600 }}>
                       <Trash2 size={14} /> Delete
@@ -501,7 +501,7 @@ export default function AdminDashboard() {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                       <div style={{ position: 'relative', width: '85px' }}>
-                        <span style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', fontWeight: 'bold', fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>$</span>
+                        <span style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', fontWeight: 'bold', fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>₹</span>
                         <input type="number" step="0.01" placeholder="0.00" className="input-field" style={{ paddingLeft: '1.2rem', height: '34px', fontSize: '0.8rem' }} value={priceEdits[item.id] || ''} onChange={e => setPriceEdits({ ...priceEdits, [item.id]: e.target.value })} />
                       </div>
                       <button onClick={() => handleUpdatePrice(item.id, item.name)} className="btn btn-primary" style={{ padding: '0 0.6rem', height: '34px', fontSize: '0.75rem', borderRadius: '10px' }}>Save</button>
@@ -533,7 +533,7 @@ export default function AdminDashboard() {
                       ) : (
                         <>
                           {log.details?.item_name && ` — 📦 ${log.details.item_name}`}
-                          {log.details?.previous_price !== undefined && ` ($${log.details.previous_price} → $${log.details.new_price})`}
+                          {log.details?.previous_price !== undefined && ` (₹${log.details.previous_price} → ₹${log.details.new_price})`}
                         </>
                       )}
                     </div>
