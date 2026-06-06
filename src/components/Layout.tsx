@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from 'react-router-dom';
-import { Home, List, Settings, Shield, LogOut } from 'lucide-react';
+import { Home, List, Settings, Shield, LogOut, BookOpen } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 
 export default function Layout() {
@@ -92,6 +92,15 @@ export default function Layout() {
           >
             <Shield size={24} />
             <span>Admin</span>
+          </NavLink>
+        )}
+        {profile?.role === 'admin' && (
+          <NavLink 
+            to="/ledger" 
+            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+          >
+            <BookOpen size={24} />
+            <span>Ledger</span>
           </NavLink>
         )}
       </nav>

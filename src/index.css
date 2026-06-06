@@ -868,3 +868,260 @@ p {
     transition-duration: 0.001ms !important;
   }
 }
+
+/* ================================================================
+   LEDGER MANAGEMENT SYSTEM — CSS
+   ================================================================ */
+
+/* Stats grid */
+.ledger-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
+}
+
+.ledger-stat-card {
+  background: linear-gradient(145deg, #ffffff, #fffafa);
+  border-radius: var(--border-radius-medium);
+  padding: 1rem;
+  box-shadow: var(--soft-shadow);
+  border: 1px solid rgba(230,57,70,0.06);
+}
+
+.ledger-stat-label {
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  margin: 0 0 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.ledger-stat-value {
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin: 0 0 0.15rem;
+  letter-spacing: -0.5px;
+}
+
+.ledger-stat-sub {
+  font-size: 0.68rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* Row buttons (list items) */
+.ledger-row-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 0.75rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(230,57,70,0.05);
+  text-align: left;
+  transition: background var(--transition-fast);
+  border-radius: 10px;
+  gap: 0.5rem;
+}
+
+.ledger-row-btn:last-child {
+  border-bottom: none;
+}
+
+.ledger-row-btn:hover {
+  background: var(--color-bg-light);
+}
+
+.ledger-row-btn:active {
+  background: rgba(230,57,70,0.04);
+}
+
+/* Back button */
+.ledger-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0.35rem 0;
+  margin-bottom: 0.75rem;
+  transition: color var(--transition-fast);
+}
+
+.ledger-back-btn:hover {
+  color: var(--color-primary);
+}
+
+/* Section title */
+.ledger-section-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin: 0 0 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Nav button (Browse by Brand, etc.) */
+.ledger-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1.1rem;
+  border-radius: var(--border-radius-small);
+  border: 1.5px solid rgba(230,57,70,0.15);
+  background: rgba(255,255,255,0.9);
+  color: var(--color-text-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.ledger-nav-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: rgba(42,157,143,0.06);
+}
+
+/* Muted text */
+.ledger-muted {
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+}
+
+/* Form grid — 2 cols on desktop, 1 on mobile */
+.ledger-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+@media (max-width: 480px) {
+  .ledger-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Table */
+.ledger-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.ledger-table th {
+  background: var(--color-bg-light);
+  color: var(--color-text-secondary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.ledger-table td {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid rgba(230,57,70,0.05);
+  vertical-align: middle;
+}
+
+.ledger-table tfoot td {
+  border-top: 2px solid rgba(230,57,70,0.1);
+  border-bottom: none;
+  font-weight: 600;
+  background: rgba(252,246,246,0.5);
+}
+
+.ledger-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Info grid for invoice detail */
+.ledger-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem 1rem;
+}
+
+@media (max-width: 480px) {
+  .ledger-info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ledger-info-label {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 0.1rem;
+}
+
+.ledger-info-val {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+/* Action row */
+.ledger-action-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Modal slide-up animation */
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Ledger stats grid responsive */
+@media (max-width: 360px) {
+  .ledger-stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ── Print Styles ── */
+@media print {
+  body > * { display: none !important; }
+  .ledger-print-area { display: block !important; }
+  .no-print { display: none !important; }
+  .bottom-nav { display: none !important; }
+  .app-layout > div:first-child { display: none !important; }
+
+  .ledger-print-area {
+    position: fixed;
+    inset: 0;
+    padding: 1.5rem;
+    background: white;
+    z-index: 9999;
+    box-shadow: none;
+    border: none;
+    border-radius: 0;
+  }
+
+  .ledger-table th {
+    background: #f0f0f0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

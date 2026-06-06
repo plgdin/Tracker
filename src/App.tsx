@@ -7,6 +7,7 @@ import Settings from './pages/Settings';
 import AddItem from './pages/AddItem';
 import AdminDashboard from './pages/AdminDashboard';
 import ResetPassword from './pages/ResetPassword';
+import Ledger from './pages/Ledger';
 import Toast from './components/Toast';
 import './index.css';
 
@@ -28,6 +29,7 @@ function App() {
                 <Route path="settings" element={<Settings />} />
                 <Route path="add-item" element={<AddItem />} />
                 <Route path="admin" element={<AdminDashboard />} />
+                <Route path="ledger" element={<Ledger />} />
               </Route>
             </Routes>
           </AuthWrapper>
