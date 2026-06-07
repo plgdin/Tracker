@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Printer, Download, Eye, X } from 'lucide-react';
 import { ledgerDb, r2, type PurchaseInvoice, type SalesInvoice } from '../../lib/ledgerDb';
 import { printPurchaseInvoice, printSaleInvoice, printReport } from '../../lib/ledgerPrint';
@@ -18,8 +18,8 @@ const getPeriodDates = (period: Period, cf: string, ct: string): [string, string
 };
 
 // Fix #5: Invoice detail modal
-function InvoiceModal({ purchaseId, saleId, onClose }: { purchaseId?: string; saleId?: string; onClose: () => void }) {
-  const inv = purchaseId ? ledgerDb.getPurchaseById(purchaseId) : saleId ? ledgerDb.getSaleById(saleId) : undefined;
+function InvoiceModal({ purchaseId, saleId, onClose, purchases, sales }: { purchaseId?: string; saleId?: string; onClose: () => void, purchases: PurchaseInvoice[], sales: SalesInvoice[] }) {
+  const inv = purchaseId ? purchases.find(p => p.id === purchaseId) : saleId ? sales.find(s => s.id === saleId) : undefined;
   if (!inv) return null;
   const isPurchase = !!purchaseId;
   const p = inv as PurchaseInvoice; const s = inv as SalesInvoice;
@@ -94,23 +94,34 @@ export default function ReportsPage() {
   const [modalPurchaseId, setModalPurchaseId] = useState<string|undefined>();
   const [modalSaleId, setModalSaleId] = useState<string|undefined>();
 
+  const [purchaseData, setPurchaseData] = useState<PurchaseInvoice[]>([]);
+  const [salesData, setSalesData] = useState<SalesInvoice[]>([]);
+  const [customers, setCustomers] = useState<import('../../lib/ledgerDb').Customer[]>([]);
+
   const [from, to] = getPeriodDates(period, customFrom, customTo);
-  let purchaseData: PurchaseInvoice[] = [];
-  let salesData: SalesInvoice[] = [];
-  if (type === 'purchase') {
-    purchaseData = from && to ? ledgerDb.getFilteredPurchases(from, to) : ledgerDb.getPurchases();
-    if (brandFilter) purchaseData = purchaseData.filter(p => p.brand_name.toLowerCase().includes(brandFilter.toLowerCase()));
-  }
-  if (type === 'sales') {
-    salesData = from && to ? ledgerDb.getFilteredSales(from, to) : ledgerDb.getSales();
-    if (customerFilter) salesData = salesData.filter(s => s.customer_name.toLowerCase().includes(customerFilter.toLowerCase()));
-  }
+
+  useEffect(() => {
+    const load = async () => {
+      if (type === 'purchase') {
+        let data = from && to ? await ledgerDb.getFilteredPurchases(from, to) : await ledgerDb.getPurchases();
+        if (brandFilter) data = data.filter(p => p.brand_name.toLowerCase().includes(brandFilter.toLowerCase()));
+        setPurchaseData(data);
+      } else if (type === 'sales') {
+        let data = from && to ? await ledgerDb.getFilteredSales(from, to) : await ledgerDb.getSales();
+        if (customerFilter) data = data.filter(s => s.customer_name.toLowerCase().includes(customerFilter.toLowerCase()));
+        setSalesData(data);
+      } else if (type === 'outstanding') {
+        const all = await ledgerDb.getCustomers();
+        setCustomers(all.filter(c => c.outstanding_balance > 0));
+      }
+    };
+    load();
+  }, [type, from, to, brandFilter, customerFilter]);
 
   const purchaseTotal = r2(purchaseData.reduce((s,p) => s+p.total_amount, 0));
   const salesTotal = r2(salesData.reduce((s,i) => s+i.total_amount, 0));
   const collectedTotal = r2(salesData.reduce((s,i) => s+i.amount_paid, 0));
   const outstandingTotal = r2(salesData.reduce((s,i) => s+i.balance_due, 0));
-  const customers = ledgerDb.getCustomers().filter(c => c.outstanding_balance > 0);
 
   // Fix #4: Proper report print using new window
   const handlePrint = () => {
@@ -170,7 +181,7 @@ export default function ReportsPage() {
   return (
     <div>
       {(modalPurchaseId || modalSaleId) && (
-        <InvoiceModal purchaseId={modalPurchaseId} saleId={modalSaleId} onClose={() => { setModalPurchaseId(undefined); setModalSaleId(undefined); }}/>
+        <InvoiceModal purchaseId={modalPurchaseId} saleId={modalSaleId} onClose={() => { setModalPurchaseId(undefined); setModalSaleId(undefined); }} purchases={purchaseData} sales={salesData} />
       )}
 
       <div style={{ marginBottom:'1rem' }}>

@@ -57,7 +57,7 @@ export const dbSupabase = isSupabaseConfigured ? supabaseClient : null;
 export const supabase = dbSupabase;
 
 // Synchronously/asynchronously verify if we have a valid authenticated user session with Supabase
-const getUseSupabase = async (): Promise<boolean> => {
+export const getUseSupabase = async (): Promise<boolean> => {
   if (!dbSupabase) return false;
   // 1. Instantly check memory state first for peak performance
   if (useAuthStore.getState().user) return true;
@@ -74,7 +74,7 @@ const getUseSupabase = async (): Promise<boolean> => {
 };
 
 // Race promise helper to prevent infinite loading screens on database hang/timeout
-const withTimeout = <T>(promiseLike: PromiseLike<T>, timeoutMs = 8000): Promise<T> => {
+export const withTimeout = <T>(promiseLike: PromiseLike<T>, timeoutMs = 8000): Promise<T> => {
   return Promise.race([
     Promise.resolve(promiseLike),
     new Promise<never>((_, reject) => 

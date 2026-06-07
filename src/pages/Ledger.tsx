@@ -21,7 +21,9 @@ export default function Ledger() {
   }, [profile, navigate]);
 
   useEffect(() => {
-    setOutstandingCount(ledgerDb.getCustomers().filter(c => c.outstanding_balance > 0).length);
+    ledgerDb.getCustomers().then(c => {
+      setOutstandingCount(c.filter(cust => cust.outstanding_balance > 0).length);
+    });
   }, [tab]);
 
   if (!profile || profile.role !== 'admin') return null;

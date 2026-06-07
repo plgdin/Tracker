@@ -1,12 +1,11 @@
 // ============================================================
-// Ledger Management System — Data Layer (localStorage-first)
+// Ledger Management System — Data Layer (Supabase + localStorage)
 // ============================================================
+import { dbSupabase, getUseSupabase, withTimeout } from './db';
 
-// Fix #1 & #2: Corrected payment method types
 export type PurchasePaymentMethod = 'cash' | 'cheque';
 export type SalePaymentMethod = 'cash' | 'upi';
 
-// Fix #3: Decimal precision helper — use everywhere amounts are computed
 export const r2 = (n: number): number => Math.round((n + Number.EPSILON) * 100) / 100;
 export const parseAmt = (v: string | number): number => {
   const n = parseFloat(String(v).replace(/[^0-9.]/g, ''));
@@ -22,7 +21,6 @@ export interface PurchaseItem {
   total: number;
 }
 
-// Fix #6: Removed supplier_name — only brand_name remains
 export interface PurchaseInvoice {
   id: string;
   invoice_number: string;
@@ -107,22 +105,28 @@ const KEYS = {
   customers: 'ledger_customers',
   payments: 'ledger_payments',
   inventory: 'ledger_inventory',
-  brands: 'ledger_brand_names',  // Fix #7: persistent brand list
+  brands: 'ledger_brand_names',
 };
 
 // ── Derived helpers ───────────────────────────────────────────
-// Fix #7: Brand autocomplete — merge stored list + purchase history, case-dedup
-export const getLedgerBrands = (): string[] => {
+export const getLedgerBrands = async (): Promise<string[]> => {
+  const useSupabase = await getUseSupabase();
+  let fromDb: string[] = [];
+  if (useSupabase && dbSupabase) {
+    try {
+      const { data } = await withTimeout(dbSupabase.from('ledger_brands').select('name'));
+      if (data) fromDb = data.map(d => d.name);
+    } catch (e) { console.warn('Supabase brands error', e); }
+  }
+  
   const stored = getLocal<string[]>(KEYS.brands, []);
-  const fromPurchases = getLocal<PurchaseInvoice[]>(KEYS.purchases, []).map(p => p.brand_name);
-  const all = [...stored, ...fromPurchases];
-  // Deduplicate case-insensitively, keep first casing encountered
+  const all = [...stored, ...fromDb];
   const seen = new Map<string, string>();
   all.forEach(b => { const k = b.toLowerCase(); if (!seen.has(k)) seen.set(k, b); });
   return Array.from(seen.values()).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 };
 
-export const saveLedgerBrand = (name: string): void => {
+export const saveLedgerBrand = async (name: string): Promise<void> => {
   const trimmed = name.trim();
   if (!trimmed) return;
   const list = getLocal<string[]>(KEYS.brands, []);
@@ -130,10 +134,16 @@ export const saveLedgerBrand = (name: string): void => {
     list.push(trimmed);
     setLocal(KEYS.brands, list);
   }
+  const useSupabase = await getUseSupabase();
+  if (useSupabase && dbSupabase) {
+    try {
+      await withTimeout(dbSupabase.from('ledger_brands').insert([{ name: trimmed }]).select());
+    } catch { /* ignore dups */ }
+  }
 };
 
-export const getLedgerCustomerNames = (): string[] => {
-  const s = getLocal<SalesInvoice[]>(KEYS.sales, []);
+export const getLedgerCustomerNames = async (): Promise<string[]> => {
+  const s = await ledgerDb.getSales();
   return [...new Set(s.map(x => x.customer_name))].sort();
 };
 
@@ -141,48 +151,113 @@ export const getLedgerCustomerNames = (): string[] => {
 export const ledgerDb = {
 
   // PURCHASES ------------------------------------------------
-  getPurchases(): PurchaseInvoice[] {
+  async getPurchases(): Promise<PurchaseInvoice[]> {
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
+      try {
+        const { data, error } = await withTimeout(
+          dbSupabase.from('ledger_purchase_invoices').select('*, ledger_purchase_items(*)')
+        );
+        if (error) throw error;
+        if (data) {
+          const res = data.map(d => ({ ...d, items: d.ledger_purchase_items })) as PurchaseInvoice[];
+          const sorted = res.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+          setLocal(KEYS.purchases, sorted);
+          return sorted;
+        }
+      } catch (e) { console.warn('Supabase getPurchases error', e); }
+    }
     return getLocal<PurchaseInvoice[]>(KEYS.purchases, [])
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   },
 
-  getPurchaseById(id: string): PurchaseInvoice | undefined {
-    return getLocal<PurchaseInvoice[]>(KEYS.purchases, []).find(p => p.id === id);
+  async getPurchaseById(id: string): Promise<PurchaseInvoice | undefined> {
+    const list = await this.getPurchases();
+    return list.find(p => p.id === id);
   },
 
-  getPurchasesByBrand(brand: string): PurchaseInvoice[] {
-    return this.getPurchases().filter(p => p.brand_name.toLowerCase() === brand.toLowerCase());
-  },
-
-  addPurchase(data: Omit<PurchaseInvoice, 'id' | 'created_at'>): PurchaseInvoice {
-    const list = getLocal<PurchaseInvoice[]>(KEYS.purchases, []);
-    if (list.some(p => p.invoice_number === data.invoice_number)) {
-      throw new Error(`Invoice "${data.invoice_number}" already exists.`);
+  async addPurchase(data: Omit<PurchaseInvoice, 'id' | 'created_at'>): Promise<PurchaseInvoice> {
+    const useSupabase = await getUseSupabase();
+    const id = genId();
+    const created_at = new Date().toISOString();
+    
+    if (useSupabase && dbSupabase) {
+      try {
+        const { items, ...invoiceData } = data;
+        const { data: invData, error: invError } = await withTimeout(
+          dbSupabase.from('ledger_purchase_invoices').insert([invoiceData]).select().single()
+        );
+        if (invError) throw invError;
+        if (invData) {
+          const dbItems = items.map(i => {
+            const { total, id, ...rest } = i;
+            return { ...rest, invoice_id: invData.id };
+          });
+          const { error: itemsError } = await withTimeout(dbSupabase.from('ledger_purchase_items').insert(dbItems));
+          if (itemsError) throw itemsError;
+        }
+      } catch (e: any) {
+        console.warn('Supabase addPurchase error:', e?.message || e);
+        if (e?.code === '23505' || e?.message?.includes('duplicate key') || e?.message?.includes('already exists')) {
+          throw new Error(`Invoice "${data.invoice_number}" already exists.`);
+        }
+        // Fall through to localStorage on all other errors (e.g. table missing)
+      }
     }
-    const record: PurchaseInvoice = { ...data, id: genId(), created_at: new Date().toISOString() };
+
+    const list = getLocal<PurchaseInvoice[]>(KEYS.purchases, []);
+    const record: PurchaseInvoice = { ...data, id, created_at };
     list.unshift(record);
     setLocal(KEYS.purchases, list);
-    saveLedgerBrand(data.brand_name);  // Fix #7: auto-save brand
+    await saveLedgerBrand(data.brand_name);
     data.items.forEach(i => this._adjustStock(i.item_name, i.quantity));
     return record;
   },
 
-  updatePurchase(id: string, data: Partial<Omit<PurchaseInvoice, 'id' | 'created_at'>>): PurchaseInvoice {
-    const list = getLocal<PurchaseInvoice[]>(KEYS.purchases, []);
+  async updatePurchase(id: string, data: Partial<Omit<PurchaseInvoice, 'id' | 'created_at'>>): Promise<PurchaseInvoice> {
+    const list = await this.getPurchases();
     const idx = list.findIndex(p => p.id === id);
     if (idx === -1) throw new Error('Purchase not found');
-    if (data.invoice_number && list.some(p => p.invoice_number === data.invoice_number && p.id !== id)) {
-      throw new Error(`Invoice "${data.invoice_number}" already exists.`);
+    const old = list[idx];
+
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
+      try {
+        const { items, ...invoiceData } = data;
+        if (Object.keys(invoiceData).length > 0) {
+          await withTimeout(dbSupabase.from('ledger_purchase_invoices').update(invoiceData).eq('id', id));
+        }
+        if (items) {
+          await withTimeout(dbSupabase.from('ledger_purchase_items').delete().eq('invoice_id', id));
+          const dbItems = items.map(i => {
+            const { total, id: itemId, ...rest } = i;
+            return { ...rest, invoice_id: id };
+          });
+          const { error: itemsError } = await withTimeout(dbSupabase.from('ledger_purchase_items').insert(dbItems));
+          if (itemsError) throw itemsError;
+        }
+      } catch (e: any) {
+        console.warn('Supabase updatePurchase error', e?.message || e);
+        // Fall through to localStorage on Supabase errors
+      }
     }
-    list[idx].items.forEach(i => this._adjustStock(i.item_name, -i.quantity));
-    list[idx] = { ...list[idx], ...data };
+
+    old.items.forEach(i => this._adjustStock(i.item_name, -i.quantity));
+    const updated = { ...old, ...data };
+    list[idx] = updated as PurchaseInvoice;
     setLocal(KEYS.purchases, list);
     list[idx].items.forEach(i => this._adjustStock(i.item_name, i.quantity));
-    if (data.brand_name) saveLedgerBrand(data.brand_name);
+    if (data.brand_name) await saveLedgerBrand(data.brand_name);
     return list[idx];
   },
 
-  deletePurchase(id: string): void {
+  async deletePurchase(id: string): Promise<void> {
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
+      try {
+        await withTimeout(dbSupabase.from('ledger_purchase_invoices').delete().eq('id', id));
+      } catch (e) { console.warn('Supabase deletePurchase error', e); }
+    }
     const list = getLocal<PurchaseInvoice[]>(KEYS.purchases, []);
     const p = list.find(x => x.id === id);
     if (p) p.items.forEach(i => this._adjustStock(i.item_name, -i.quantity));
@@ -190,136 +265,274 @@ export const ledgerDb = {
   },
 
   // SALES ----------------------------------------------------
-  getSales(): SalesInvoice[] {
+  async getSales(): Promise<SalesInvoice[]> {
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
+      try {
+        const { data, error } = await withTimeout(
+          dbSupabase.from('ledger_sales_invoices').select('*, ledger_sales_items(*)')
+        );
+        if (error) throw error;
+        if (data) {
+          const res = data.map(d => ({ ...d, items: d.ledger_sales_items })) as SalesInvoice[];
+          const sorted = res.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+          setLocal(KEYS.sales, sorted);
+          return sorted;
+        }
+      } catch (e) { console.warn('Supabase getSales error', e); }
+    }
     return getLocal<SalesInvoice[]>(KEYS.sales, [])
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   },
 
-  getSaleById(id: string): SalesInvoice | undefined {
-    return getLocal<SalesInvoice[]>(KEYS.sales, []).find(s => s.id === id);
+  async getSaleById(id: string): Promise<SalesInvoice | undefined> {
+    const list = await this.getSales();
+    return list.find(s => s.id === id);
   },
 
-  getSalesByCustomer(name: string): SalesInvoice[] {
-    return this.getSales().filter(s => s.customer_name.toLowerCase() === name.toLowerCase());
-  },
+  async addSale(data: Omit<SalesInvoice, 'id' | 'created_at'>): Promise<SalesInvoice> {
+    const useSupabase = await getUseSupabase();
+    const id = genId();
+    const created_at = new Date().toISOString();
 
-  addSale(data: Omit<SalesInvoice, 'id' | 'created_at'>): SalesInvoice {
-    const list = getLocal<SalesInvoice[]>(KEYS.sales, []);
-    if (list.some(s => s.invoice_number === data.invoice_number)) {
-      throw new Error(`Invoice "${data.invoice_number}" already exists.`);
+    if (useSupabase && dbSupabase) {
+      try {
+        const { items, balance_due, ...invoiceData } = data;
+        const { data: invData, error: invError } = await withTimeout(
+          dbSupabase.from('ledger_sales_invoices').insert([invoiceData]).select().single()
+        );
+        if (invError) throw invError;
+        if (invData) {
+          const dbItems = items.map(i => {
+            const { total, id, ...rest } = i;
+            return { ...rest, invoice_id: invData.id };
+          });
+          const { error: itemsError } = await withTimeout(dbSupabase.from('ledger_sales_items').insert(dbItems));
+          if (itemsError) throw itemsError;
+        }
+      } catch (e: any) {
+        console.warn('Supabase addSale error:', e?.message || e);
+        if (e?.code === '23505' || e?.message?.includes('duplicate key') || e?.message?.includes('already exists')) {
+          throw new Error(`Invoice "${data.invoice_number}" already exists.`);
+        }
+        // Fall through to localStorage on all other errors (e.g. table missing)
+      }
     }
-    const record: SalesInvoice = { ...data, id: genId(), created_at: new Date().toISOString() };
+
+    const list = getLocal<SalesInvoice[]>(KEYS.sales, []);
+    const record: SalesInvoice = { ...data, id, created_at };
     list.unshift(record);
     setLocal(KEYS.sales, list);
-    this._upsertCustomer(data.customer_name, data.customer_phone, data.balance_due, data.sale_date);
+    await this._upsertCustomer(data.customer_name, data.customer_phone, data.balance_due, data.sale_date);
     data.items.forEach(i => this._adjustStock(i.item_name, -i.quantity));
     return record;
   },
 
-  updateSale(id: string, data: Partial<Omit<SalesInvoice, 'id' | 'created_at'>>): SalesInvoice {
-    const list = getLocal<SalesInvoice[]>(KEYS.sales, []);
+  async updateSale(id: string, data: Partial<Omit<SalesInvoice, 'id' | 'created_at'>>): Promise<SalesInvoice> {
+    const list = await this.getSales();
     const idx = list.findIndex(s => s.id === id);
     if (idx === -1) throw new Error('Sale not found');
-    if (data.invoice_number && list.some(s => s.invoice_number === data.invoice_number && s.id !== id)) {
-      throw new Error(`Invoice "${data.invoice_number}" already exists.`);
-    }
     const old = list[idx];
+
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
+      try {
+        const { items, balance_due, ...invoiceData } = data;
+        if (Object.keys(invoiceData).length > 0) {
+          await withTimeout(dbSupabase.from('ledger_sales_invoices').update(invoiceData).eq('id', id));
+        }
+        if (items) {
+          await withTimeout(dbSupabase.from('ledger_sales_items').delete().eq('invoice_id', id));
+          const dbItems = items.map(i => {
+            const { total, id: itemId, ...rest } = i;
+            return { ...rest, invoice_id: id };
+          });
+          const { error: itemsError } = await withTimeout(dbSupabase.from('ledger_sales_items').insert(dbItems));
+          if (itemsError) throw itemsError;
+        }
+      } catch (e: any) {
+        console.warn('Supabase updateSale error', e?.message || e);
+        // Fall through to localStorage on Supabase errors
+      }
+    }
+
     old.items.forEach(i => this._adjustStock(i.item_name, i.quantity));
-    this._adjustCustomerBalance(old.customer_name, -old.balance_due);
-    list[idx] = { ...old, ...data };
+    await this._adjustCustomerBalance(old.customer_name, -old.balance_due);
+    const updated = { ...old, ...data };
+    list[idx] = updated as SalesInvoice;
     setLocal(KEYS.sales, list);
     list[idx].items.forEach(i => this._adjustStock(i.item_name, -i.quantity));
-    this._adjustCustomerBalance(list[idx].customer_name, list[idx].balance_due);
+    await this._adjustCustomerBalance(list[idx].customer_name, list[idx].balance_due);
     return list[idx];
   },
 
-  deleteSale(id: string): void {
+  async deleteSale(id: string): Promise<void> {
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
+      try {
+        await withTimeout(dbSupabase.from('ledger_sales_invoices').delete().eq('id', id));
+      } catch (e) { console.warn('Supabase deleteSale error', e); }
+    }
     const list = getLocal<SalesInvoice[]>(KEYS.sales, []);
     const s = list.find(x => x.id === id);
     if (s) {
       s.items.forEach(i => this._adjustStock(i.item_name, i.quantity));
-      this._adjustCustomerBalance(s.customer_name, -s.balance_due);
+      await this._adjustCustomerBalance(s.customer_name, -s.balance_due);
     }
     setLocal(KEYS.sales, list.filter(x => x.id !== id));
   },
 
   // CUSTOMERS ------------------------------------------------
-  getCustomers(): Customer[] {
+  async getCustomers(): Promise<Customer[]> {
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
+      try {
+        const { data, error } = await withTimeout(dbSupabase.from('ledger_customers').select('*'));
+        if (error) throw error;
+        if (data) {
+          const sorted = data.sort((a, b) => b.outstanding_balance - a.outstanding_balance);
+          setLocal(KEYS.customers, sorted);
+          return sorted as Customer[];
+        }
+      } catch (e) { console.warn('Supabase getCustomers error', e); }
+    }
     return getLocal<Customer[]>(KEYS.customers, [])
       .sort((a, b) => b.outstanding_balance - a.outstanding_balance);
   },
 
-  getCustomerByName(name: string): Customer | undefined {
-    return getLocal<Customer[]>(KEYS.customers, [])
-      .find(c => c.name.toLowerCase() === name.toLowerCase());
+  async getCustomerByName(name: string): Promise<Customer | undefined> {
+    const list = await this.getCustomers();
+    return list.find(c => c.name.toLowerCase() === name.toLowerCase());
   },
 
-  _upsertCustomer(name: string, phone: string, balanceDelta: number, purchaseDate?: string): void {
+  async _upsertCustomer(name: string, phone: string, balanceDelta: number, purchaseDate?: string): Promise<void> {
     const list = getLocal<Customer[]>(KEYS.customers, []);
     const idx = list.findIndex(c => c.name.toLowerCase() === name.toLowerCase());
-    // Fix #3: use r2() for balance precision
+    
+    let newBalance = Math.max(0, r2(balanceDelta));
     if (idx !== -1) {
-      list[idx].outstanding_balance = Math.max(0, r2(list[idx].outstanding_balance + balanceDelta));
+      newBalance = Math.max(0, r2(list[idx].outstanding_balance + balanceDelta));
+      list[idx].outstanding_balance = newBalance;
       if (phone) list[idx].phone = phone;
       if (purchaseDate) list[idx].last_purchase_date = purchaseDate;
     } else {
-      list.push({ id: genId(), name, phone, outstanding_balance: Math.max(0, r2(balanceDelta)), last_purchase_date: purchaseDate, created_at: new Date().toISOString() });
+      list.push({ id: genId(), name, phone, outstanding_balance: newBalance, last_purchase_date: purchaseDate, created_at: new Date().toISOString() });
     }
     setLocal(KEYS.customers, list);
+
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
+      try {
+        const { data: existing } = await withTimeout(dbSupabase.from('ledger_customers').select('id, outstanding_balance').ilike('name', name).maybeSingle());
+        if (existing) {
+          await withTimeout(dbSupabase.from('ledger_customers').update({ 
+            outstanding_balance: Math.max(0, r2(existing.outstanding_balance + balanceDelta)),
+            ...(phone ? { phone } : {}),
+            ...(purchaseDate ? { last_purchase_date: purchaseDate } : {})
+          }).eq('id', existing.id));
+        } else {
+          await withTimeout(dbSupabase.from('ledger_customers').insert([{ name, phone, outstanding_balance: newBalance, last_purchase_date: purchaseDate }]));
+        }
+      } catch (e) { console.warn('Supabase upsertCustomer error', e); }
+    }
   },
 
-  _adjustCustomerBalance(name: string, delta: number): void {
-    const list = getLocal<Customer[]>(KEYS.customers, []);
-    const idx = list.findIndex(c => c.name.toLowerCase() === name.toLowerCase());
-    if (idx !== -1) {
-      list[idx].outstanding_balance = Math.max(0, r2(list[idx].outstanding_balance + delta));
-      setLocal(KEYS.customers, list);
-    }
+  async _adjustCustomerBalance(name: string, delta: number): Promise<void> {
+    await this._upsertCustomer(name, '', delta);
   },
 
   // PAYMENTS -------------------------------------------------
-  getPayments(): LedgerPayment[] {
+  async getPayments(): Promise<LedgerPayment[]> {
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
+      try {
+        const { data, error } = await withTimeout(dbSupabase.from('ledger_payments').select('*'));
+        if (error) throw error;
+        if (data) {
+          const sorted = data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+          setLocal(KEYS.payments, sorted);
+          return sorted as LedgerPayment[];
+        }
+      } catch (e) { console.warn('Supabase getPayments error', e); }
+    }
     return getLocal<LedgerPayment[]>(KEYS.payments, [])
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   },
 
-  addPayment(data: Omit<LedgerPayment, 'id' | 'created_at'>): LedgerPayment {
-    const record: LedgerPayment = { ...data, id: genId(), created_at: new Date().toISOString() };
+  async addPayment(data: Omit<LedgerPayment, 'id' | 'created_at'>): Promise<LedgerPayment> {
+    const useSupabase = await getUseSupabase();
+    const id = genId();
+    const created_at = new Date().toISOString();
+    
+    if (useSupabase && dbSupabase) {
+      try {
+        await withTimeout(dbSupabase.from('ledger_payments').insert([data]));
+      } catch (e) { console.warn('Supabase addPayment error', e); }
+    }
+
+    const record: LedgerPayment = { ...data, id, created_at };
     const list = getLocal<LedgerPayment[]>(KEYS.payments, []);
     list.unshift(record);
     setLocal(KEYS.payments, list);
-    this._adjustCustomerBalance(data.customer_name, -data.amount);
+    await this._adjustCustomerBalance(data.customer_name, -data.amount);
     return record;
   },
 
   // INVENTORY ------------------------------------------------
-  getInventory(): InventoryStock[] {
+  async getInventory(): Promise<InventoryStock[]> {
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
+      try {
+        const { data, error } = await withTimeout(dbSupabase.from('ledger_inventory').select('*'));
+        if (error) throw error;
+        if (data) {
+          const sorted = data.sort((a, b) => a.stock - b.stock);
+          setLocal(KEYS.inventory, sorted);
+          return sorted as InventoryStock[];
+        }
+      } catch (e) { console.warn('Supabase getInventory error', e); }
+    }
     return getLocal<InventoryStock[]>(KEYS.inventory, []).sort((a, b) => a.stock - b.stock);
   },
 
-  _adjustStock(itemName: string, delta: number): void {
+  async _adjustStock(itemName: string, delta: number): Promise<void> {
     const list = getLocal<InventoryStock[]>(KEYS.inventory, []);
     const idx = list.findIndex(i => i.item_name.toLowerCase() === itemName.toLowerCase());
+    let newStock = r2(delta);
     if (idx !== -1) {
-      list[idx].stock = Math.max(0, r2(list[idx].stock + delta));
+      newStock = Math.max(0, r2(list[idx].stock + delta));
+      list[idx].stock = newStock;
       list[idx].last_updated = new Date().toISOString();
     } else if (delta > 0) {
-      list.push({ item_name: itemName, stock: r2(delta), last_updated: new Date().toISOString() });
+      list.push({ item_name: itemName, stock: newStock, last_updated: new Date().toISOString() });
     }
     setLocal(KEYS.inventory, list);
+
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
+      try {
+        const { data: existing } = await withTimeout(dbSupabase.from('ledger_inventory').select('stock').ilike('item_name', itemName).maybeSingle());
+        if (existing) {
+          await withTimeout(dbSupabase.from('ledger_inventory').update({ stock: Math.max(0, r2(existing.stock + delta)), last_updated: new Date().toISOString() }).ilike('item_name', itemName));
+        } else if (delta > 0) {
+          await withTimeout(dbSupabase.from('ledger_inventory').insert([{ item_name: itemName, stock: newStock }]));
+        }
+      } catch (e) { console.warn('Supabase adjustStock error', e); }
+    }
   },
 
-  getStockForItem(name: string): number {
-    return getLocal<InventoryStock[]>(KEYS.inventory, []).find(i => i.item_name.toLowerCase() === name.toLowerCase())?.stock ?? 0;
+  async getStockForItem(name: string): Promise<number> {
+    const inv = await this.getInventory();
+    return inv.find(i => i.item_name.toLowerCase() === name.toLowerCase())?.stock ?? 0;
   },
 
   // STATS ----------------------------------------------------
-  getPurchaseStats() {
-    const purchases = this.getPurchases();
+  async getPurchaseStats() {
+    const purchases = await this.getPurchases();
     const now = new Date();
     const thisMonth = purchases.filter(p => { const d = new Date(p.purchase_date); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); });
     const cheques = purchases.filter(p => p.payment_method === 'cheque');
-    const brandTotals = purchases.reduce<Record<string, number>>((acc, p) => { acc[p.brand_name] = r2((acc[p.brand_name] || 0) + p.total_amount); return acc; }, {});
+    const brandTotals = purchases.reduce((acc: Record<string, number>, p) => { acc[p.brand_name] = r2((acc[p.brand_name] || 0) + p.total_amount); return acc; }, {});
     const topBrands = Object.entries(brandTotals).sort((a, b) => b[1] - a[1]).slice(0, 5);
     return {
       totalAmount: r2(purchases.reduce((s, p) => s + p.total_amount, 0)),
@@ -332,11 +545,11 @@ export const ledgerDb = {
     };
   },
 
-  getSalesStats() {
-    const sales = this.getSales();
+  async getSalesStats() {
+    const sales = await this.getSales();
     const now = new Date();
     const thisMonth = sales.filter(s => { const d = new Date(s.sale_date); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); });
-    const customers = this.getCustomers();
+    const customers = await this.getCustomers();
     return {
       totalAmount: r2(sales.reduce((s, i) => s + i.total_amount, 0)),
       totalCount: sales.length,
@@ -350,11 +563,13 @@ export const ledgerDb = {
   },
 
   // REPORTS --------------------------------------------------
-  getFilteredPurchases(from: string, to: string): PurchaseInvoice[] {
-    return this.getPurchases().filter(p => p.purchase_date >= from && p.purchase_date <= to);
+  async getFilteredPurchases(from: string, to: string): Promise<PurchaseInvoice[]> {
+    const p = await this.getPurchases();
+    return p.filter(x => x.purchase_date >= from && x.purchase_date <= to);
   },
 
-  getFilteredSales(from: string, to: string): SalesInvoice[] {
-    return this.getSales().filter(s => s.sale_date >= from && s.sale_date <= to);
+  async getFilteredSales(from: string, to: string): Promise<SalesInvoice[]> {
+    const s = await this.getSales();
+    return s.filter(x => x.sale_date >= from && x.sale_date <= to);
   },
 };

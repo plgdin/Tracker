@@ -15,7 +15,7 @@ export default function OutstandingPage() {
   const [payNotes, setPayNotes] = useState('');
   const [saving, setSaving] = useState(false);
 
-  const refresh = () => setCustomers(ledgerDb.getCustomers().filter(c => c.outstanding_balance > 0));
+  const refresh = async () => setCustomers((await ledgerDb.getCustomers()).filter(c => c.outstanding_balance > 0));
   useEffect(() => { refresh(); }, []);
 
   const filtered = search ? customers.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.phone.includes(search)) : customers;
@@ -29,15 +29,17 @@ export default function OutstandingPage() {
     if (amount > collecting.outstanding_balance) { showToast(`Amount exceeds outstanding balance of ${fmt(collecting.outstanding_balance)}`); return; }
     setSaving(true);
     try {
-      ledgerDb.addPayment({ customer_name: collecting.name, customer_phone: collecting.phone, amount, payment_method: payMethod, notes: payNotes || undefined });
+      await ledgerDb.addPayment({ customer_name: collecting.name, customer_phone: collecting.phone, amount, payment_method: payMethod, notes: payNotes || undefined });
       showToast(`Payment of ${fmt(amount)} collected ✅`);
       setCollecting(null); setPayAmt(''); setPayNotes(''); refresh();
     } finally { setSaving(false); }
   };
 
-  const handlePrintStatement = (c: Customer) => {
-    const sales = ledgerDb.getSalesByCustomer(c.name);
-    const payments = ledgerDb.getPayments().filter(p => p.customer_name.toLowerCase() === c.name.toLowerCase());
+  const handlePrintStatement = async (c: Customer) => {
+    const allSales = await ledgerDb.getSales();
+    const sales = allSales.filter(s => s.customer_name.toLowerCase() === c.name.toLowerCase());
+    const allPayments = await ledgerDb.getPayments();
+    const payments = allPayments.filter(p => p.customer_name.toLowerCase() === c.name.toLowerCase());
     const win = window.open('', '_blank');
     if (!win) return;
     win.document.write(`

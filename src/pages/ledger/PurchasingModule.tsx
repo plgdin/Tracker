@@ -60,14 +60,14 @@ export default function PurchasingModule() {
   const [search, setSearch] = useState('');
   const [purchases, setPurchases] = useState<PurchaseInvoice[]>([]);
   const [brands, setBrands] = useState<string[]>([]);
-  const [stats, setStats] = useState(ledgerDb.getPurchaseStats());
+  const [stats, setStats] = useState<Awaited<ReturnType<typeof ledgerDb.getPurchaseStats>>>({ totalAmount: 0, totalCount: 0, monthAmount: 0, monthCount: 0, chequesCount: 0, topBrands: [], recent: [] });
   const [saving, setSaving] = useState(false);
 
   // Fix #6: No supplier_name in blank form
   const blank = () => ({ invoice_number: '', purchase_date: todayStr(), brand_name: '', payment_method: 'cash' as PurchasePaymentMethod, cheque_number: '', cheque_date: '', notes: '', items: [newRow()] });
   const [form, setForm] = useState(blank());
 
-  const refresh = () => { setPurchases(ledgerDb.getPurchases()); setBrands(getLedgerBrands()); setStats(ledgerDb.getPurchaseStats()); };
+  const refresh = async () => { setPurchases(await ledgerDb.getPurchases()); setBrands(await getLedgerBrands()); setStats(await ledgerDb.getPurchaseStats()); };
   useEffect(() => { refresh(); }, []);
 
   const setF = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
@@ -108,26 +108,26 @@ export default function PurchasingModule() {
         purchase_date: form.purchase_date,
         brand_name: brandName,
         payment_method: form.payment_method,
-        cheque_number: form.payment_method === 'cheque' ? form.cheque_number : undefined,
-        cheque_date: form.payment_method === 'cheque' ? form.cheque_date : undefined,
+        cheque_number: form.payment_method === 'cheque' ? (form.cheque_number || undefined) : undefined,
+        cheque_date: form.payment_method === 'cheque' ? (form.cheque_date || undefined) : undefined,
         notes: form.notes || undefined,
         items,
         total_amount: r2(items.reduce((s, i) => s + i.total, 0)),
       };
-      if (view === 'edit') { ledgerDb.updatePurchase(editId, payload); showToast('Updated ✅'); }
-      else { ledgerDb.addPurchase(payload); showToast('Saved ✅'); }
-      saveLedgerBrand(brandName);
+      if (view === 'edit') { await ledgerDb.updatePurchase(editId, payload); showToast('Updated ✅'); }
+      else { await ledgerDb.addPurchase(payload); showToast('Saved ✅'); }
+      await saveLedgerBrand(brandName);
       refresh(); setView('dashboard');
     } catch (err: unknown) { showToast('❌ ' + (err instanceof Error ? err.message : 'Error')); }
     finally { setSaving(false); }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm('Delete this purchase? Inventory will be adjusted.')) return;
-    ledgerDb.deletePurchase(id); showToast('Deleted 🗑️'); refresh(); setView('dashboard');
+    await ledgerDb.deletePurchase(id); showToast('Deleted 🗑️'); refresh(); setView('dashboard');
   };
 
-  const inv = selectedId ? ledgerDb.getPurchaseById(selectedId) : undefined;
+  const inv = purchases.find(p => p.id === selectedId);
   const brandInvoices = purchases.filter(p => p.brand_name.toLowerCase() === selectedBrand.toLowerCase());
   const filtered = search ? purchases.filter(p => p.invoice_number.toLowerCase().includes(search.toLowerCase()) || p.brand_name.toLowerCase().includes(search.toLowerCase())) : [];
 

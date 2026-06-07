@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Plus, Trash2, Edit2, Printer, ChevronRight, Users, FileText, AlertCircle } from 'lucide-react';
-import { ledgerDb, r2, parseAmt, type SalesInvoice, type SalesItem, type SalePaymentMethod } from '../../lib/ledgerDb';
+import { ledgerDb, r2, parseAmt, type SalesInvoice, type SalesItem, type SalePaymentMethod, type Customer } from '../../lib/ledgerDb';
 import { printSaleInvoice } from '../../lib/ledgerPrint';
 import { useToastStore } from '../../store/toastStore';
 
@@ -17,14 +17,16 @@ export default function SellingModule() {
   const [editId, setEditId] = useState('');
   const [search, setSearch] = useState('');
   const [sales, setSales] = useState<SalesInvoice[]>([]);
-  const [stats, setStats] = useState(ledgerDb.getSalesStats());
+  const [stats, setStats] = useState<Awaited<ReturnType<typeof ledgerDb.getSalesStats>>>({ totalAmount: 0, totalCount: 0, monthAmount: 0, monthCount: 0, totalCollected: 0, totalOutstanding: 0, outstandingCount: 0, recent: [] });
   const [saving, setSaving] = useState(false);
+
+  const [allCustomers, setAllCustomers] = useState<Customer[]>([]);
 
   // Fix #2: Only Cash and UPI — no cheque fields
   const blank = () => ({ invoice_number: '', sale_date: todayStr(), customer_name: '', customer_phone: '', payment_method: 'cash' as SalePaymentMethod, notes: '', items: [newRow()], amount_paid: '' });
   const [form, setForm] = useState(blank());
 
-  const refresh = () => { setSales(ledgerDb.getSales()); setStats(ledgerDb.getSalesStats()); };
+  const refresh = async () => { setSales(await ledgerDb.getSales()); setStats(await ledgerDb.getSalesStats()); setAllCustomers(await ledgerDb.getCustomers()); };
   useEffect(() => { refresh(); }, []);
 
   const setF = (k: string, v: string | number) => setForm(f => ({ ...f, [k]: v }));
@@ -45,7 +47,7 @@ export default function SellingModule() {
   const amountPaid = parseAmt(String(form.amount_paid));
   const balanceDue = Math.max(0, r2(itemsTotal - amountPaid));
 
-  const prevBalance = form.customer_name ? (ledgerDb.getCustomerByName(form.customer_name)?.outstanding_balance ?? 0) : 0;
+  const prevBalance = form.customer_name ? (allCustomers.find(c => c.name.toLowerCase() === form.customer_name.toLowerCase())?.outstanding_balance ?? 0) : 0;
   const totalPayable = r2(itemsTotal + (view === 'new' ? prevBalance : 0));
 
   const openEdit = (inv: SalesInvoice) => {
@@ -60,7 +62,7 @@ export default function SellingModule() {
     if (form.items.some(i => !i.item_name.trim())) { showToast('Each item needs a name'); return; }
     setSaving(true);
     try {
-      const previousBalance = view === 'new' ? prevBalance : (ledgerDb.getSaleById(editId)?.previous_balance ?? 0);
+      const previousBalance = view === 'new' ? prevBalance : (sales.find(s => s.id === editId)?.previous_balance ?? 0);
       // Fix #3: All amounts computed with r2()
       const items = form.items.map(i => ({ ...i, quantity: parseAmt(i.quantity), unit_price: parseAmt(i.unit_price), total: r2(parseAmt(i.quantity) * parseAmt(i.unit_price)) }));
       const total_amount = r2(items.reduce((s, i) => s + i.total, 0));
@@ -73,21 +75,20 @@ export default function SellingModule() {
         notes: form.notes || undefined, items, total_amount,
         amount_paid: amount_paid_val, balance_due: balance_due_val,
       };
-      if (view === 'edit') { ledgerDb.updateSale(editId, payload); showToast('Updated ✅'); }
-      else { ledgerDb.addSale(payload); showToast('Sale saved ✅'); }
+      if (view === 'edit') { await ledgerDb.updateSale(editId, payload); showToast('Updated ✅'); }
+      else { await ledgerDb.addSale(payload); showToast('Sale saved ✅'); }
       refresh(); setForm(blank()); setView('dashboard');
     } catch (err: unknown) { showToast('❌ ' + (err instanceof Error ? err.message : 'Error')); }
     finally { setSaving(false); }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm('Delete this sale? Stock and customer balance will be adjusted.')) return;
-    ledgerDb.deleteSale(id); showToast('Deleted 🗑️'); refresh(); setView('dashboard');
+    await ledgerDb.deleteSale(id); showToast('Deleted 🗑️'); refresh(); setView('dashboard');
   };
 
-  const inv = selectedId ? ledgerDb.getSaleById(selectedId) : undefined;
+  const inv = sales.find(s => s.id === selectedId);
   const custInvoices = sales.filter(s => s.customer_name.toLowerCase() === selectedCustomer.toLowerCase());
-  const allCustomers = ledgerDb.getCustomers();
   const filtered = search ? sales.filter(s => s.invoice_number.toLowerCase().includes(search.toLowerCase()) || s.customer_name.toLowerCase().includes(search.toLowerCase())) : [];
 
   // ── DASHBOARD ───────────────────────────────────────────────
@@ -167,7 +168,7 @@ export default function SellingModule() {
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1rem' }}>
         <div>
           <h2 style={{ fontSize:'1.1rem', fontWeight:700, margin:0 }}>{selectedCustomer}</h2>
-          {(() => { const c = ledgerDb.getCustomerByName(selectedCustomer); return c && c.outstanding_balance > 0 ? <span style={{ background:'#FEF3C7', color:'#D97706', fontSize:'0.72rem', fontWeight:700, padding:'0.2rem 0.5rem', borderRadius:'99px' }}>Outstanding: {fmt(c.outstanding_balance)}</span> : null; })()}
+          {(() => { const c = allCustomers.find(c => c.name.toLowerCase() === selectedCustomer.toLowerCase()); return c && c.outstanding_balance > 0 ? <span style={{ background:'#FEF3C7', color:'#D97706', fontSize:'0.72rem', fontWeight:700, padding:'0.2rem 0.5rem', borderRadius:'99px' }}>Outstanding: {fmt(c.outstanding_balance)}</span> : null; })()}
         </div>
         <button className="btn btn-primary" style={{ padding:'0.4rem 0.85rem', fontSize:'0.75rem' }} onClick={() => { setForm(blank()); setView('new'); }}><Plus size={14}/> New Sale</button>
       </div>
