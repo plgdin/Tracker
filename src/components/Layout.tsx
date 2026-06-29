@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from 'react-router-dom';
-import { Home, List, Settings, Shield, LogOut, BookOpen } from 'lucide-react';
+import { Home, List, Settings, Shield, LogOut, BookOpen, ShoppingBag } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 
 export default function Layout() {
@@ -61,7 +61,8 @@ export default function Layout() {
         <Outlet />
       </main>
 
-      <nav className="bottom-nav">
+      {profile && (
+        <nav className="bottom-nav">
         <NavLink 
           to="/" 
           className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
@@ -85,6 +86,13 @@ export default function Layout() {
           <Settings size={24} />
           <span>Settings</span>
         </NavLink>
+        <NavLink 
+          to="/store" 
+          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+        >
+          <ShoppingBag size={24} />
+          <span>Store</span>
+        </NavLink>
         {profile?.role === 'admin' && (
           <NavLink 
             to="/admin" 
@@ -104,6 +112,7 @@ export default function Layout() {
           </NavLink>
         )}
       </nav>
+      )}
     </div>
   );
 }
