@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import { db } from '../lib/db';
-import type { Item, Category } from '../lib/db';
-import { Search, Trash2 } from 'lucide-react';
+import type { Item } from '../lib/db';
+import { Search, Plus, Edit2, Trash2, Package } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useToastStore } from '../store/toastStore';
-import MilkCarton from '../components/MilkCarton';
 
 export default function Inventory() {
   const navigate = useNavigate();
@@ -14,41 +13,18 @@ export default function Inventory() {
   const isAdmin = profile?.role === 'admin';
 
   const [items, setItems] = useState<Item[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [warningDays, setWarningDays] = useState(30);
   const [loading, setLoading] = useState(true);
-
-  // Search & Filter state
   const [search, setSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [statusFilter, setStatusFilter] = useState('All');
-  const [sortBy, setSortBy] = useState('date-asc');
 
   useEffect(() => {
     async function loadData() {
       try {
-        // ── Phase 1: Show cached data instantly
         const cachedItems = JSON.parse(localStorage.getItem('tracker_items') || '[]') as Item[];
-        const cachedCats = JSON.parse(localStorage.getItem('tracker_categories') || '[]') as Category[];
-        const cachedSettings = JSON.parse(localStorage.getItem('tracker_settings') || '{"warning_period_days":30}');
-        if (cachedItems.length > 0) {
-          setItems(cachedItems.sort(
-            (a: Item, b: Item) => new Date(a.expiration_date).getTime() - new Date(b.expiration_date).getTime()
-          ));
-        }
-        if (cachedCats.length > 0) setCategories(cachedCats);
-        setWarningDays(cachedSettings.warning_period_days ?? 30);
+        if (cachedItems.length > 0) setItems(cachedItems);
         setLoading(false);
 
-        // ── Phase 2: Silently fetch fresh data from Supabase
-        const [fetchedItems, fetchedCategories, fetchedSettings] = await Promise.all([
-          db.getItems(),
-          db.getCategories(),
-          db.getSettings()
-        ]);
+        const fetchedItems = await db.getItems();
         setItems(fetchedItems);
-        setCategories(fetchedCategories);
-        setWarningDays(fetchedSettings.warning_period_days);
       } catch (err) {
         console.error('Error fetching inventory:', err);
         setLoading(false);
@@ -56,15 +32,6 @@ export default function Inventory() {
     }
     loadData();
   }, []);
-
-  const getDaysRemaining = (expiryDateStr: string) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const expiry = new Date(expiryDateStr);
-    expiry.setHours(0, 0, 0, 0);
-    const diffTime = expiry.getTime() - today.getTime();
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  };
 
   const handleDeleteItem = async (e: React.MouseEvent, item: Item) => {
     e.stopPropagation();
@@ -79,197 +46,112 @@ export default function Inventory() {
     }
   };
 
-  // Filtered & Sorted Items
-  const filteredItems = items
-    .filter(item => {
-      const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase()) || 
-                            (item.notes && item.notes.toLowerCase().includes(search.toLowerCase()));
-      
-      const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
-      
-      const days = getDaysRemaining(item.expiration_date);
-
-      // Determine if item is "Expiring Soon" based on warning_date or dynamic warningDays
-      let isExpiringSoon: boolean;
-      if (item.warning_date) {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const warningDate = new Date(item.warning_date);
-        warningDate.setHours(0, 0, 0, 0);
-        const expiryDate = new Date(item.expiration_date);
-        expiryDate.setHours(0, 0, 0, 0);
-        isExpiringSoon = today.getTime() >= warningDate.getTime() && today.getTime() <= expiryDate.getTime();
-      } else {
-        isExpiringSoon = days >= 0 && days <= warningDays;
-      }
-
-      const matchesStatus = 
-        statusFilter === 'All' ? true :
-        statusFilter === 'Expired' ? days < 0 :
-        statusFilter === 'Expiring Soon' ? isExpiringSoon :
-        statusFilter === 'Fresh' ? (!isExpiringSoon && days >= 0) : true;
-
-      return matchesSearch && matchesCategory && matchesStatus;
-    })
-    .sort((a, b) => {
-      if (sortBy === 'date-asc') {
-        return new Date(a.expiration_date).getTime() - new Date(b.expiration_date).getTime();
-      }
-      if (sortBy === 'date-desc') {
-        return new Date(b.expiration_date).getTime() - new Date(a.expiration_date).getTime();
-      }
-      if (sortBy === 'name-asc') {
-        return a.name.localeCompare(b.name);
-      }
-      if (sortBy === 'name-desc') {
-        return b.name.localeCompare(a.name);
-      }
-      return 0;
-    });
+  const filteredItems = items.filter(item => 
+    item.name.toLowerCase().includes(search.toLowerCase()) || 
+    (item.category && item.category.toLowerCase().includes(search.toLowerCase()))
+  );
 
   return (
-    <div className="container">
-      <header style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
-        <h1 style={{ display: 'inline-block' }}>All Items</h1>
-        <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>Your complete tracked inventory</p>
-      </header>
+    <div style={{ maxWidth: '1200px' }}>
+      <div className="admin-page-header">
+        <h1 className="admin-page-title">Products</h1>
+        <p className="admin-page-subtitle">Manage your store's product catalog</p>
+      </div>
 
-      {/* Filters panel */}
-      <div className="panel" style={{ padding: '1rem', marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-        <div style={{ position: 'relative' }}>
-          <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-secondary)' }} />
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
+        <div style={{ position: 'relative', flex: 1 }}>
+          <Search size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-secondary)' }} />
           <input 
             type="text" 
-            placeholder="Search items..." 
-            className="input-field" 
-            style={{ paddingLeft: '2.5rem' }} 
+            placeholder="Search products..." 
+            style={{ 
+              width: '100%', 
+              padding: '0.85rem 1rem 0.85rem 3rem', 
+              borderRadius: '8px', 
+              border: 'none', 
+              boxShadow: '0 2px 10px rgba(0,0,0,0.03)',
+              fontSize: '0.95rem'
+            }}
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
         </div>
-        
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <select 
-            className="input-field" 
-            style={{ flex: 1, minWidth: '110px' }}
-            value={selectedCategory}
-            onChange={e => setSelectedCategory(e.target.value)}
-          >
-            <option value="All">All Categories</option>
-            {categories.map(cat => (
-              <option key={cat.id} value={cat.name}>{cat.name}</option>
-            ))}
-          </select>
-
-          <select 
-            className="input-field" 
-            style={{ flex: 1, minWidth: '110px' }}
-            value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value)}
-          >
-            <option value="All">All Statuses</option>
-            <option value="Expired">Expired</option>
-            <option value="Expiring Soon">Expiring Soon</option>
-            <option value="Fresh">Fresh</option>
-          </select>
-
-          <select 
-            className="input-field" 
-            style={{ flex: 1, minWidth: '110px' }}
-            value={sortBy}
-            onChange={e => setSortBy(e.target.value)}
-          >
-            <option value="date-asc">Expiry (Newest First)</option>
-            <option value="date-desc">Expiry (Oldest First)</option>
-            <option value="name-asc">Name (A-Z)</option>
-          </select>
-        </div>
+        <button 
+          className="btn btn-primary"
+          onClick={() => navigate('/add-item')}
+          style={{ borderRadius: '8px', padding: '0.85rem 1.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}
+        >
+          <Plus size={18} /> Add Product
+        </button>
       </div>
 
-      {/* Grid listing */}
-      {loading ? (
-        <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)', padding: '2rem' }}>Loading...</p>
-      ) : filteredItems.length === 0 ? (
-        <div className="panel" style={{ textAlign: 'center', padding: '3rem 1rem' }}>
-          <p style={{ color: 'var(--color-text-secondary)' }}>No items found.</p>
-        </div>
-      ) : (
-        <div className="items-grid" style={{ paddingBottom: '6rem' }}>
-          {filteredItems.map(item => {
-            const daysRemaining = getDaysRemaining(item.expiration_date);
-            let daysLabel = `${daysRemaining} d`;
-            if (daysRemaining < 0) daysLabel = 'Expired';
-            else if (daysRemaining === 0) daysLabel = 'Today';
-
-            // Determine warning state
-            let isWarning: boolean;
-            if (item.warning_date) {
-              const today = new Date();
-              today.setHours(0, 0, 0, 0);
-              const warningDate = new Date(item.warning_date);
-              warningDate.setHours(0, 0, 0, 0);
-              const expiryDate = new Date(item.expiration_date);
-              expiryDate.setHours(0, 0, 0, 0);
-              isWarning = today.getTime() >= warningDate.getTime() && today.getTime() <= expiryDate.getTime();
-            } else {
-              isWarning = daysRemaining >= 0 && daysRemaining <= warningDays;
-            }
-
-            return (
-              <div 
-                key={item.id} 
-                className="cute-card"
-                onClick={() => navigate(`/add-item?edit=${item.id}`)}
-                style={{ position: 'relative' }}
-              >
-                <div className="cute-card-qty">{item.quantity}</div>
-
-                {/* Admin-only delete button */}
-                {isAdmin && (
-                  <button
-                    onClick={(e) => handleDeleteItem(e, item)}
-                    style={{
-                      position: 'absolute',
-                      top: '6px',
-                      left: '6px',
-                      background: 'rgba(230, 57, 70, 0.9)',
-                      border: 'none',
-                      borderRadius: '50%',
-                      width: '28px',
-                      height: '28px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'white',
-                      cursor: 'pointer',
-                      zIndex: 5,
-                      boxShadow: '0 2px 6px rgba(230, 57, 70, 0.3)',
-                      transition: 'transform 0.15s ease'
-                    }}
-                    title="Delete item"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                )}
-                
-                <div className="cute-card-illustration">
-                  <MilkCarton daysRemaining={daysRemaining} size={50} />
-                  <span className="cute-card-name">{item.name}</span>
-
-                </div>
-
-                <div 
-                  className={`cute-card-days-band ${
-                    daysRemaining < 0 ? '' : isWarning ? 'warning' : 'fresh'
-                  }`}
-                >
-                  {daysLabel}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+      <div className="panel" style={{ padding: 0, overflow: 'hidden' }}>
+        {loading ? (
+          <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-secondary)' }}>Loading products...</div>
+        ) : filteredItems.length === 0 ? (
+          <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--color-text-secondary)' }}>No products found.</div>
+        ) : (
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid #EFEBE8', color: 'var(--color-text-secondary)', fontSize: '0.75rem', letterSpacing: '1px' }}>
+                <th style={{ padding: '1.25rem 1.5rem', fontWeight: 600, textTransform: 'uppercase' }}>Product</th>
+                <th style={{ padding: '1.25rem 1.5rem', fontWeight: 600, textTransform: 'uppercase' }}>Category</th>
+                <th style={{ padding: '1.25rem 1.5rem', fontWeight: 600, textTransform: 'uppercase' }}>Price</th>
+                <th style={{ padding: '1.25rem 1.5rem', fontWeight: 600, textTransform: 'uppercase' }}>Status</th>
+                <th style={{ padding: '1.25rem 1.5rem', fontWeight: 600, textTransform: 'uppercase', textAlign: 'right' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredItems.map(item => (
+                <tr key={item.id} style={{ borderBottom: '1px solid #EFEBE8', transition: 'background 0.2s' }}>
+                  <td style={{ padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: 'var(--color-bg-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-secondary)' }}>
+                      <Package size={20} strokeWidth={1.5} />
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{item.name}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginTop: '0.2rem' }}>Featured</div>
+                    </div>
+                  </td>
+                  <td style={{ padding: '1.25rem 1.5rem', fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
+                    {item.category || '-'}
+                  </td>
+                  <td style={{ padding: '1.25rem 1.5rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                    Rs.{(item.price || 0).toFixed(2)}
+                  </td>
+                  <td style={{ padding: '1.25rem 1.5rem' }}>
+                    <span style={{ 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      gap: '0.35rem',
+                      background: 'rgba(52, 211, 153, 0.15)', 
+                      color: '#059669', 
+                      padding: '0.25rem 0.75rem', 
+                      borderRadius: '999px', 
+                      fontSize: '0.75rem', 
+                      fontWeight: 600 
+                    }}>
+                      ✓ In Stock
+                    </span>
+                  </td>
+                  <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right' }}>
+                    <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+                      <button onClick={() => navigate(`/add-item?edit=${item.id}`)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)' }}>
+                        <Edit2 size={16} />
+                      </button>
+                      {isAdmin && (
+                        <button onClick={(e) => handleDeleteItem(e, item)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)' }}>
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 }

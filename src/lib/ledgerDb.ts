@@ -41,6 +41,7 @@ export interface SalesItem {
   description?: string;
   quantity: number;
   unit_price: number;
+  tax_percentage?: number;
   total: number;
 }
 
@@ -52,6 +53,9 @@ export interface SalesInvoice {
   customer_phone: string;
   previous_balance: number;
   items: SalesItem[];
+  tax_percentage?: number;
+  sgst_amount?: number;
+  cgst_amount?: number;
   total_amount: number;
   amount_paid: number;
   balance_due: number;

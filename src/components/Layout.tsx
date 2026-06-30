@@ -1,9 +1,10 @@
-import { Outlet, NavLink } from 'react-router-dom';
-import { Home, List, Settings, Shield, LogOut, BookOpen } from 'lucide-react';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, Package, ShoppingCart, FileText, ClipboardList, Settings, LogOut, ChefHat } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 
 export default function Layout() {
-  const { profile, signOut } = useAuthStore();
+  const { signOut } = useAuthStore();
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     await signOut();
@@ -11,99 +12,54 @@ export default function Layout() {
   };
 
   return (
-    <div className="app-layout">
-      {/* Top bar with logout */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-        padding: '0.5rem 1rem',
-        gap: '0.75rem'
-      }}>
-        {profile && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ 
-              fontSize: '0.75rem', 
-              color: 'var(--color-text-secondary)',
-              background: 'rgba(230, 57, 70, 0.06)',
-              padding: '0.25rem 0.65rem',
-              borderRadius: '20px',
-              fontWeight: 600
-            }}>
-              {profile.role === 'admin' ? '🛡️' : '👤'} {profile.name || 'User'}
-            </span>
-            <button 
-              onClick={handleLogout}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                background: 'var(--color-primary)',
-                border: 'none',
-                color: 'white',
-                padding: '0.35rem 0.85rem',
-                borderRadius: '20px',
-                cursor: 'pointer',
-                fontSize: '0.75rem',
-                fontWeight: 700,
-                transition: 'all 0.15s ease',
-                boxShadow: '0 2px 8px rgba(230, 57, 70, 0.25)'
-              }}
-            >
-              <LogOut size={13} />
-              Logout
-            </button>
+    <div className="admin-layout">
+      {/* Dark Sidebar */}
+      <aside className="admin-sidebar">
+        <div className="admin-logo-area">
+          <div className="admin-logo-icon">
+            <ChefHat size={20} strokeWidth={2.5} />
           </div>
-        )}
-      </div>
+          <div>
+            <h2 className="admin-logo-text">Bake & Joy</h2>
+            <span className="admin-logo-sub">Admin Panel</span>
+          </div>
+        </div>
 
-      <main className="main-content container">
+        <nav className="admin-nav">
+          <NavLink to="/" className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`} end>
+            <LayoutDashboard size={20} /> Dashboard
+          </NavLink>
+          <NavLink to="/inventory" className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}>
+            <Package size={20} /> Products
+          </NavLink>
+          <NavLink to="/orders" className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}>
+            <ShoppingCart size={20} /> Orders
+          </NavLink>
+          <NavLink to="/ledger" className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}>
+            <FileText size={20} /> Invoices
+          </NavLink>
+          <NavLink to="/admin" className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}>
+            <ClipboardList size={20} /> Audit Logs
+          </NavLink>
+          <NavLink to="/settings" className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}>
+            <Settings size={20} /> Settings
+          </NavLink>
+        </nav>
+
+        <div style={{ marginTop: 'auto' }}>
+          <button onClick={handleLogout} className="admin-nav-item" style={{ width: '100%', background: 'transparent', border: 'none', textAlign: 'left' }}>
+            <LogOut size={20} /> Logout
+          </button>
+          <div style={{ textAlign: 'center', fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: '0.5rem' }}>
+            {window.location.host}{window.location.pathname}
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <main className="admin-main">
         <Outlet />
       </main>
-
-      <nav className="bottom-nav">
-        <NavLink 
-          to="/" 
-          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-          end
-        >
-          <Home size={24} />
-          <span>Dashboard</span>
-        </NavLink>
-
-        <NavLink 
-          to="/inventory" 
-          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-        >
-          <List size={24} />
-          <span>Inventory</span>
-        </NavLink>
-        <NavLink 
-          to="/settings" 
-          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-        >
-          <Settings size={24} />
-          <span>Settings</span>
-        </NavLink>
-        {profile?.role === 'admin' && (
-          <NavLink 
-            to="/admin" 
-            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-          >
-            <Shield size={24} />
-            <span>Admin</span>
-          </NavLink>
-        )}
-        {profile?.role === 'admin' && (
-          <NavLink 
-            to="/ledger" 
-            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-          >
-            <BookOpen size={24} />
-            <span>Ledger</span>
-          </NavLink>
-        )}
-      </nav>
     </div>
   );
 }

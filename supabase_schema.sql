@@ -25,13 +25,15 @@ CREATE TABLE items (
 );
 
 -- 3. Create categories table
-CREATE TABLE categories (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    name TEXT NOT NULL,
-    color TEXT DEFAULT '#4F46E5',
-    icon TEXT DEFAULT 'tag',
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+CREATE TABLE public.categories (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
+  name text NOT NULL,
+  color text NOT NULL,
+  icon text NOT NULL,
+  parent_id uuid REFERENCES public.categories(id) ON DELETE CASCADE,
+  image_url text,
+  created_at timestamptz DEFAULT now()
 );
 
 -- 4. Create shopping_list table

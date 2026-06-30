@@ -1,21 +1,24 @@
 :root {
   --font-family: 'Outfit', 'Inter', 'Roboto', sans-serif;
   
-  /* Premium Red & White Aesthetic Color Palette */
-  --color-bg-light: #FCF6F6; /* Soft warm rose-tinted white background */
-  --color-card-bg: #FFFFFF; /* Pure crisp white cards */
-  --color-primary: #E63946; /* Vibrant, premium strawberry red */
-  --color-primary-hover: #D6222F;
-  --color-secondary: #FFB703; /* Soft warm orange-yellow */
-  --color-accent: #2A9D8F; /* Fresh mint-sage green */
-  --color-success: #2A9D8F;
-  --color-warning: #FFB703;
-  --color-danger: #E63946;
+  /* Premium Bake & Joy Aesthetic */
+  --color-bg-light: #F7F5F2; /* Off-white warm background */
+  --color-card-bg: #FFFFFF;
+  --color-primary: #C75C41; /* Burnt orange / terracotta */
+  --color-primary-hover: #B54F36;
+  --color-sidebar: #332E2C; /* Dark charcoal/brown for sidebar */
+  --color-sidebar-text: #E8E5E2;
+  --color-sidebar-hover: #463F3C;
+  --color-secondary: #FFB703;
+  --color-accent: #C75C41;
+  --color-success: #34D399;
+  --color-warning: #FBBF24;
+  --color-danger: #F87171;
   
-  /* Elegant Rose-Black & Rose-Grey Text (Ditches boring cold greys!) */
-  --color-text-primary: #2E1E1E; /* Deep organic cherry charcoal */
-  --color-text-secondary: #856E6E; /* Beautiful warm rose-gray */
-  --color-text-light: #FCF6F6;
+  /* Text */
+  --color-text-primary: #2D2A29; 
+  --color-text-secondary: #7A7471;
+  --color-text-light: #F7F5F2;
   
   --border-radius-large: 24px;
   --border-radius-medium: 16px;
@@ -40,8 +43,7 @@
 
 body {
   font-family: var(--font-family);
-  background:
-    linear-gradient(135deg, rgba(252, 246, 246, 0.96) 0%, #ffffff 46%, rgba(239, 250, 246, 0.94) 100%);
+  background: var(--color-bg-light);
   color: var(--color-text-primary);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -50,19 +52,7 @@ body {
   position: relative;
 }
 
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(90deg, rgba(230, 57, 70, 0.045) 1px, transparent 1px),
-    linear-gradient(0deg, rgba(42, 157, 143, 0.04) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent 80%);
-  animation: backgroundDrift 24s linear infinite;
-}
+/* Removed backgroundDrift */
 
 ::selection {
   background: rgba(255, 183, 3, 0.35);
@@ -201,20 +191,13 @@ p {
   background-color: var(--color-bg-light);
 }
 
-/* Panel Layouts */
 .panel {
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(255, 252, 250, 0.92));
-  border-radius: var(--border-radius-large);
-  padding: 1.5rem;
-  box-shadow: var(--soft-shadow);
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
   margin-bottom: 1.5rem;
-  border: 1px solid rgba(230, 57, 70, 0.08);
-  backdrop-filter: blur(14px);
-  will-change: transform, box-shadow;
-  animation: panelRise 0.45s ease both;
   width: 100%;
-  max-width: 100%;
 }
 
 @keyframes panelRise {
@@ -480,7 +463,6 @@ p {
 .btn-primary {
   background-color: var(--color-primary);
   color: white;
-  box-shadow: 0 4px 14px rgba(230, 57, 70, 0.25);
 }
 
 .btn-primary:hover {
@@ -653,80 +635,158 @@ p {
   color: var(--color-accent);
 }
 
-/* App Shell */
-.app-layout {
+/* Admin Layout */
+.admin-layout {
+  display: flex;
   min-height: 100vh;
+  background: var(--color-bg-light);
 }
 
-.main-content {
-  animation: pageFade 0.35s ease both;
+.admin-sidebar {
+  width: 260px;
+  background: var(--color-sidebar);
+  color: var(--color-sidebar-text);
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 1rem;
 }
 
-@keyframes pageFade {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.admin-logo-area {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 0.5rem;
+  margin-bottom: 2.5rem;
 }
 
-/* Login */
-.auth-shell {
-  min-height: 100vh;
-  padding: 1.25rem;
+.admin-logo-icon {
+  background: var(--color-primary);
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
+}
+
+.admin-logo-text {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+}
+.admin-logo-sub {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.6);
+  display: block;
+}
+
+.admin-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.admin-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  color: rgba(255,255,255,0.7);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.admin-nav-item:hover {
+  background: var(--color-sidebar-hover);
+  color: white;
+}
+
+.admin-nav-item.active {
+  background: var(--color-primary);
+  color: white;
+}
+
+.admin-main {
+  flex: 1;
+  padding: 2.5rem 3rem;
+  overflow-y: auto;
+}
+
+.admin-page-header {
+  margin-bottom: 2rem;
+}
+
+.admin-page-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  color: var(--color-text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.admin-page-subtitle {
+  color: var(--color-text-secondary);
+  font-size: 0.95rem;
+}
+
+/* Auth Page */
+.auth-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-light);
 }
 
 .auth-card {
   width: 100%;
-  max-width: 420px;
-  padding: 2rem;
-  border-radius: 28px;
-  background:
-    linear-gradient(150deg, rgba(255, 255, 255, 0.95), rgba(255, 250, 247, 0.9));
-  border: 1px solid rgba(230, 57, 70, 0.10);
-  box-shadow: var(--lifted-shadow), var(--glow-shadow);
-  backdrop-filter: blur(18px);
-  animation: authEnter 0.55s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+  max-width: 440px;
+  padding: 3rem 2.5rem;
+  border-radius: 16px;
+  background: white;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.04);
 }
 
-.auth-brand-mark {
-  width: 64px;
-  height: 64px;
-  margin: 0 auto 1rem;
-  border-radius: 20px;
-  display: grid;
-  place-items: center;
+.auth-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.auth-logo-icon {
+  background: var(--color-primary);
   color: white;
-  font-weight: 900;
-  font-size: 1rem;
-  letter-spacing: 0;
-  background:
-    linear-gradient(135deg, var(--color-primary), #ff7a50 58%, var(--color-secondary));
-  box-shadow: 0 14px 28px rgba(230, 57, 70, 0.22);
-  animation: softPulse 3.8s ease-in-out infinite;
+  width: 54px;
+  height: 54px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  font-size: 1.5rem;
 }
 
 .auth-title {
-  margin: 0;
-  color: var(--color-primary);
   font-family: 'Playfair Display', serif;
-  font-size: 2.15rem;
-  font-weight: 800;
-  letter-spacing: 0;
-  margin-top: 0.25rem;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 0.25rem;
 }
 
 .auth-subtitle {
-  text-align: center;
-  margin: 0.25rem 0 1.5rem;
-  font-size: 0.98rem;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+}
+
+.auth-form-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
 }
 
 .auth-form {

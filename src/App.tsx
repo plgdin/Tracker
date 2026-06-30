@@ -8,6 +8,8 @@ import AddItem from './pages/AddItem';
 import AdminDashboard from './pages/AdminDashboard';
 import ResetPassword from './pages/ResetPassword';
 import Ledger from './pages/Ledger';
+import Orders from './pages/Orders';
+import Storefront from './pages/Storefront';
 import Toast from './components/Toast';
 import './index.css';
 
@@ -16,8 +18,9 @@ function App() {
     <BrowserRouter>
       <Toast />
       <Routes>
-        {/* Standalone — accessible without being logged in (recovery session from email link) */}
+        {/* Standalone — accessible without being logged in */}
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/store" element={<Storefront />} />
 
         {/* All other routes are protected by AuthWrapper */}
         <Route path="/*" element={
@@ -29,6 +32,7 @@ function App() {
                 <Route path="settings" element={<Settings />} />
                 <Route path="add-item" element={<AddItem />} />
                 <Route path="admin" element={<AdminDashboard />} />
+                <Route path="orders" element={<Orders />} />
                 <Route path="ledger" element={<Ledger />} />
               </Route>
             </Routes>

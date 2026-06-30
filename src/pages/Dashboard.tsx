@@ -1,51 +1,28 @@
 import { useEffect, useState } from 'react';
-import { Plus, X, Settings as SettingsIcon } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { db } from '../lib/db';
-import type { Item } from '../lib/db';
+import type { Item, Category, AuditLog } from '../lib/db';
 import { useAuthStore } from '../store/authStore';
-import MilkCarton from '../components/MilkCarton';
+import { Package, DollarSign, AlertTriangle, Grid, Activity } from 'lucide-react';
 
 export default function Dashboard() {
-  const navigate = useNavigate();
   const { profile } = useAuthStore();
   const [items, setItems] = useState<Item[]>([]);
-  const [warningDays, setWarningDays] = useState(30);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showBanner, setShowBanner] = useState(true);
-  const [bannerWink, setBannerWink] = useState(false);
-
-  // Winks the warning carton periodically on the home page!
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setBannerWink(true);
-      setTimeout(() => setBannerWink(false), 800);
-    }, 3500); // Winks every 3.5 seconds
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     async function loadData() {
       try {
-        // ── Phase 1: Show cached data instantly so the page never gets stuck
-        // Pull whatever is already in localStorage so loading=false right away
-        const cachedItems = JSON.parse(localStorage.getItem('tracker_items') || '[]') as Item[];
-        const cachedSettings = JSON.parse(localStorage.getItem('tracker_settings') || '{"warning_period_days":30}');
-        if (cachedItems.length > 0) {
-          setItems(cachedItems.sort(
-            (a: Item, b: Item) => new Date(a.expiration_date).getTime() - new Date(b.expiration_date).getTime()
-          ));
-          setWarningDays(cachedSettings.warning_period_days ?? 30);
-        }
-        setLoading(false);
-
-        // ── Phase 2: Silently fetch fresh data from Supabase in the background
-        const [freshItems, freshSettings] = await Promise.all([
+        const [freshItems, freshCats, freshLogs] = await Promise.all([
           db.getItems(),
-          db.getSettings()
+          db.getCategories(),
+          db.getAuditLogs()
         ]);
         setItems(freshItems);
-        setWarningDays(freshSettings.warning_period_days);
+        setCategories(freshCats);
+        setLogs(freshLogs.slice(0, 5)); // Get 5 most recent logs
+        setLoading(false);
       } catch (err) {
         console.error('Error loading dashboard data:', err);
         setLoading(false);
@@ -54,146 +31,107 @@ export default function Dashboard() {
     loadData();
   }, []);
 
-  const getDaysRemaining = (expiryDateStr: string) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const expiry = new Date(expiryDateStr);
-    expiry.setHours(0, 0, 0, 0);
-    const diffTime = expiry.getTime() - today.getTime();
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  };
-
-  // Filter items expiring soon based on dynamic warning period or custom warning date
-  const expiringSoonItems = items.filter(item => {
-    if (item.warning_date) {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const warningDate = new Date(item.warning_date);
-      warningDate.setHours(0, 0, 0, 0);
-      const expiryDate = new Date(item.expiration_date);
-      expiryDate.setHours(0, 0, 0, 0);
-      return today.getTime() >= warningDate.getTime() && today.getTime() <= expiryDate.getTime();
-    }
-    const days = getDaysRemaining(item.expiration_date);
-    return days >= 0 && days <= warningDays;
-  }).sort((a, b) => new Date(a.expiration_date).getTime() - new Date(b.expiration_date).getTime());
+  const totalProducts = items.length;
+  const totalValue = items.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 0), 0);
+  const lowStockItems = items.filter(item => item.quantity > 0 && item.quantity <= 5).length;
+  const totalCategories = categories.length;
 
   return (
-    <div className="container">
-      {/* Header */}
-      <header className="app-header">
-        <button className="header-icon-btn" onClick={() => navigate('/settings')}>
-          <SettingsIcon size={24} />
-        </button>
-        <div style={{ textAlign: 'center' }}>
-          <h1 style={{ margin: 0, fontFamily: "'Playfair Display', serif", fontWeight: 800, letterSpacing: '-0.5px', fontSize: '1.75rem' }}>Bake N Joy</h1>
-          {profile?.name && (
-            <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.8rem', marginTop: '0.1rem' }}>
-              Welcome back, {profile.name}
-            </p>
-          )}
-        </div>
-        <div style={{ width: 40 }} /> {/* Spacer to align title */}
-      </header>
-
-      {/* Warning alert banner matching screens */}
-      {showBanner && (
-        <div className="notification-banner">
-          <div className="notification-content">
-            <div className="notification-icon-wrapper">
-              <MilkCarton winking={bannerWink} size={45} />
-            </div>
-            <span>
-              {expiringSoonItems.length} item(s) will expire in {warningDays} days.
-            </span>
-          </div>
-          <button className="notification-close-btn" onClick={() => setShowBanner(false)}>
-            <X size={18} />
-          </button>
-        </div>
-      )}
-
-      {/* Title */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', marginTop: '0.5rem' }}>
-        <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-text-secondary)' }}>Expiring Soon</h2>
+    <div style={{ maxWidth: '1200px' }}>
+      <div className="admin-page-header">
+        <h1 className="admin-page-title">Dashboard</h1>
+        <p className="admin-page-subtitle">Welcome to your admin dashboard, {profile?.name || 'Admin'}</p>
       </div>
 
       {loading ? (
-        <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)', padding: '2rem' }}>Loading...</p>
-      ) : items.length === 0 ? (
-        /* Empty State */
-        <div className="empty-state">
-          <div className="empty-state-illustration">
-            <MilkCarton winking={true} size={70} />
-          </div>
-          <p className="empty-state-text">Let's add your first item!</p>
-          <div className="empty-state-arrow">↓</div>
-        </div>
-      ) : expiringSoonItems.length === 0 ? (
-        <div className="panel" style={{ textAlign: 'center', padding: '2.5rem 1rem' }}>
-          <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.95rem' }}>
-            No items expiring in the next {warningDays} days.
-          </p>
-        </div>
+        <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--color-text-secondary)' }}>Loading dashboard...</div>
       ) : (
-        /* Grid of Cards matching the screens */
-        <div className="items-grid" style={{ paddingBottom: '6rem' }}>
-          {expiringSoonItems.map(item => {
-            const daysRemaining = getDaysRemaining(item.expiration_date);
+        <>
+          {/* Top Summary Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
             
-            // Format dynamic days label
-            let daysLabel = `${daysRemaining} d`;
-            if (daysRemaining < 0) daysLabel = 'Expired';
-            else if (daysRemaining === 0) daysLabel = 'Today';
-
-            // Determine warning state
-            let isWarning: boolean;
-            if (item.warning_date) {
-              const today = new Date();
-              today.setHours(0, 0, 0, 0);
-              const warningDate = new Date(item.warning_date);
-              warningDate.setHours(0, 0, 0, 0);
-              const expiryDate = new Date(item.expiration_date);
-              expiryDate.setHours(0, 0, 0, 0);
-              isWarning = today.getTime() >= warningDate.getTime() && today.getTime() <= expiryDate.getTime();
-            } else {
-              isWarning = daysRemaining >= 0 && daysRemaining <= 3; // 3 days fallback for winking carton
-            }
-
-            return (
-              <div 
-                key={item.id} 
-                className="cute-card"
-                onClick={() => navigate(`/add-item?edit=${item.id}`)}
-              >
-                {/* Quantity badge top right */}
-                <div className="cute-card-qty">{item.quantity}</div>
-                
-                {/* Illustration with label */}
-                <div className="cute-card-illustration">
-                  <MilkCarton daysRemaining={daysRemaining} size={50} />
-                  <span className="cute-card-name">{item.name}</span>
-
+            <div className="panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.25rem' }}>Total Products</div>
+                  <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--color-text-primary)' }}>{totalProducts}</div>
                 </div>
-
-                {/* Days remaining band with warning color codes */}
-                <div 
-                  className={`cute-card-days-band ${
-                    daysRemaining < 0 ? '' : isWarning ? 'warning' : 'fresh'
-                  }`}
-                >
-                  {daysLabel}
+                <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: 'rgba(99, 102, 241, 0.1)', color: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Package size={20} />
                 </div>
               </div>
-            );
-          })}
-        </div>
-      )}
+              <div style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 600 }}>+12% from last month</div>
+            </div>
 
-      {/* Center FAB plus button */}
-      <div className="fab" onClick={() => navigate('/add-item')}>
-        <Plus size={28} />
-      </div>
+            <div className="panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.25rem' }}>Total Value</div>
+                  <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--color-text-primary)' }}>Rs. {totalValue.toLocaleString()}</div>
+                </div>
+                <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <DollarSign size={20} />
+                </div>
+              </div>
+              <div style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 600 }}>+8% from last month</div>
+            </div>
+
+            <div className="panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.25rem' }}>Low Stock Items</div>
+                  <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--color-text-primary)' }}>{lowStockItems}</div>
+                </div>
+                <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <AlertTriangle size={20} />
+                </div>
+              </div>
+              <div style={{ fontSize: '0.75rem', color: '#ef4444', fontWeight: 600 }}>-2 from last month</div>
+            </div>
+
+            <div className="panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.25rem' }}>Total Categories</div>
+                  <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--color-text-primary)' }}>{totalCategories}</div>
+                </div>
+                <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Grid size={20} />
+                </div>
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', fontWeight: 600 }}>Same as last month</div>
+            </div>
+
+          </div>
+
+          {/* Recent Activity */}
+          <div className="panel">
+            <h3 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Activity size={20} color="var(--color-primary)" /> Recent Activity
+            </h3>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {logs.length === 0 ? (
+                <p style={{ color: 'var(--color-text-secondary)', textAlign: 'center', padding: '1rem' }}>No recent activity.</p>
+              ) : (
+                logs.map(log => (
+                  <div key={log.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', borderBottom: '1px solid #EFEBE8' }}>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{log.action}</div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', marginTop: '0.25rem' }}>
+                        By {log.worker_email} {log.details?.item_name ? `(${log.details.item_name})` : ''}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
+                      {new Date(log.created_at).toLocaleString()}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

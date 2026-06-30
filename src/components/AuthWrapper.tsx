@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { supabase } from '../lib/supabase';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, ChefHat, User, Lock } from 'lucide-react';
 
 export default function AuthWrapper({ children }: { children: React.ReactNode }) {
   const { user, isLoading, initialize, authNotice, setAuthNotice } = useAuthStore();
@@ -123,35 +123,23 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
 
   return (
     <div className="auth-shell">
-      <div className="auth-card">
-        <h1 className="auth-title">Bake N Joy</h1>
-        <p className="auth-subtitle">Welcome back to your stockroom</p>
-
-        {(authNotice || error) && (
-          <div className={`auth-error${authNotice ? ' auth-notice' : ''}`}>{authNotice || error}</div>
-        )}
-
-        {/* Mode tabs — hidden when in forgot-password mode */}
-        {mode !== 'forgot' && (
-          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-            <button
-              type="button"
-              className={`btn ${mode === 'login' ? 'btn-primary' : 'btn-outline'}`}
-              style={{ flex: 1, minHeight: 40, padding: '0.55rem 1rem', fontSize: '0.9rem' }}
-              onClick={() => { setMode('login'); setError(''); setAuthNotice(''); }}
-            >
-              Log In
-            </button>
-            <button
-              type="button"
-              className={`btn ${mode === 'signup' ? 'btn-primary' : 'btn-outline'}`}
-              style={{ flex: 1, minHeight: 40, padding: '0.55rem 1rem', fontSize: '0.9rem' }}
-              onClick={() => { setMode('signup'); setError(''); setAuthNotice(''); }}
-            >
-              Sign Up
-            </button>
+      <div>
+        <div className="auth-header">
+          <div className="auth-logo-icon">
+            <ChefHat size={32} strokeWidth={2.5} />
           </div>
-        )}
+          <h1 className="auth-title">Bake & Joy</h1>
+          <p className="auth-subtitle">Admin Panel</p>
+        </div>
+
+        <div className="auth-card">
+          <h2 className="auth-form-title">Sign In</h2>
+
+          {(authNotice || error) && (
+            <div className={`auth-error${authNotice ? ' auth-notice' : ''}`}>{authNotice || error}</div>
+          )}
+
+        {/* Mode tabs removed to match design exactly */}
 
         {/* ── FORGOT PASSWORD MODE ─────────────────────────────────── */}
         {mode === 'forgot' && (
@@ -192,46 +180,37 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
           </>
         )}
 
-        {/* ── LOGIN / SIGNUP FORM ──────────────────────────────────── */}
+        {/* ── LOGIN FORM ──────────────────────────────────── */}
         {mode !== 'forgot' && (
           <form onSubmit={handleAuth} className="auth-form">
             <div className="input-group">
-              <label className="input-label">{mode === 'signup' ? 'Email' : 'Username or Email'}</label>
-              <input
-                type={mode === 'signup' ? "email" : "text"}
-                className="input-field"
-                placeholder={mode === 'signup' ? 'Enter your email' : 'Email or Username'}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-
-            {mode === 'signup' && (
-              <div className="input-group">
-                <label className="input-label">Username</label>
+              <label className="input-label">Username</label>
+              <div style={{ position: 'relative' }}>
+                <User size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-secondary)' }} />
                 <input
-                  type="text"
+                  type={mode === 'signup' ? "email" : "text"}
                   className="input-field"
-                  placeholder="Choose a username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required={mode === 'signup'}
+                  style={{ paddingLeft: '2.5rem' }}
+                  placeholder="Enter username"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
                 />
               </div>
-            )}
+            </div>
 
             <div className="input-group">
               <label className="input-label">Password</label>
               <div style={{ position: 'relative' }}>
+                <Lock size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-secondary)' }} />
                 <input
                   type={showPassword ? "text" : "password"}
                   className="input-field"
-                  placeholder="Enter password..."
+                  style={{ paddingLeft: '2.5rem', paddingRight: '2.5rem' }}
+                  placeholder="Enter password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  style={{ paddingRight: '2.5rem' }}
                 />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', padding: 0 }}>
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -240,21 +219,18 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
             </div>
 
             <button type="submit" className="btn btn-primary auth-submit" disabled={isSubmitting}>
-              {isSubmitting ? (mode === 'signup' ? 'Submitting...' : 'Logging in...') : (mode === 'signup' ? 'Request Access' : 'Log In')}
+              {isSubmitting ? 'Authenticating...' : 'Sign In'}
             </button>
 
-            {/* Forgot Password link — only on login tab */}
-            {mode === 'login' && (
-              <button
-                type="button"
-                onClick={() => { setMode('forgot'); setError(''); setAuthNotice(''); }}
-                className="auth-reset"
-              >
-                Forgot your password?
-              </button>
-            )}
+            <button type="button" className="auth-reset" onClick={() => window.location.href = '/store'}>
+              ← Back to store
+            </button>
           </form>
         )}
+        </div>
+        <div style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--color-text-secondary)', fontSize: '0.8rem' }}>
+          Default: admin / admin123
+        </div>
 
       </div>
     </div>

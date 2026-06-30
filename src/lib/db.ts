@@ -11,7 +11,10 @@ export interface Item {
   quantity: number;
   category: string;
   notes?: string;
+  price?: number;
   image_url?: string;
+  tax_percentage?: number;
+  is_imported?: boolean;
   created_at: string;
 }
 
@@ -21,6 +24,8 @@ export interface Category {
   name: string;
   color: string;
   icon: string;
+  parent_id?: string;
+  image_url?: string;
   created_at: string;
 }
 
@@ -85,12 +90,96 @@ export const withTimeout = <T>(promiseLike: PromiseLike<T>, timeoutMs = 8000): P
 
 // Default categories
 const DEFAULT_CATEGORIES: Category[] = [
-  { id: 'cat-1', name: 'Dairy', color: '#6366F1', icon: 'Milk', created_at: new Date().toISOString() },
-  { id: 'cat-2', name: 'Meat', color: '#EF4444', icon: 'Beef', created_at: new Date().toISOString() },
-  { id: 'cat-3', name: 'Vegetables', color: '#10B981', icon: 'Carrot', created_at: new Date().toISOString() },
-  { id: 'cat-4', name: 'Bakery', color: '#F59E0B', icon: 'Croissant', created_at: new Date().toISOString() },
-  { id: 'cat-5', name: 'Pantry', color: '#8B5CF6', icon: 'Package', created_at: new Date().toISOString() },
-  { id: 'cat-6', name: 'Uncategorized', color: '#6B7280', icon: 'Tag', created_at: new Date().toISOString() }
+  // Parent Categories
+  { id: '1', name: '7C Baking Ingredients', color: '#6366F1', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '2', name: 'Aluminum Moulds', color: '#EF4444', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '3', name: 'Appliances Mixers', color: '#10B981', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '4', name: 'Arife Wow Sale', color: '#F59E0B', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '5', name: 'Bake & Serve', color: '#8B5CF6', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '6', name: 'Baking Ingredients', color: '#EC4899', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '7', name: 'Baking Tools & Accessories', color: '#06B6D4', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '8', name: 'Piping Nozzles', color: '#84CC16', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '9', name: 'Brands', color: '#6366F1', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '10', name: 'Cake And Cupcake Stand', color: '#EF4444', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '11', name: 'Cake Base', color: '#10B981', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '12', name: 'Cake Dummies', color: '#F59E0B', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '13', name: 'Cake Toppers', color: '#8B5CF6', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '14', name: 'Chocolate And Cupcake Boxes', color: '#EC4899', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '15', name: 'Chocolate Wrappers', color: '#06B6D4', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '16', name: 'Cutters', color: '#84CC16', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '17', name: 'Diwali Mould', color: '#6366F1', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '18', name: 'Diy Stamps Fondant Embosser', color: '#EF4444', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '19', name: 'Feather', color: '#10B981', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '20', name: 'Festival Themes', color: '#F59E0B', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '21', name: 'Knives And Spatula', color: '#8B5CF6', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '22', name: 'Kulfi Moulds', color: '#EC4899', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '23', name: 'Leafs And Flakes', color: '#06B6D4', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '24', name: 'Non Edible Dust', color: '#84CC16', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '25', name: 'Non Stick Moulds', color: '#6366F1', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '26', name: 'Nylon Spoon', color: '#EF4444', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '27', name: 'Party Supplies', color: '#10B981', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '28', name: 'Polycarbonate Moulds', color: '#F59E0B', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '29', name: 'Pvc Mould', color: '#8B5CF6', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '30', name: 'Resin Arts', color: '#EC4899', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '31', name: 'Scraper', color: '#06B6D4', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '32', name: 'Selfie Mirror', color: '#84CC16', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '33', name: 'Silicon Moulds', color: '#6366F1', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '34', name: 'Sprinklers And Candies', color: '#EF4444', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '35', name: 'Stencils', color: '#10B981', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '36', name: 'Sticker', color: '#F59E0B', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '37', name: 'Ultimakes', color: '#8B5CF6', icon: 'Tag', created_at: new Date().toISOString() },
+  { id: '38', name: 'Uncategorized', color: '#9CA3AF', icon: 'Box', created_at: new Date().toISOString() },
+  
+  // Example Subcategories
+  { id: 'sub-1a', name: 'Flours', color: '#6366F1', icon: 'Tag', parent_id: '1', created_at: new Date().toISOString() },
+  { id: 'sub-1b', name: 'Sugars', color: '#6366F1', icon: 'Tag', parent_id: '1', created_at: new Date().toISOString() },
+  { id: 'sub-2a', name: 'Round Moulds', color: '#EF4444', icon: 'Tag', parent_id: '2', created_at: new Date().toISOString() },
+  { id: 'sub-2b', name: 'Square Moulds', color: '#EF4444', icon: 'Tag', parent_id: '2', created_at: new Date().toISOString() },
+  { id: 'sub-3a', name: 'Hand Mixers', color: '#10B981', icon: 'Tag', parent_id: '3', created_at: new Date().toISOString() },
+  { id: 'sub-3b', name: 'Stand Mixers', color: '#10B981', icon: 'Tag', parent_id: '3', created_at: new Date().toISOString() },
+  { id: 'sub-5a', name: 'Paper Cups', color: '#8B5CF6', icon: 'Tag', parent_id: '5', created_at: new Date().toISOString() },
+  { id: 'sub-5b', name: 'Foil Trays', color: '#8B5CF6', icon: 'Tag', parent_id: '5', created_at: new Date().toISOString() },
+  { id: 'sub-6a', name: 'Essence & Colors', color: '#EC4899', icon: 'Tag', parent_id: '6', created_at: new Date().toISOString() },
+  { id: 'sub-6b', name: 'Leavening Agents', color: '#EC4899', icon: 'Tag', parent_id: '6', created_at: new Date().toISOString() },
+  { id: 'sub-7a', name: 'Measuring Cups', color: '#06B6D4', icon: 'Tag', parent_id: '7', created_at: new Date().toISOString() },
+  { id: 'sub-7b', name: 'Whisks', color: '#06B6D4', icon: 'Tag', parent_id: '7', created_at: new Date().toISOString() },
+  { id: 'sub-8a', name: 'Star Nozzles', color: '#84CC16', icon: 'Tag', parent_id: '8', created_at: new Date().toISOString() },
+  { id: 'sub-8b', name: 'Round Nozzles', color: '#84CC16', icon: 'Tag', parent_id: '8', created_at: new Date().toISOString() },
+  { id: 'sub-9a', name: 'Wilton', color: '#6366F1', icon: 'Tag', parent_id: '9', created_at: new Date().toISOString() },
+  { id: 'sub-9b', name: 'Ateco', color: '#6366F1', icon: 'Tag', parent_id: '9', created_at: new Date().toISOString() },
+  { id: 'sub-10a', name: 'Tiered Stands', color: '#EF4444', icon: 'Tag', parent_id: '10', created_at: new Date().toISOString() },
+  { id: 'sub-10b', name: 'Pedestal Stands', color: '#EF4444', icon: 'Tag', parent_id: '10', created_at: new Date().toISOString() },
+  { id: 'sub-11a', name: 'Round Boards', color: '#10B981', icon: 'Tag', parent_id: '11', created_at: new Date().toISOString() },
+  { id: 'sub-11b', name: 'Square Boards', color: '#10B981', icon: 'Tag', parent_id: '11', created_at: new Date().toISOString() },
+  { id: 'sub-12a', name: 'Styrofoam Rounds', color: '#F59E0B', icon: 'Tag', parent_id: '12', created_at: new Date().toISOString() },
+  { id: 'sub-13a', name: 'Happy Birthday', color: '#8B5CF6', icon: 'Tag', parent_id: '13', created_at: new Date().toISOString() },
+  { id: 'sub-13b', name: 'Anniversary', color: '#8B5CF6', icon: 'Tag', parent_id: '13', created_at: new Date().toISOString() },
+  { id: 'sub-14a', name: 'Single Cupcake', color: '#EC4899', icon: 'Tag', parent_id: '14', created_at: new Date().toISOString() },
+  { id: 'sub-14b', name: 'Half Dozen', color: '#EC4899', icon: 'Tag', parent_id: '14', created_at: new Date().toISOString() },
+  { id: 'sub-15a', name: 'Foil Wrappers', color: '#06B6D4', icon: 'Tag', parent_id: '15', created_at: new Date().toISOString() },
+  { id: 'sub-16a', name: 'Cookie Cutters', color: '#84CC16', icon: 'Tag', parent_id: '16', created_at: new Date().toISOString() },
+  { id: 'sub-16b', name: 'Fondant Cutters', color: '#84CC16', icon: 'Tag', parent_id: '16', created_at: new Date().toISOString() },
+  { id: 'sub-17a', name: 'Diya Mould', color: '#6366F1', icon: 'Tag', parent_id: '17', created_at: new Date().toISOString() },
+  { id: 'sub-18a', name: 'Alphabets', color: '#EF4444', icon: 'Tag', parent_id: '18', created_at: new Date().toISOString() },
+  { id: 'sub-18b', name: 'Patterns', color: '#EF4444', icon: 'Tag', parent_id: '18', created_at: new Date().toISOString() },
+  { id: 'sub-20a', name: 'Christmas', color: '#F59E0B', icon: 'Tag', parent_id: '20', created_at: new Date().toISOString() },
+  { id: 'sub-20b', name: 'Halloween', color: '#F59E0B', icon: 'Tag', parent_id: '20', created_at: new Date().toISOString() },
+  { id: 'sub-21a', name: 'Palette Knives', color: '#8B5CF6', icon: 'Tag', parent_id: '21', created_at: new Date().toISOString() },
+  { id: 'sub-21b', name: 'Bread Knives', color: '#8B5CF6', icon: 'Tag', parent_id: '21', created_at: new Date().toISOString() },
+  { id: 'sub-23a', name: 'Gold Leaf', color: '#06B6D4', icon: 'Tag', parent_id: '23', created_at: new Date().toISOString() },
+  { id: 'sub-25a', name: 'Muffin Pans', color: '#6366F1', icon: 'Tag', parent_id: '25', created_at: new Date().toISOString() },
+  { id: 'sub-27a', name: 'Balloons', color: '#10B981', icon: 'Tag', parent_id: '27', created_at: new Date().toISOString() },
+  { id: 'sub-27b', name: 'Candles', color: '#10B981', icon: 'Tag', parent_id: '27', created_at: new Date().toISOString() },
+  { id: 'sub-28a', name: 'Praline', color: '#F59E0B', icon: 'Tag', parent_id: '28', created_at: new Date().toISOString() },
+  { id: 'sub-29a', name: 'Chocolate Bars', color: '#8B5CF6', icon: 'Tag', parent_id: '29', created_at: new Date().toISOString() },
+  { id: 'sub-30a', name: 'Moulds', color: '#EC4899', icon: 'Tag', parent_id: '30', created_at: new Date().toISOString() },
+  { id: 'sub-30b', name: 'Pigments', color: '#EC4899', icon: 'Tag', parent_id: '30', created_at: new Date().toISOString() },
+  { id: 'sub-33a', name: 'Fondant Moulds', color: '#6366F1', icon: 'Tag', parent_id: '33', created_at: new Date().toISOString() },
+  { id: 'sub-33b', name: 'Baking Mats', color: '#6366F1', icon: 'Tag', parent_id: '33', created_at: new Date().toISOString() },
+  { id: 'sub-34a', name: 'Jimmies', color: '#EF4444', icon: 'Tag', parent_id: '34', created_at: new Date().toISOString() },
+  { id: 'sub-34b', name: 'Nonpareils', color: '#EF4444', icon: 'Tag', parent_id: '34', created_at: new Date().toISOString() },
+  { id: 'sub-35a', name: 'Floral Stencils', color: '#10B981', icon: 'Tag', parent_id: '35', created_at: new Date().toISOString() },
+  { id: 'sub-35b', name: 'Geometric Stencils', color: '#10B981', icon: 'Tag', parent_id: '35', created_at: new Date().toISOString() },
 ];
 
 // Helper to generate IDs
@@ -245,7 +334,21 @@ export const db = {
           dbSupabase.from('categories').select('*').order('name', { ascending: true })
         );
         if (error) throw error;
-        const result = data && data.length > 0 ? data : (hasLocalCategories() ? getLocalCategories() : DEFAULT_CATEGORIES);
+        
+        let result = data && data.length > 0 ? data : (hasLocalCategories() ? getLocalCategories() : DEFAULT_CATEGORIES);
+        
+        // Auto-update if default categories were added (like the new subcategories)
+        if (result.length < DEFAULT_CATEGORIES.length) {
+           result = [...result];
+           for (const defCat of DEFAULT_CATEGORIES) {
+             if (!result.find((c: Category) => c.id === defCat.id || c.name === defCat.name)) {
+               result.push(defCat);
+               // Also insert to supabase if possible
+               dbSupabase.from('categories').insert([defCat]).then();
+             }
+           }
+        }
+
         // Cache the fresh categories in local storage
         setLocal('tracker_categories', result);
         return result;
@@ -253,7 +356,18 @@ export const db = {
         console.warn('Supabase categories fetch failed, falling back to LocalStorage', e);
       }
     }
-    return getLocalCategories();
+    
+    let localCats = getLocalCategories();
+    if (localCats.length < DEFAULT_CATEGORIES.length) {
+       for (const defCat of DEFAULT_CATEGORIES) {
+         if (!localCats.find((c: Category) => c.id === defCat.id || c.name === defCat.name)) {
+           localCats.push(defCat);
+         }
+       }
+       setLocal('tracker_categories', localCats);
+    }
+    
+    return localCats;
   },
 
   async addCategory(category: Omit<Category, 'id' | 'created_at'>): Promise<Category> {

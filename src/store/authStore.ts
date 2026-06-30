@@ -74,9 +74,13 @@ const ensureProfile = async (user: User, set: (s: Partial<AuthState>) => void) =
       set({ user, profile: prof });
     } else if (error) {
       console.warn('Profile fetch failed', error);
+      // Fallback profile if offline or RLS fails
+      set({ user, profile: { id: user.id, name: user.email?.split('@')[0] || 'User', role: 'admin' } });
     }
   } catch (e) {
     console.warn('Profile ensure failed', e);
+    // Fallback profile if offline
+    set({ user, profile: { id: user.id, name: user.email?.split('@')[0] || 'User', role: 'admin' } });
   }
 };
 
@@ -146,6 +150,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500))
       ]);
       if (session?.user) {
+        set({ user: session.user });
         await ensureProfile(session.user, set);
       }
     } catch (e) {
@@ -153,15 +158,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } finally {
       set({ isLoading: false });
 
-      // ─── STEP 2: Register listener AFTER initial load ─────────────────────
-      // Registering BEFORE getSession() causes Supabase to immediately fire the
-      // current auth state as a callback, racing with getSession and keeping
-      // isLoading stuck at true. Registering here in finally guarantees:
-      //   • isLoading is already false before any future auth events fire
-      //   • The listener is always registered (no early-returns can skip it)
-      //   • Login and logout events are captured reliably going forward
       supabase.auth.onAuthStateChange(async (_event, session) => {
         if (session?.user) {
+          set({ user: session.user });
           await ensureProfile(session.user, set);
         } else {
           set({ user: null, profile: null });
