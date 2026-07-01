@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useCartStore } from '../store/cartStore';
+import { useAuthStore } from '../store/authStore';
 import { X, MessageCircle } from 'lucide-react';
 import { useToastStore } from '../store/toastStore';
 
 export default function CheckoutModal() {
   const { cart, isCheckoutOpen, setIsCheckoutOpen, getTotalAmount, clearCart } = useCartStore();
+  const { profile } = useAuthStore();
   const showToast = useToastStore(state => state.showToast);
 
   const [name, setName] = useState('');
@@ -15,13 +17,18 @@ export default function CheckoutModal() {
   useEffect(() => {
     if (isCheckoutOpen) {
       document.body.style.overflow = 'hidden';
+      // Pre-fill user data
+      if (profile) {
+        if (!name && profile.name) setName(profile.name);
+        if (!phone && profile.phone) setPhone(profile.phone);
+      }
     } else {
       document.body.style.overflow = '';
     }
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isCheckoutOpen]);
+  }, [isCheckoutOpen, profile]);
 
   if (!isCheckoutOpen) return null;
 
@@ -58,8 +65,6 @@ export default function CheckoutModal() {
     // Clean up
     clearCart();
     setIsCheckoutOpen(false);
-    setName('');
-    setPhone('');
     setNotes('');
     showToast('Redirecting to WhatsApp...');
   };

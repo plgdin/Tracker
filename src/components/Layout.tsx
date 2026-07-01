@@ -61,7 +61,7 @@ export default function Layout() {
         <Outlet />
       </main>
 
-      {profile && (
+      {profile && profile.role !== 'client' && (
         <nav className="bottom-nav">
         <NavLink 
           to="/" 

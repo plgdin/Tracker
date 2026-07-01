@@ -7,7 +7,9 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
   const { user, isLoading, initialize, authNotice, setAuthNotice } = useAuthStore();
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [accountType, setAccountType] = useState<'customer' | 'staff'>('customer');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mode, setMode] = useState<'login' | 'signup' | 'forgot'>('login');
@@ -54,18 +56,33 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
           setIsSubmitting(false);
           return;
         }
+        if (accountType === 'customer' && !phone.trim()) {
+          setError('Phone number is required for customers.');
+          setIsSubmitting(false);
+          return;
+        }
         const { error } = await supabase.auth.signUp({
           email: trimInput.toLowerCase(),
           password: trimPassword,
-          options: { data: { full_name: username.trim() } }
+          options: { data: { 
+            full_name: username.trim(),
+            phone: phone.trim(),
+            role: accountType === 'staff' ? 'pending' : 'client'
+          } }
         });
         if (error) throw error;
-        // Show the access-request notice and switch to login tab
-        setAuthNotice('✅ Request submitted! The admin will review and activate your account. Check back once approved.');
+        
+        if (accountType === 'staff') {
+          setAuthNotice('✅ Request submitted! The admin will review and activate your account. Check back once approved.');
+        } else {
+          setAuthNotice('✅ Account created successfully! Please log in.');
+        }
+        
         setMode('login');
         setEmail('');
         setPassword('');
         setUsername('');
+        setPhone('');
         setIsSubmitting(false);
         return;
       }
@@ -208,17 +225,56 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
             </div>
 
             {mode === 'signup' && (
-              <div className="input-group">
-                <label className="input-label">Username</label>
-                <input
-                  type="text"
-                  className="input-field"
-                  placeholder="Choose a username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required={mode === 'signup'}
-                />
+              <div className="input-group" style={{ marginBottom: '1rem' }}>
+                <label className="input-label" style={{ marginBottom: '0.75rem' }}>I am a...</label>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => setAccountType('customer')}
+                    className={`btn ${accountType === 'customer' ? 'btn-primary' : 'btn-outline'}`}
+                    style={{ flex: 1, padding: '0.5rem', minHeight: 'auto', fontSize: '0.85rem' }}
+                  >
+                    Customer
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAccountType('staff')}
+                    className={`btn ${accountType === 'staff' ? 'btn-primary' : 'btn-outline'}`}
+                    style={{ flex: 1, padding: '0.5rem', minHeight: 'auto', fontSize: '0.85rem' }}
+                  >
+                    Staff
+                  </button>
+                </div>
               </div>
+            )}
+
+            {mode === 'signup' && (
+              <>
+                <div className="input-group">
+                  <label className="input-label">Full Name</label>
+                  <input
+                    type="text"
+                    className="input-field"
+                    placeholder="Enter your name"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required={mode === 'signup'}
+                  />
+                </div>
+                {accountType === 'customer' && (
+                  <div className="input-group">
+                    <label className="input-label">Phone Number</label>
+                    <input
+                      type="tel"
+                      className="input-field"
+                      placeholder="e.g. 9876543210"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      required={accountType === 'customer'}
+                    />
+                  </div>
+                )}
+              </>
             )}
 
             <div className="input-group">

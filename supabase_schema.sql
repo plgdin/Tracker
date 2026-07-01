@@ -5,7 +5,8 @@ CREATE TABLE profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     name TEXT,
     email TEXT,
-    role TEXT CHECK (role IN ('admin', 'worker', 'pending', 'disabled')) DEFAULT 'pending',
+    phone TEXT,
+    role TEXT CHECK (role IN ('admin', 'worker', 'pending', 'disabled', 'client')) DEFAULT 'pending',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -96,12 +97,13 @@ CREATE POLICY "Authenticated users can insert audit_logs" ON audit_logs FOR INSE
 CREATE OR REPLACE FUNCTION public.handle_new_user() 
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.profiles (id, name, email, role)
+  INSERT INTO public.profiles (id, name, email, phone, role)
   VALUES (
-    new.id, 
+    new.id,
     COALESCE(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1) || '_' || substr(new.id::text, 1, 6)),
     new.email,
-    'worker'
+    new.raw_user_meta_data->>'phone',
+    COALESCE(new.raw_user_meta_data->>'role', 'client')
   );
   RETURN new;
 END;
