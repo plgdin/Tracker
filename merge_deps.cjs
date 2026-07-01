@@ -1,16 +1,15 @@
-{
-  "name": "tracker",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@hookform/resolvers": "^5.2.2",
+const fs = require('fs');
+const trackerPkg = JSON.parse(fs.readFileSync('D:/Website/Tracker/package.json', 'utf8'));
+const bjPkg = JSON.parse(fs.readFileSync('D:/Website/bakeandjoy/package.json', 'utf8'));
+
+trackerPkg.dependencies = {
+    ...trackerPkg.dependencies,
+    "tailwindcss": "^3.4.19",
+    "tailwindcss-animate": "^1.0.7",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^3.4.0",
+    "lucide-react": "^0.562.0",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-aspect-ratio": "^1.1.8",
@@ -37,44 +36,20 @@
     "@radix-ui/react-toggle": "^1.1.10",
     "@radix-ui/react-toggle-group": "^1.1.11",
     "@radix-ui/react-tooltip": "^1.2.8",
-    "@supabase/supabase-js": "^2.106.2",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
-    "html5-qrcode": "^2.3.8",
-    "input-otp": "^1.4.2",
-    "lucide-react": "^0.562.0",
-    "next-themes": "^0.4.6",
-    "react": "^19.2.6",
     "react-day-picker": "^9.13.0",
-    "react-dom": "^19.2.6",
-    "react-hook-form": "^7.70.0",
-    "react-resizable-panels": "^4.12.0",
-    "react-router-dom": "^7.16.0",
-    "sonner": "^2.0.7",
-    "tailwind-merge": "^3.4.0",
-    "tailwindcss": "^3.4.19",
-    "tailwindcss-animate": "^1.0.7",
+    "date-fns": "^4.1.0",
     "zod": "^4.3.5",
-    "zustand": "^5.0.14"
-  },
-  "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "@types/node": "^24.12.3",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.1",
+    "react-hook-form": "^7.70.0",
+    "@hookform/resolvers": "^5.2.2"
+};
+
+trackerPkg.devDependencies = {
+    ...trackerPkg.devDependencies,
     "autoprefixer": "^10.4.23",
-    "eslint": "^10.3.0",
-    "eslint-plugin-react-hooks": "^7.1.1",
-    "eslint-plugin-react-refresh": "^0.5.2",
-    "globals": "^17.6.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.19",
-    "tailwindcss-animate": "^1.0.7",
-    "typescript": "~6.0.2",
-    "typescript-eslint": "^8.59.2",
-    "vite": "^8.0.12"
-  }
-}
+    "tailwindcss-animate": "^1.0.7"
+};
+
+fs.writeFileSync('D:/Website/Tracker/package.json', JSON.stringify(trackerPkg, null, 2));

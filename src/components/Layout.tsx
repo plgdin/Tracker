@@ -1,6 +1,7 @@
 import { Outlet, NavLink } from 'react-router-dom';
 import { Home, List, Settings, Shield, LogOut, BookOpen } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
+import '../admin.css';
 
 export default function Layout() {
   const { profile, signOut } = useAuthStore();
@@ -63,7 +64,7 @@ export default function Layout() {
 
       <nav className="bottom-nav">
         <NavLink 
-          to="/" 
+          to="/admin" 
           className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
           end
         >
@@ -72,14 +73,14 @@ export default function Layout() {
         </NavLink>
 
         <NavLink 
-          to="/inventory" 
+          to="/admin/inventory" 
           className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
         >
           <List size={24} />
           <span>Inventory</span>
         </NavLink>
         <NavLink 
-          to="/settings" 
+          to="/admin/settings" 
           className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
         >
           <Settings size={24} />
@@ -87,7 +88,7 @@ export default function Layout() {
         </NavLink>
         {profile?.role === 'admin' && (
           <NavLink 
-            to="/admin" 
+            to="/admin/dashboard" 
             className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
           >
             <Shield size={24} />
@@ -96,7 +97,7 @@ export default function Layout() {
         )}
         {profile?.role === 'admin' && (
           <NavLink 
-            to="/ledger" 
+            to="/admin/ledger" 
             className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
           >
             <BookOpen size={24} />

@@ -9,6 +9,10 @@ import AdminDashboard from './pages/AdminDashboard';
 import ResetPassword from './pages/ResetPassword';
 import Ledger from './pages/Ledger';
 import Toast from './components/Toast';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import { CartProvider } from './context/CartContext';
+import { Outlet } from 'react-router-dom';
 import './index.css';
 
 function App() {
@@ -16,19 +20,25 @@ function App() {
     <BrowserRouter>
       <Toast />
       <Routes>
-        {/* Standalone — accessible without being logged in (recovery session from email link) */}
+        {/* Standalone — accessible without being logged in */}
         <Route path="/reset-password" element={<ResetPassword />} />
+        
+        {/* Storefront - Public/Client */}
+        <Route element={<div className="storefront"><CartProvider><Outlet /></CartProvider></div>}>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+        </Route>
 
-        {/* All other routes are protected by AuthWrapper */}
+        {/* All other routes are protected by AuthWrapper (Staff/Admin area) */}
         <Route path="/*" element={
           <AuthWrapper>
             <Routes>
-              <Route path="/" element={<Layout />}>
+              <Route path="/admin" element={<Layout />}>
                 <Route index element={<Dashboard />} />
                 <Route path="inventory" element={<Inventory />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="add-item" element={<AddItem />} />
-                <Route path="admin" element={<AdminDashboard />} />
+                <Route path="dashboard" element={<AdminDashboard />} />
                 <Route path="ledger" element={<Ledger />} />
               </Route>
             </Routes>
