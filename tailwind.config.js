@@ -51,6 +51,11 @@ module.exports = {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        "burnt-orange": "#D95B35",
+        espresso: "#3D2B1F",
+        taupe: "#8C7B6B",
+        cream: "#F4F1EE",
+        "dark-chocolate": "#2B1D14",
       },
       borderRadius: {
         xl: "calc(var(--radius) + 4px)",

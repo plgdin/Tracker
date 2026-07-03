@@ -60,7 +60,9 @@ export const supabase = dbSupabase;
 export const getUseSupabase = async (): Promise<boolean> => {
   if (!dbSupabase) return false;
   // 1. Instantly check memory state first for peak performance
-  if (useAuthStore.getState().user) return true;
+  const user = useAuthStore.getState().user;
+  if (user && user.id === 'mock-admin-id') return false;
+  if (user) return true;
   try {
     // 2. Fall back to getSession but wrap in a 2-second timeout to prevent any hangs
     const sessionPromise = dbSupabase.auth.getSession().then(({ data }) => !!data.session);

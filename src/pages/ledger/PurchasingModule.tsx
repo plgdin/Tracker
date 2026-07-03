@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Trash2, Edit2, Printer, ChevronRight, Package, TrendingUp, FileText, AlertCircle } from 'lucide-react';
 import { ledgerDb, getLedgerBrands, saveLedgerBrand, r2, parseAmt, type PurchaseInvoice, type PurchaseItem, type PurchasePaymentMethod } from '../../lib/ledgerDb';
 import { printPurchaseInvoice } from '../../lib/ledgerPrint';
@@ -52,6 +53,7 @@ function BrandAutocomplete({ value, onChange, brands }: { value: string; onChang
 }
 
 export default function PurchasingModule() {
+  const navigate = useNavigate();
   const showToast = useToastStore(s => s.showToast);
   const [view, setView] = useState<View>('dashboard');
   const [selectedBrand, setSelectedBrand] = useState('');
@@ -67,8 +69,28 @@ export default function PurchasingModule() {
   const blank = () => ({ invoice_number: '', purchase_date: todayStr(), brand_name: '', payment_method: 'cash' as PurchasePaymentMethod, cheque_number: '', cheque_date: '', notes: '', items: [newRow()] });
   const [form, setForm] = useState(blank());
 
-  const refresh = async () => { setPurchases(await ledgerDb.getPurchases()); setBrands(await getLedgerBrands()); setStats(await ledgerDb.getPurchaseStats()); };
-  useEffect(() => { refresh(); }, []);
+  const refresh = async () => {
+    const pData = await ledgerDb.getPurchases();
+    const bData = await getLedgerBrands();
+    const sData = await ledgerDb.getPurchaseStats();
+    setPurchases(pData);
+    setBrands(bData);
+    setStats(sData);
+  };
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const pData = await ledgerDb.getPurchases();
+      const bData = await getLedgerBrands();
+      const sData = await ledgerDb.getPurchaseStats();
+      if (active) {
+        setPurchases(pData);
+        setBrands(bData);
+        setStats(sData);
+      }
+    })();
+    return () => { active = false; };
+  }, []);
 
   const setF = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
@@ -134,9 +156,12 @@ export default function PurchasingModule() {
   // ── DASHBOARD ───────────────────────────────────────────────
   if (view === 'dashboard') return (
     <div>
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1rem' }}>
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1rem', flexWrap:'wrap', gap:'0.5rem' }}>
         <h2 style={{ fontSize:'1.1rem', fontWeight:700, margin:0 }}>Purchasing</h2>
-        <button className="btn btn-primary" style={{ padding:'0.5rem 1rem', fontSize:'0.8rem' }} onClick={() => { setForm(blank()); setView('new'); }}><Plus size={15}/> New Purchase</button>
+        <div style={{ display:'flex', gap:'0.5rem' }}>
+          <button className="btn btn-outline" style={{ padding:'0.5rem 1rem', fontSize:'0.8rem' }} onClick={() => navigate('/admin/add-item')}><Plus size={15}/> Add Item</button>
+          <button className="btn btn-primary" style={{ padding:'0.5rem 1rem', fontSize:'0.8rem' }} onClick={() => { setForm(blank()); setView('new'); }}><Plus size={15}/> New Purchase</button>
+        </div>
       </div>
       <div className="ledger-stats-grid">
         {[{ label:'Total Purchases', value:fmt(stats.totalAmount), sub:`${stats.totalCount} invoices`, color:'var(--color-primary)' }, { label:'This Month', value:fmt(stats.monthAmount), sub:`${stats.monthCount} invoices`, color:'var(--color-accent)' }, { label:'Cheques Pending', value:String(stats.chequesCount), sub:'outstanding', color:'var(--color-warning)' }].map(s => (
@@ -239,11 +264,13 @@ export default function PurchasingModule() {
           {inv.cheque_number && <div><span className="ledger-info-label">Cheque No.</span><span className="ledger-info-val">{inv.cheque_number}</span></div>}
           {inv.cheque_date && <div><span className="ledger-info-label">Cheque Date</span><span className="ledger-info-val">{inv.cheque_date}</span></div>}
         </div>
-        <table className="ledger-table" style={{ marginTop:'1rem' }}>
-          <thead><tr><th>Item</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead>
-          <tbody>{inv.items.map(i => (<tr key={i.id}><td>{i.item_name}{i.description && <div className="ledger-muted" style={{ fontSize:'0.72rem' }}>{i.description}</div>}</td><td>{i.quantity}</td><td>{fmt(i.unit_price)}</td><td>{fmt(i.total)}</td></tr>))}</tbody>
-          <tfoot><tr><td colSpan={3} style={{ fontWeight:700, textAlign:'right' }}>Grand Total</td><td style={{ fontWeight:700, color:'var(--color-primary)' }}>{fmt(inv.total_amount)}</td></tr></tfoot>
-        </table>
+        <div className="ledger-table-container" style={{ marginTop:'1rem' }}>
+          <table className="ledger-table">
+            <thead><tr><th>Item</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead>
+            <tbody>{inv.items.map(i => (<tr key={i.id}><td>{i.item_name}{i.description && <div className="ledger-muted" style={{ fontSize:'0.72rem' }}>{i.description}</div>}</td><td>{i.quantity}</td><td>{fmt(i.unit_price)}</td><td>{fmt(i.total)}</td></tr>))}</tbody>
+            <tfoot><tr><td colSpan={3} style={{ fontWeight:700, textAlign:'right' }}>Grand Total</td><td style={{ fontWeight:700, color:'var(--color-primary)' }}>{fmt(inv.total_amount)}</td></tr></tfoot>
+          </table>
+        </div>
         {inv.notes && <div style={{ marginTop:'1rem', padding:'0.75rem', background:'var(--color-bg-light)', borderRadius:'10px', fontSize:'0.82rem' }}><strong>Notes:</strong> {inv.notes}</div>}
       </div>
       <div className="ledger-action-row">

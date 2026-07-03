@@ -10,6 +10,7 @@ import ResetPassword from './pages/ResetPassword';
 import Ledger from './pages/Ledger';
 import Toast from './components/Toast';
 import Home from './pages/Home';
+import Products from './pages/Products';
 import Login from './pages/Login';
 import { CartProvider } from './context/CartContext';
 import { Outlet } from 'react-router-dom';
@@ -26,6 +27,7 @@ function App() {
         {/* Storefront - Public/Client */}
         <Route element={<div className="storefront"><CartProvider><Outlet /></CartProvider></div>}>
           <Route path="/" element={<Home />} />
+          <Route path="/products" element={<Products />} />
           <Route path="/login" element={<Login />} />
         </Route>
 

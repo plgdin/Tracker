@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { db } from '../lib/db';
 import type { Item, Category } from '../lib/db';
-import { Search, Trash2 } from 'lucide-react';
+import { Search, Trash2, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useToastStore } from '../store/toastStore';
@@ -129,9 +129,14 @@ export default function Inventory() {
 
   return (
     <div className="container">
-      <header style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
-        <h1 style={{ display: 'inline-block' }}>All Items</h1>
-        <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>Your complete tracked inventory</p>
+      <header style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+        <div>
+          <h1 style={{ margin: 0, textAlign: 'left' }}>All Items</h1>
+          <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', margin: 0 }}>Your complete tracked inventory</p>
+        </div>
+        <button className="btn btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }} onClick={() => navigate('/admin/add-item')}>
+          <Plus size={15} /> Add Item
+        </button>
       </header>
 
       {/* Filters panel */}
@@ -219,7 +224,7 @@ export default function Inventory() {
               <div 
                 key={item.id} 
                 className="cute-card"
-                onClick={() => navigate(`/add-item?edit=${item.id}`)}
+                onClick={() => navigate(`/admin/add-item?edit=${item.id}`)}
                 style={{ position: 'relative' }}
               >
                 <div className="cute-card-qty">{item.quantity}</div>

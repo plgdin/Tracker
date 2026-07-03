@@ -1,6 +1,6 @@
-import { X, Plus, Minus, ShoppingBag, ArrowRight } from "lucide-react";
+import { X, Plus, Minus, ShoppingBag, ArrowRight, ArrowLeft } from "lucide-react";
 import { useCartContext } from "@/context/CartContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -10,6 +10,21 @@ interface CartDrawerProps {
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const { items, removeItem, updateQuantity, totalAmount, clearCart } = useCartContext();
   const [showCheckout, setShowCheckout] = useState(false);
+  const [removingIds, setRemovingIds] = useState<number[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setShowCheckout(true);
+    }
+  }, [isOpen]);
+
+  const handleRemoveClick = (productId: number) => {
+    setRemovingIds((prev) => [...prev, productId]);
+    setTimeout(() => {
+      removeItem(productId);
+      setRemovingIds((prev) => prev.filter((id) => id !== productId));
+    }, 300);
+  };
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
@@ -40,7 +55,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     text += `\nPlease confirm my order and share payment QR.`;
 
     const encodedText = encodeURIComponent(text);
-    const whatsappUrl = `https://wa.me/919876543210?text=${encodedText}`;
+    const whatsappUrl = `https://wa.me/919999999999?text=${encodedText}`;
 
     setOrderSuccess({
       whatsappUrl,
@@ -51,9 +66,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   if (orderSuccess) {
     return (
       <div
-        className={`fixed inset-y-0 right-0 z-[60] w-full max-w-md bg-white shadow-2xl transition-transform duration-300 ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed inset-y-0 right-0 z-[60] w-full max-w-lg bg-white shadow-2xl transition-transform duration-300 ${isOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         <div className="h-full flex flex-col items-center justify-center p-8 text-center">
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
@@ -101,22 +115,44 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
       {/* Drawer */}
       <div
-        className={`fixed inset-y-0 right-0 z-[60] w-full max-w-md bg-white shadow-2xl transition-transform duration-300 flex flex-col ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed inset-y-0 right-0 z-[60] w-full max-w-lg bg-white shadow-2xl transition-transform duration-300 flex flex-col ${isOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-espresso/10">
-          <h2 className="font-heading text-xl font-bold text-espresso">
-            {showCheckout ? "Checkout" : "Your Cart"}
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-full hover:bg-espresso/5 transition-colors"
-          >
-            <X className="w-5 h-5 text-espresso" />
-          </button>
-        </div>
+        {showCheckout ? (
+          <div className="relative flex items-center justify-center py-6 px-5 border-b border-espresso/10">
+            {items.length > 0 && (
+              <button
+                onClick={() => setShowCheckout(false)}
+                className="absolute left-5 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-espresso/5 transition-colors"
+                aria-label="Back to cart"
+              >
+                <ArrowLeft className="w-6 h-6 text-espresso" />
+              </button>
+            )}
+            <h2 className="font-heading text-[24px] font-bold text-espresso text-center leading-tight">
+              Checkout
+            </h2>
+            <button
+              onClick={onClose}
+              className="absolute right-5 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-espresso/5 transition-colors"
+            >
+              <X className="w-6 h-6 text-espresso" />
+            </button>
+          </div>
+        ) : (
+          <div className="relative flex items-center justify-center py-6 px-5 border-b border-espresso/10">
+            <h2 className="font-heading text-[24px] font-bold text-espresso text-center leading-tight">
+              Your Cart
+            </h2>
+            <button
+              onClick={onClose}
+              className="absolute right-5 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-espresso/5 transition-colors"
+            >
+              <X className="w-6 h-6 text-espresso" />
+            </button>
+          </div>
+        )}
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
@@ -130,65 +166,59 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             </div>
           ) : showCheckout ? (
             /* Checkout Form */
-            <div className="p-5 space-y-4">
+            <div className="p-7 space-y-7">
               <div>
-                <label className="block text-sm font-medium text-espresso mb-1">
+                <label className="block text-base font-semibold text-espresso mb-2">
                   Full Name *
                 </label>
                 <input
                   type="text"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-espresso/15 focus:border-burnt-orange focus:ring-2 focus:ring-burnt-orange/20 outline-none transition-all"
+                  className="w-full px-5 py-6 rounded-xl border border-espresso/15 focus:border-burnt-orange focus:ring-2 focus:ring-burnt-orange/20 outline-none transition-all text-base"
                   placeholder="Enter your name"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-espresso mb-1">
+                <label className="block text-base font-semibold text-espresso mb-2">
                   Phone Number *
                 </label>
                 <input
                   type="tel"
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-espresso/15 focus:border-burnt-orange focus:ring-2 focus:ring-burnt-orange/20 outline-none transition-all"
-                  placeholder="+91-9876543210"
+                  className="w-full px-5 py-6 rounded-xl border border-espresso/15 focus:border-burnt-orange focus:ring-2 focus:ring-burnt-orange/20 outline-none transition-all text-base"
+                  placeholder="+91-1234567890"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-espresso mb-1">
+                <label className="block text-base font-semibold text-espresso mb-2">
                   Email (optional)
                 </label>
                 <input
                   type="email"
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-espresso/15 focus:border-burnt-orange focus:ring-2 focus:ring-burnt-orange/20 outline-none transition-all"
+                  className="w-full px-5 py-6 rounded-xl border border-espresso/15 focus:border-burnt-orange focus:ring-2 focus:ring-burnt-orange/20 outline-none transition-all text-base"
                   placeholder="you@example.com"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-espresso mb-2">
+                <label className="block text-base font-semibold text-espresso mb-3">
                   Delivery Type
                 </label>
-                <div className="flex gap-3">
+                <div className="flex gap-4">
                   <button
                     onClick={() => setDeliveryType("pickup")}
-                    className={`flex-1 py-3 rounded-xl border-2 transition-all ${
-                      deliveryType === "pickup"
-                        ? "border-burnt-orange bg-burnt-orange/5 text-burnt-orange"
-                        : "border-espresso/15 text-espresso/70"
-                    }`}
+                    className={`delivery-btn flex-1 py-5 rounded-xl transition-all text-base font-bold ${deliveryType === "pickup" ? "active" : "inactive"
+                      }`}
                   >
                     Store Pickup
                   </button>
                   <button
                     onClick={() => setDeliveryType("delivery")}
-                    className={`flex-1 py-3 rounded-xl border-2 transition-all ${
-                      deliveryType === "delivery"
-                        ? "border-burnt-orange bg-burnt-orange/5 text-burnt-orange"
-                        : "border-espresso/15 text-espresso/70"
-                    }`}
+                    className={`delivery-btn flex-1 py-5 rounded-xl transition-all text-base font-bold ${deliveryType === "delivery" ? "active" : "inactive"
+                      }`}
                   >
                     Home Delivery
                   </button>
@@ -196,152 +226,170 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               </div>
               {deliveryType === "delivery" && (
                 <div>
-                  <label className="block text-sm font-medium text-espresso mb-1">
+                  <label className="block text-base font-semibold text-espresso mb-2">
                     Delivery Address *
                   </label>
                   <textarea
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-espresso/15 focus:border-burnt-orange focus:ring-2 focus:ring-burnt-orange/20 outline-none transition-all resize-none"
+                    className="w-full px-5 py-6 rounded-xl border border-espresso/15 focus:border-burnt-orange focus:ring-2 focus:ring-burnt-orange/20 outline-none transition-all resize-none text-base"
                     rows={3}
                     placeholder="Enter your delivery address"
                   />
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium text-espresso mb-1">
+                <label className="block text-base font-semibold text-espresso mb-2">
                   Notes (optional)
                 </label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-espresso/15 focus:border-burnt-orange focus:ring-2 focus:ring-burnt-orange/20 outline-none transition-all resize-none"
+                  className="w-full px-5 py-6 rounded-xl border border-espresso/15 focus:border-burnt-orange focus:ring-2 focus:ring-burnt-orange/20 outline-none transition-all resize-none text-base"
                   rows={2}
                   placeholder="Any special instructions..."
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-espresso mb-1">
+                <label className="block text-base font-semibold text-espresso mb-2">
                   Offer Code
                 </label>
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   <input
                     type="text"
                     value={offerCode}
                     onChange={(e) => setOfferCode(e.target.value.toUpperCase())}
-                    className="flex-1 px-4 py-3 rounded-xl border border-espresso/15 focus:border-burnt-orange focus:ring-2 focus:ring-burnt-orange/20 outline-none transition-all uppercase"
+                    className="flex-1 px-5 py-6 rounded-xl border border-espresso/15 focus:border-burnt-orange focus:ring-2 focus:ring-burnt-orange/20 outline-none transition-all uppercase text-base"
                     placeholder="e.g. FIRST15"
                   />
                 </div>
               </div>
-              <button
-                onClick={() => setShowCheckout(false)}
-                className="text-sm text-taupe hover:text-espresso transition-colors"
-              >
-                ← Back to cart
-              </button>
             </div>
           ) : (
-            /* Cart Items */
-            <div className="p-5 space-y-4">
-              {items.map((item) => (
-                <div
-                  key={item.productId}
-                  className="flex gap-4 bg-cream/50 rounded-2xl p-3"
-                >
-                  <div className="w-20 h-20 rounded-xl bg-white flex items-center justify-center flex-shrink-0 overflow-hidden">
-                    {item.image ? (
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <ShoppingBag className="w-8 h-8 text-taupe/40" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-espresso text-sm truncate">
-                      {item.name}
-                    </h3>
-                    <p className="text-burnt-orange font-semibold text-sm mt-1">
-                      Rs.{item.price}
-                    </p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <button
-                        onClick={() =>
-                          updateQuantity(item.productId, item.quantity - 1)
-                        }
-                        className="w-7 h-7 rounded-full bg-white border border-espresso/15 flex items-center justify-center hover:bg-espresso/5 transition-colors"
-                      >
-                        <Minus className="w-3 h-3" />
-                      </button>
-                      <span className="text-sm font-medium w-6 text-center">
-                        {item.quantity}
-                      </span>
-                      <button
-                        onClick={() =>
-                          updateQuantity(item.productId, item.quantity + 1)
-                        }
-                        className="w-7 h-7 rounded-full bg-white border border-espresso/15 flex items-center justify-center hover:bg-espresso/5 transition-colors"
-                      >
-                        <Plus className="w-3 h-3" />
-                      </button>
-                      <button
-                        onClick={() => removeItem(item.productId)}
-                        className="ml-auto text-taupe hover:text-red-500 transition-colors"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
+            <div className="p-5 space-y-4 overflow-x-hidden">
+              {items.map((item) => {
+                const isRemoving = removingIds.includes(item.productId);
+                return (
+                  <div
+                    key={item.productId}
+                    className={`flex gap-4 bg-cream/50 rounded-2xl p-3 transition-all duration-300 ${isRemoving ? "animate-fly-out-left" : ""
+                      }`}
+                  >
+                    <div className="w-20 h-20 rounded-xl bg-white flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      {item.image ? (
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <ShoppingBag className="w-8 h-8 text-taupe/40" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-espresso text-sm truncate">
+                        {item.name}
+                      </h3>
+                      <p className="text-burnt-orange font-semibold text-sm mt-1">
+                        ₹{item.price}
+                      </p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <button
+                          onClick={() =>
+                            updateQuantity(item.productId, item.quantity - 1)
+                          }
+                          className="w-7 h-7 rounded-full bg-white border border-espresso/15 flex items-center justify-center hover:bg-espresso/5 transition-colors"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </button>
+                        <span className="text-sm font-medium w-6 text-center">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() =>
+                            updateQuantity(item.productId, item.quantity + 1)
+                          }
+                          className="w-7 h-7 rounded-full bg-white border border-espresso/15 flex items-center justify-center hover:bg-espresso/5 transition-colors"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={() => handleRemoveClick(item.productId)}
+                          className="ml-auto text-taupe hover:text-red-500 transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
 
         {/* Footer */}
         {items.length > 0 && !showCheckout && (
-          <div className="border-t border-espresso/10 p-5 space-y-4 bg-white">
-            <div className="flex justify-between items-center">
-              <span className="text-taupe">Subtotal</span>
-              <span className="font-heading text-xl font-bold text-espresso">
-                Rs.{totalAmount}
+          <div className="border-t border-espresso/10 px-6 pt-7 pb-7 space-y-5 bg-white text-espresso rounded-t-[50px] shadow-[0_-8px_30px_rgba(61,43,31,0.06)]">
+            <div className="flex justify-between items-center px-2">
+              <span className="text-espresso font-semibold text-lg">Subtotal</span>
+              <span className="font-sans text-2xl font-bold text-burnt-orange">
+                ₹{totalAmount}
               </span>
             </div>
-            <p className="text-xs text-taupe">
-              Payment via QR code after order confirmation
-            </p>
             <button
               onClick={() => setShowCheckout(true)}
-              className="w-full py-4 bg-burnt-orange text-white font-semibold rounded-full hover:bg-[#C44D2A] transition-all hover:shadow-lg flex items-center justify-center gap-2"
+              style={{ backgroundColor: "#D95B35", color: "#FFFFFF" }}
+              className="w-full h-16 text-white font-bold rounded-full transition-all duration-300 hover:bg-[#C44D2A] hover:shadow-[0_0_22px_rgba(217,91,53,0.55),0_12px_28px_rgba(61,43,31,0.18)] flex items-center justify-center gap-2 text-xl shadow-none"
             >
               Proceed to Checkout
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-6 h-6 text-white" />
             </button>
+            <p className="text-sm text-taupe text-center">
+              Payment via QR code after order confirmation
+            </p>
           </div>
         )}
 
         {showCheckout && (
-          <div className="border-t border-espresso/10 p-5 space-y-4 bg-white">
-            <div className="flex justify-between items-center">
-              <span className="text-taupe">Total</span>
-              <span className="font-heading text-xl font-bold text-espresso">
-                Rs.{totalAmount}
+          <div className="border-t border-espresso/10 px-6 pt-7 pb-7 space-y-5 bg-white text-espresso rounded-t-[50px] shadow-[0_-8px_30px_rgba(61,43,31,0.06)]">
+            <div className="flex justify-between items-center px-2">
+              <span className="text-espresso font-semibold text-lg">Total</span>
+              <span className="font-sans text-2xl font-bold text-burnt-orange">
+                ₹{totalAmount}
               </span>
             </div>
             <button
               onClick={handleCheckout}
               disabled={!customerName || !customerPhone}
-              className="w-full py-4 bg-burnt-orange text-white font-semibold rounded-full hover:bg-[#C44D2A] transition-all hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              style={(!customerName || !customerPhone) ? { backgroundColor: "rgba(61,43,31,0.1)", color: "rgba(61,43,31,0.4)" } : { backgroundColor: "#D95B35", color: "#FFFFFF" }}
+              className={`w-full h-16 font-bold rounded-full transition-all duration-300 flex items-center justify-center gap-2 text-xl ${(!customerName || !customerPhone)
+                ? "cursor-not-allowed shadow-none"
+                : "hover:bg-[#C44D2A] hover:shadow-[0_0_22px_rgba(217,91,53,0.55),0_12px_28px_rgba(61,43,31,0.18)]"
+                }`}
             >
               Place Order via WhatsApp
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-6 h-6" />
             </button>
           </div>
         )}
       </div>
+
+      <style>{`
+        @keyframes flyOutLeft {
+          0% {
+            transform: translateX(0);
+            opacity: 1;
+          }
+          100% {
+            transform: translateX(-150px);
+            opacity: 0;
+          }
+        }
+        .animate-fly-out-left {
+          animation: flyOutLeft 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+      `}</style>
     </>
   );
 }

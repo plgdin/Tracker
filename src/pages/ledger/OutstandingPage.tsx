@@ -15,8 +15,20 @@ export default function OutstandingPage() {
   const [payNotes, setPayNotes] = useState('');
   const [saving, setSaving] = useState(false);
 
-  const refresh = async () => setCustomers((await ledgerDb.getCustomers()).filter(c => c.outstanding_balance > 0));
-  useEffect(() => { refresh(); }, []);
+  const refresh = async () => {
+    const data = await ledgerDb.getCustomers();
+    setCustomers(data.filter(c => c.outstanding_balance > 0));
+  };
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const data = await ledgerDb.getCustomers();
+      if (active) {
+        setCustomers(data.filter(c => c.outstanding_balance > 0));
+      }
+    })();
+    return () => { active = false; };
+  }, []);
 
   const filtered = search ? customers.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.phone.includes(search)) : customers;
   const totalDue = customers.reduce((s, c) => s + c.outstanding_balance, 0);

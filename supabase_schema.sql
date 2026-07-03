@@ -4,6 +4,7 @@
 CREATE TABLE profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     name TEXT,
+    email TEXT,
     role TEXT CHECK (role IN ('admin', 'worker', 'pending', 'disabled')) DEFAULT 'pending',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -95,8 +96,13 @@ CREATE POLICY "Authenticated users can insert audit_logs" ON audit_logs FOR INSE
 CREATE OR REPLACE FUNCTION public.handle_new_user() 
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.profiles (id, name, role)
-  VALUES (new.id, new.raw_user_meta_data->>'full_name', 'worker');
+  INSERT INTO public.profiles (id, name, email, role)
+  VALUES (
+    new.id,
+    COALESCE(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
+    new.email,
+    COALESCE(new.raw_user_meta_data->>'role', 'pending')
+  );
   RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

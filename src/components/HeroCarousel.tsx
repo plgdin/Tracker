@@ -51,11 +51,6 @@ export default function HeroCarousel() {
     return () => clearInterval(timer);
   }, [next]);
 
-  const scrollToProducts = () => {
-    const el = document.getElementById("products");
-    if (el) el.scrollIntoView({ behavior: "smooth" });
-  };
-
   return (
     <section id="hero" className="relative w-full h-screen overflow-hidden">
       {/* Slides */}
@@ -87,12 +82,7 @@ export default function HeroCarousel() {
         <p className="mt-6 text-lg md:text-xl text-white/85 max-w-2xl font-body animate-fade-in-up">
           {heroSlides[current].subtitle}
         </p>
-        <button
-          onClick={scrollToProducts}
-          className="mt-10 px-8 py-4 bg-burnt-orange text-white font-semibold rounded-full hover:bg-[#C44D2A] transition-all duration-300 hover:shadow-lg hover:scale-105 animate-fade-in-up"
-        >
-          Order Now
-        </button>
+
       </div>
 
       {/* Navigation Arrows */}

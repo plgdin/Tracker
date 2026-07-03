@@ -26,8 +26,28 @@ export default function SellingModule() {
   const blank = () => ({ invoice_number: '', sale_date: todayStr(), customer_name: '', customer_phone: '', payment_method: 'cash' as SalePaymentMethod, notes: '', items: [newRow()], amount_paid: '' });
   const [form, setForm] = useState(blank());
 
-  const refresh = async () => { setSales(await ledgerDb.getSales()); setStats(await ledgerDb.getSalesStats()); setAllCustomers(await ledgerDb.getCustomers()); };
-  useEffect(() => { refresh(); }, []);
+  const refresh = async () => {
+    const sData = await ledgerDb.getSales();
+    const statsData = await ledgerDb.getSalesStats();
+    const cData = await ledgerDb.getCustomers();
+    setSales(sData);
+    setStats(statsData);
+    setAllCustomers(cData);
+  };
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const sData = await ledgerDb.getSales();
+      const statsData = await ledgerDb.getSalesStats();
+      const cData = await ledgerDb.getCustomers();
+      if (active) {
+        setSales(sData);
+        setStats(statsData);
+        setAllCustomers(cData);
+      }
+    })();
+    return () => { active = false; };
+  }, []);
 
   const setF = (k: string, v: string | number) => setForm(f => ({ ...f, [k]: v }));
 
@@ -209,15 +229,17 @@ export default function SellingModule() {
             ⚠️ Previous Outstanding Balance: {fmt(inv.previous_balance)}
           </div>
         )}
-        <table className="ledger-table" style={{ marginTop:'1rem' }}>
-          <thead><tr><th>Item</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead>
-          <tbody>{inv.items.map(i => (<tr key={i.id}><td>{i.item_name}{i.description && <div className="ledger-muted" style={{ fontSize:'0.72rem' }}>{i.description}</div>}</td><td>{i.quantity}</td><td>{fmt(i.unit_price)}</td><td>{fmt(i.total)}</td></tr>))}</tbody>
-          <tfoot>
-            <tr><td colSpan={3} style={{ fontWeight:700, textAlign:'right' }}>Items Total</td><td style={{ fontWeight:700 }}>{fmt(inv.total_amount)}</td></tr>
-            <tr><td colSpan={3} style={{ textAlign:'right' }}>Amount Paid</td><td style={{ color:'var(--color-accent)', fontWeight:600 }}>- {fmt(inv.amount_paid)}</td></tr>
-            <tr><td colSpan={3} style={{ fontWeight:700, textAlign:'right' }}>Balance Due</td><td style={{ fontWeight:700, color: inv.balance_due > 0 ? '#D97706' : 'var(--color-accent)' }}>{fmt(inv.balance_due)}</td></tr>
-          </tfoot>
-        </table>
+        <div className="ledger-table-container" style={{ marginTop:'1rem' }}>
+          <table className="ledger-table">
+            <thead><tr><th>Item</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead>
+            <tbody>{inv.items.map(i => (<tr key={i.id}><td>{i.item_name}{i.description && <div className="ledger-muted" style={{ fontSize:'0.72rem' }}>{i.description}</div>}</td><td>{i.quantity}</td><td>{fmt(i.unit_price)}</td><td>{fmt(i.total)}</td></tr>))}</tbody>
+            <tfoot>
+              <tr><td colSpan={3} style={{ fontWeight:700, textAlign:'right' }}>Items Total</td><td style={{ fontWeight:700 }}>{fmt(inv.total_amount)}</td></tr>
+              <tr><td colSpan={3} style={{ textAlign:'right' }}>Amount Paid</td><td style={{ color:'var(--color-accent)', fontWeight:600 }}>- {fmt(inv.amount_paid)}</td></tr>
+              <tr><td colSpan={3} style={{ fontWeight:700, textAlign:'right' }}>Balance Due</td><td style={{ fontWeight:700, color: inv.balance_due > 0 ? '#D97706' : 'var(--color-accent)' }}>{fmt(inv.balance_due)}</td></tr>
+            </tfoot>
+          </table>
+        </div>
         {inv.notes && <div style={{ marginTop:'1rem', padding:'0.75rem', background:'var(--color-bg-light)', borderRadius:'10px', fontSize:'0.82rem' }}><strong>Notes:</strong> {inv.notes}</div>}
       </div>
       <div className="ledger-action-row">

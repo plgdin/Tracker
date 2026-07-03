@@ -51,23 +51,25 @@ function InvoiceModal({ purchaseId, saleId, onClose, purchases, sales }: { purch
             ⚠️ Previous Outstanding: {fmt(s.previous_balance)}
           </div>
         )}
-        <table className="ledger-table">
-          <thead><tr><th>Item</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead>
-          <tbody>
-            {(isPurchase ? p.items : s.items).map(i => (
-              <tr key={i.id}><td>{i.item_name}</td><td>{i.quantity}</td><td>{fmt(i.unit_price)}</td><td>{fmt(i.total)}</td></tr>
-            ))}
-          </tbody>
-          <tfoot>
-            {isPurchase ? (
-              <tr><td colSpan={3} style={{ textAlign:'right', fontWeight:700 }}>Grand Total</td><td style={{ fontWeight:700, color:'var(--color-primary)' }}>{fmt(p.total_amount)}</td></tr>
-            ) : (<>
-              <tr><td colSpan={3} style={{ textAlign:'right', fontWeight:700 }}>Items Total</td><td>{fmt(s.total_amount)}</td></tr>
-              <tr><td colSpan={3} style={{ textAlign:'right' }}>Paid</td><td style={{ color:'var(--color-accent)' }}>- {fmt(s.amount_paid)}</td></tr>
-              <tr><td colSpan={3} style={{ textAlign:'right', fontWeight:700 }}>Balance Due</td><td style={{ fontWeight:700, color: s.balance_due>0?'#D97706':'var(--color-accent)' }}>{fmt(s.balance_due)}</td></tr>
-            </>)}
-          </tfoot>
-        </table>
+        <div className="ledger-table-container">
+          <table className="ledger-table">
+            <thead><tr><th>Item</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead>
+            <tbody>
+              {(isPurchase ? p.items : s.items).map(i => (
+                <tr key={i.id}><td>{i.item_name}</td><td>{i.quantity}</td><td>{fmt(i.unit_price)}</td><td>{fmt(i.total)}</td></tr>
+              ))}
+            </tbody>
+            <tfoot>
+              {isPurchase ? (
+                <tr><td colSpan={3} style={{ textAlign:'right', fontWeight:700 }}>Grand Total</td><td style={{ fontWeight:700, color:'var(--color-primary)' }}>{fmt(p.total_amount)}</td></tr>
+              ) : (<>
+                <tr><td colSpan={3} style={{ textAlign:'right', fontWeight:700 }}>Items Total</td><td>{fmt(s.total_amount)}</td></tr>
+                <tr><td colSpan={3} style={{ textAlign:'right' }}>Paid</td><td style={{ color:'var(--color-accent)' }}>- {fmt(s.amount_paid)}</td></tr>
+                <tr><td colSpan={3} style={{ textAlign:'right', fontWeight:700 }}>Balance Due</td><td style={{ fontWeight:700, color: s.balance_due>0?'#D97706':'var(--color-accent)' }}>{fmt(s.balance_due)}</td></tr>
+              </>)}
+            </tfoot>
+          </table>
+        </div>
         {(isPurchase ? p.notes : s.notes) && (
           <div style={{ marginTop:'0.75rem', padding:'0.65rem', background:'var(--color-bg-light)', borderRadius:'8px', fontSize:'0.82rem' }}>
             <strong>Notes:</strong> {isPurchase ? p.notes : s.notes}
@@ -232,7 +234,7 @@ export default function ReportsPage() {
           <div className="ledger-stat-card" style={{ borderTop:'3px solid var(--color-warning)' }}><p className="ledger-stat-label">Cheques</p><p className="ledger-stat-value" style={{ color:'var(--color-warning)' }}>{purchaseData.filter(p=>p.payment_method==='cheque').length}</p><p className="ledger-stat-sub">pending</p></div>
         </div>
         <div className="panel" style={{ padding:'0.5rem' }}>
-          <div style={{ overflowX:'auto' }}>
+          <div className="ledger-table-container">
             <table className="ledger-table">
               <thead><tr><th>#</th><th>Invoice</th><th>Date</th><th>Brand</th><th>Payment</th><th>Total</th><th>View</th></tr></thead>
               <tbody>
@@ -263,7 +265,7 @@ export default function ReportsPage() {
           ))}
         </div>
         <div className="panel" style={{ padding:'0.5rem' }}>
-          <div style={{ overflowX:'auto' }}>
+          <div className="ledger-table-container">
             <table className="ledger-table">
               <thead><tr><th>#</th><th>Invoice</th><th>Date</th><th>Customer</th><th>Total</th><th>Paid</th><th>Balance</th><th>Status</th><th>View</th></tr></thead>
               <tbody>
@@ -298,7 +300,7 @@ export default function ReportsPage() {
           </div>
         </div>
         <div className="panel" style={{ padding:'0.5rem' }}>
-          <div style={{ overflowX:'auto' }}>
+          <div className="ledger-table-container">
             <table className="ledger-table">
               <thead><tr><th>#</th><th>Customer</th><th>Phone</th><th>Outstanding</th><th>Last Purchase</th></tr></thead>
               <tbody>
