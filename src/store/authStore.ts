@@ -93,6 +93,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     // 1. Wipe our own session storage
     localStorage.removeItem('admin_session');
     localStorage.removeItem('worker_session');
+    localStorage.removeItem('cart');
 
     // 2. Wipe Supabase's local storage and session storage keys directly to ensure no session persistence
     const wipeStorage = (storage: Storage) => {

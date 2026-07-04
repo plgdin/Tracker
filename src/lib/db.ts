@@ -12,6 +12,7 @@ export interface Item {
   category: string;
   notes?: string;
   image_url?: string;
+  price?: string;
   created_at: string;
 }
 

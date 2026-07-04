@@ -22,6 +22,8 @@ export default function AddItem() {
     quantity: 1,
     category: 'Uncategorized',
     notes: '',
+    price: '',
+    image_url: '',
   });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -50,6 +52,8 @@ export default function AddItem() {
               quantity: itemToEdit.quantity,
               category: itemToEdit.category,
               notes: itemToEdit.notes || '',
+              price: itemToEdit.price || '',
+              image_url: itemToEdit.image_url || '',
             });
           }
         }
@@ -82,6 +86,8 @@ export default function AddItem() {
         quantity: formData.quantity,
         category: formData.category,
         notes: formData.notes || undefined,
+        price: formData.price || undefined,
+        image_url: formData.image_url || undefined,
         added_by: profile?.id || undefined
       };
 
@@ -211,6 +217,34 @@ export default function AddItem() {
                 onChange={e => setFormData({ ...formData, notes: e.target.value })}
               />
               <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginTop: '0.35rem' }}>Any storage instructions, brand details, or custom reminders.</p>
+            </div>
+
+            <div className="input-group" style={{ marginTop: '1.5rem' }}>
+              <label className="input-label">💰 Price</label>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <span style={{ padding: '0 0.75rem', background: 'rgba(230,57,70,0.1)', color: 'var(--color-primary)', fontWeight: 'bold', border: '1px solid rgba(230,57,70,0.2)', borderRight: 'none', borderRadius: '12px 0 0 12px', height: '42px', display: 'flex', alignItems: 'center' }}>₹</span>
+                <input 
+                  type="text" 
+                  className="input-field" 
+                  placeholder="e.g., 450/kg or 50"
+                  value={formData.price}
+                  onChange={e => setFormData({ ...formData, price: e.target.value })}
+                  style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0, flex: 1 }}
+                />
+              </div>
+              <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginTop: '0.35rem' }}>Type the amount and unit (e.g., 450/kg). The ₹ symbol is added automatically.</p>
+            </div>
+
+            <div className="input-group" style={{ marginTop: '1.5rem' }}>
+              <label className="input-label">🖼️ Image URL</label>
+              <input 
+                type="text" 
+                className="input-field" 
+                placeholder="https://example.com/image.jpg"
+                value={formData.image_url}
+                onChange={e => setFormData({ ...formData, image_url: e.target.value })}
+              />
+              <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginTop: '0.35rem' }}>Link to an image for the storefront.</p>
             </div>
 
             {/* List items with right alignment as seen in Screenshot 4 */}

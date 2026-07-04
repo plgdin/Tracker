@@ -19,6 +19,8 @@ CREATE TABLE items (
     expiration_date DATE NOT NULL,
     quantity INTEGER DEFAULT 1,
     category TEXT DEFAULT 'Uncategorized',
+    brand TEXT,
+    origin TEXT,
     notes TEXT,
     price NUMERIC,
     image_url TEXT,
@@ -76,12 +78,13 @@ CREATE POLICY "Admins can update all profiles" ON profiles FOR UPDATE USING (
   )
 );
 
-CREATE POLICY "Authenticated users can read items" ON items FOR SELECT USING (auth.role() = 'authenticated');
+-- Public can read items and categories (Storefront access)
+CREATE POLICY "Public users can read items" ON items FOR SELECT USING (true);
 CREATE POLICY "Authenticated users can insert items" ON items FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 CREATE POLICY "Authenticated users can update items" ON items FOR UPDATE USING (auth.role() = 'authenticated');
 CREATE POLICY "Authenticated users can delete items" ON items FOR DELETE USING (auth.role() = 'authenticated');
 
-CREATE POLICY "Authenticated users can read categories" ON categories FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Public users can read categories" ON categories FOR SELECT USING (true);
 CREATE POLICY "Authenticated users can insert categories" ON categories FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 CREATE POLICY "Authenticated users can update categories" ON categories FOR UPDATE USING (auth.role() = 'authenticated');
 CREATE POLICY "Authenticated users can delete categories" ON categories FOR DELETE USING (auth.role() = 'authenticated');

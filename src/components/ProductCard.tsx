@@ -34,7 +34,7 @@ export default function ProductCard({
   onAddedToCart,
 }: ProductCardProps) {
   const { addItem } = useCartContext();
-  const formattedPrice = `₹${price}/kg`;
+  const formattedPrice = `₹${price}`;
   const [flyingItems, setFlyingItems] = useState<FlyingItem[]>([]);
 
   const handleAdd = (e: React.MouseEvent<HTMLButtonElement>) => {

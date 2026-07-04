@@ -1,5 +1,7 @@
-import { X, Plus, Minus, ShoppingBag, ArrowRight, ArrowLeft } from "lucide-react";
+import { X, Plus, Minus, ShoppingBag, ArrowRight, ArrowLeft, User } from "lucide-react";
 import { useCartContext } from "@/context/CartContext";
+import { useAuthStore } from "@/store/authStore";
+import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 interface CartDrawerProps {
@@ -8,6 +10,7 @@ interface CartDrawerProps {
 }
 
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
+  const { user } = useAuthStore();
   const { items, removeItem, updateQuantity, totalAmount, clearCart } = useCartContext();
   const [showCheckout, setShowCheckout] = useState(false);
   const [removingIds, setRemovingIds] = useState<number[]>([]);
@@ -55,7 +58,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     text += `\nPlease confirm my order and share payment QR.`;
 
     const encodedText = encodeURIComponent(text);
-    const whatsappUrl = `https://wa.me/919999999999?text=${encodedText}`;
+    const phoneNumber = import.meta.env.VITE_WHATSAPP_NUMBER || "919999999999";
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedText}`;
 
     setOrderSuccess({
       whatsappUrl,
@@ -156,7 +160,22 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
-          {items.length === 0 && !showCheckout ? (
+          {!user ? (
+            <div className="h-full flex flex-col items-center justify-center text-center p-8">
+              <User className="w-16 h-16 text-taupe/40 mb-4" />
+              <h3 className="font-heading text-xl font-bold text-espresso mb-2">Sign In Required</h3>
+              <p className="text-taupe text-base mb-6">
+                Please sign in to view and manage your cart.
+              </p>
+              <Link
+                to="/login"
+                onClick={onClose}
+                className="w-full py-4 bg-burnt-orange text-white font-bold rounded-full hover:bg-[#C44D2A] shadow-md shadow-burnt-orange/20 transition-all flex justify-center items-center"
+              >
+                Sign In
+              </Link>
+            </div>
+          ) : items.length === 0 && !showCheckout ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-8">
               <ShoppingBag className="w-16 h-16 text-taupe/40 mb-4" />
               <p className="text-taupe text-lg">Your cart is empty</p>
@@ -329,7 +348,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         </div>
 
         {/* Footer */}
-        {items.length > 0 && !showCheckout && (
+        {user && items.length > 0 && !showCheckout && (
           <div className="border-t border-espresso/10 px-6 pt-7 pb-7 space-y-5 bg-white text-espresso rounded-t-[50px] shadow-[0_-8px_30px_rgba(61,43,31,0.06)]">
             <div className="flex justify-between items-center px-2">
               <span className="text-espresso font-semibold text-lg">Subtotal</span>
@@ -351,7 +370,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           </div>
         )}
 
-        {showCheckout && (
+        {user && showCheckout && (
           <div className="border-t border-espresso/10 px-6 pt-7 pb-7 space-y-5 bg-white text-espresso rounded-t-[50px] shadow-[0_-8px_30px_rgba(61,43,31,0.06)]">
             <div className="flex justify-between items-center px-2">
               <span className="text-espresso font-semibold text-lg">Total</span>

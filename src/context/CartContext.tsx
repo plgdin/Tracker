@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
+import { useAuthStore } from "@/store/authStore";
 
 export interface CartItem {
   productId: number;
@@ -28,8 +29,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return saved ? JSON.parse(saved) : [];
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const { user, isLoading } = useAuthStore();
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      setItems([]);
+      localStorage.removeItem("cart");
+    }
+  }, [user, isLoading]);
 
   const addItem = useCallback((item: Omit<CartItem, "quantity">) => {
+    if (!useAuthStore.getState().user) {
+      // You could trigger a toast here, but the UI might already handle it.
+      return;
+    }
+    
     setItems((prev) => {
       const existing = prev.find((i) => i.productId === item.productId);
       let newItems: CartItem[];

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { ShoppingCart, User, Menu, X, ChefHat, Search } from "lucide-react";
 import { useCartContext } from "@/context/CartContext";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useAuthStore } from "@/store/authStore";
 
 interface NavbarProps {
   onCartClick: () => void;
@@ -13,6 +14,7 @@ export default function Navbar({ onCartClick, searchQuery, setSearchQuery }: Nav
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { totalItems } = useCartContext();
+  const { user } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -148,12 +150,12 @@ export default function Navbar({ onCartClick, searchQuery, setSearchQuery }: Nav
             }
           `}</style>
 
-          <a
-            href="/login"
+          <Link
+            to={user ? "/profile" : "/login"}
             className="group p-2 rounded-full hover:bg-espresso/5 transition-colors hidden sm:block"
           >
             <User className="w-6 h-6 text-espresso group-hover:text-burnt-orange transition-colors" />
-          </a>
+          </Link>
 
           {/* Mobile Menu Toggle */}
           <button

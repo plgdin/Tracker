@@ -12,81 +12,6 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-const placeholderCategories = [
-  { id: "mock-chocolate", name: "Chocolate" },
-  { id: "mock-baking", name: "Baking Materials" },
-  { id: "mock-decorations", name: "Cake Decorations" },
-  { id: "mock-flavors", name: "Flavors" },
-];
-
-const categoryImages: Record<string, string> = {
-  chocolate: "/cat-chocolate.jpg",
-  "baking materials": "/cat-baking-materials.jpg",
-  "cake decorations": "/cat-cake-decorations.jpg",
-  flavors: "/cat-flavors.jpg",
-  packaging: "/cat-packaging.jpg",
-  "frozen food": "/cat-frozen-food.jpg",
-  "gift hampers": "/cat-gift-hampers.jpg",
-  "hotel supplies": "/cat-hotel-supplies.jpg",
-};
-
-const mockProducts = [
-  {
-    id: -1,
-    name: "Dark Compound Chocolate",
-    description: "Smooth slab for ganache, moulding, and bakery coating.",
-    price: "220",
-    image: "/cat-chocolate.jpg",
-    categoryName: "Chocolate",
-    inStock: true,
-  },
-  {
-    id: -2,
-    name: "Vanilla Cake Premix",
-    description: "Soft sponge base for celebration cakes and cupcakes.",
-    price: "180",
-    image: "/cat-baking-materials.jpg",
-    categoryName: "Baking Materials",
-    inStock: true,
-  },
-  {
-    id: -3,
-    name: "Gold Sprinkle Mix",
-    description: "Ready garnish for cakes, jars, donuts, and desserts.",
-    price: "95",
-    image: "/cat-cake-decorations.jpg",
-    categoryName: "Cake Decorations",
-    inStock: true,
-  },
-  {
-    id: -4,
-    name: "Strawberry Flavour",
-    description: "Bakery-grade flavour for creams, batters, and fillings.",
-    price: "140",
-    image: "/cat-flavors.jpg",
-    categoryName: "Flavors",
-    inStock: true,
-  },
-  {
-    id: -5,
-    name: "Window Cake Box",
-    description: "Sturdy box with display window for clean delivery.",
-    price: "35",
-    image: "/cat-packaging.jpg",
-    categoryName: "Packaging",
-    inStock: true,
-  },
-  {
-    id: -6,
-    name: "Frozen Puff Sheets",
-    description: "Layered pastry sheets for quick bakery prep.",
-    price: "260",
-    image: "/cat-frozen-food.jpg",
-    categoryName: "Frozen Food",
-    inStock: true,
-  },
-];
-
 const BakeryPattern = ({ dense = false }: { dense?: boolean }) => {
   const baseIcons = [
     { name: "croissant", className: "left-[6%] top-10 h-16 w-16 rotate-[-12deg]" },
@@ -134,6 +59,17 @@ const BakeryPattern = ({ dense = false }: { dense?: boolean }) => {
   );
 };
 
+const categoryImages: Record<string, string> = {
+  chocolate: "/cat-chocolate.jpg",
+  "baking materials": "/cat-baking-materials.jpg",
+  "cake decorations": "/cat-cake-decorations.jpg",
+  flavors: "/cat-flavors.jpg",
+  packaging: "/cat-packaging.jpg",
+  "frozen food": "/cat-frozen-food.jpg",
+  "gift hampers": "/cat-gift-hampers.jpg",
+  "hotel supplies": "/cat-hotel-supplies.jpg",
+};
+
 const getCategoryImage = (name: string) =>
   categoryImages[name.toLowerCase()] || "/cat-baking-materials.jpg";
 
@@ -177,11 +113,13 @@ export default function Home() {
             price: p.price || 0,
             image: p.image_url || null,
             categoryName: p.category,
-            inStock: p.quantity > 0
+            inStock: p.quantity > 0,
+            brand: p.brand || "",
+            origin: p.origin || "",
         }));
-        setProducts(formatted.length > 0 ? formatted : mockProducts);
+        setProducts(formatted);
       } else {
-        setProducts(mockProducts);
+        setProducts([]);
       }
       setIsLoading(false);
     }
@@ -198,7 +136,7 @@ export default function Home() {
     return matchCategory && matchSearch;
   });
 
-  const displayedCategories = categories.length > 0 ? categories : placeholderCategories;
+  const displayedCategories = categories;
   const featuredProducts = products.slice(0, 3);
   const featuredCatName = categories[0]?.name || "Cakes";
   const featuredCatProducts = products

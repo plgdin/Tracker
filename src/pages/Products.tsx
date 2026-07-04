@@ -6,78 +6,7 @@ import { useCartContext } from "@/context/CartContext";
 import { supabase } from "@/lib/supabase";
 import { Search, Check, Trash2, ChevronDown } from "lucide-react";
 
-const placeholderCategories = [
-  { id: "mock-chocolate", name: "Chocolate" },
-  { id: "mock-baking", name: "Baking Materials" },
-  { id: "mock-decorations", name: "Cake Decorations" },
-  { id: "mock-flavors", name: "Flavors" },
-];
-
-const mockProducts = [
-  {
-    id: -1,
-    name: "Dark Compound Chocolate",
-    description: "Smooth slab for ganache, moulding, and bakery coating.",
-    price: "220",
-    image: "/cat-chocolate.jpg",
-    categoryName: "Chocolate",
-    inStock: true,
-  },
-  {
-    id: -2,
-    name: "Vanilla Cake Premix",
-    description: "Soft sponge base for celebration cakes and cupcakes.",
-    price: "180",
-    image: "/cat-baking-materials.jpg",
-    categoryName: "Baking Materials",
-    inStock: true,
-  },
-  {
-    id: -3,
-    name: "Gold Sprinkle Mix",
-    description: "Ready garnish for cakes, jars, donuts, and desserts.",
-    price: "95",
-    image: "/cat-cake-decorations.jpg",
-    categoryName: "Cake Decorations",
-    inStock: true,
-  },
-  {
-    id: -4,
-    name: "Strawberry Flavour",
-    description: "Bakery-grade flavour for creams, batters, and fillings.",
-    price: "140",
-    image: "/cat-flavors.jpg",
-    categoryName: "Flavors",
-    inStock: true,
-  },
-  {
-    id: -5,
-    name: "Window Cake Box",
-    description: "Sturdy box with display window for clean delivery.",
-    price: "35",
-    image: "/cat-packaging.jpg",
-    categoryName: "Packaging",
-    inStock: true,
-  },
-  {
-    id: -6,
-    name: "Frozen Puff Sheets",
-    description: "Layered pastry sheets for quick bakery prep.",
-    price: "260",
-    image: "/cat-frozen-food.jpg",
-    categoryName: "Frozen Food",
-    inStock: true,
-  },
-];
-
-const AVAILABLE_BRANDS = [
-  "Bake & Joy Originals",
-  "Puratos",
-  "Callebaut",
-  "Vizyon",
-  "Pillsbury"
-];
-
+// Removed mock products and placeholder categories
 const CustomCheckbox = ({ checked }: { checked: boolean }) => {
   return (
     <div className={`relative w-5 h-5 rounded-md border-2 flex items-center justify-center overflow-hidden transition-all duration-300 shrink-0 ${
@@ -139,21 +68,8 @@ export default function Products() {
   const [isLoading, setIsLoading] = useState(true);
 
 
-  // Assign deterministic mock brand to products
-  const getProductBrand = (p: any) => {
-    const idVal = typeof p.id === 'string'
-      ? p.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0)
-      : Math.abs(p.id);
-    return AVAILABLE_BRANDS[idVal % AVAILABLE_BRANDS.length];
-  };
-
-  // Assign deterministic origin to products
-  const getProductOrigin = (p: any) => {
-    const idVal = typeof p.id === 'string'
-      ? p.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0)
-      : Math.abs(p.id);
-    return idVal % 2 === 0 ? "Imported" : "Exported";
-  };
+  const AVAILABLE_BRANDS = Array.from(new Set(products.map(p => p.brand).filter(Boolean)));
+  const AVAILABLE_ORIGINS = Array.from(new Set(products.map(p => p.origin).filter(Boolean)));
 
   useEffect(() => {
     async function fetchData() {
@@ -170,18 +86,18 @@ export default function Products() {
             price: p.price || 0,
             image: p.image_url || null,
             categoryName: p.category,
-            inStock: p.quantity > 0
+            inStock: p.quantity > 0,
+            brand: p.brand || "",
+            origin: p.origin || "",
         }));
-        const itemsList = formatted.length > 0 ? formatted : mockProducts;
-        setProducts(itemsList);
-        const calculatedMax = Math.max(...itemsList.map(item => Math.ceil(parseFloat(item.price) || 0)), 300);
-        setMaxPriceLimit(calculatedMax);
-        setPriceLimit(calculatedMax);
+        setProducts(formatted);
+        if (formatted.length > 0) {
+          const calculatedMax = Math.max(...formatted.map((item: any) => Math.ceil(parseFloat(item.price) || 0)), 300);
+          setMaxPriceLimit(calculatedMax);
+          setPriceLimit(calculatedMax);
+        }
       } else {
-        setProducts(mockProducts);
-        const calculatedMax = Math.max(...mockProducts.map(item => Math.ceil(parseFloat(item.price) || 0)), 300);
-        setMaxPriceLimit(calculatedMax);
-        setPriceLimit(calculatedMax);
+        setProducts([]);
       }
       setIsLoading(false);
     }
@@ -200,17 +116,17 @@ export default function Products() {
     const matchPrice = priceNum <= priceLimit;
 
     // Brand check
-    const pBrand = getProductBrand(p);
+    const pBrand = p.brand;
     const matchBrand = selectedBrands.length === 0 || selectedBrands.includes(pBrand);
 
     // Origin check
-    const pOrigin = getProductOrigin(p);
+    const pOrigin = p.origin;
     const matchOrigin = selectedOrigins.length === 0 || selectedOrigins.includes(pOrigin);
 
     return matchCategory && matchSearch && matchPrice && matchBrand && matchOrigin;
   });
 
-  const displayedCategories = categories.length > 0 ? categories : placeholderCategories;
+  const displayedCategories = categories;
 
   const hasActiveFilters = 
     selectedCategory !== undefined || 
@@ -412,7 +328,7 @@ export default function Products() {
                       : "max-h-0 opacity-0 p-0 border-transparent pointer-events-none"
                   } overflow-y-auto`}
                 >
-                  {["Imported", "Exported"].map((origin) => {
+                  {AVAILABLE_ORIGINS.map((origin: string) => {
                     const isChecked = selectedOrigins.includes(origin);
                     return (
                       <CheckboxOption

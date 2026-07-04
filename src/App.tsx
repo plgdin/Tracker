@@ -12,8 +12,10 @@ import Toast from './components/Toast';
 import Home from './pages/Home';
 import Products from './pages/Products';
 import Login from './pages/Login';
+import Profile from './pages/Profile';
 import { CartProvider } from './context/CartContext';
 import { Outlet } from 'react-router-dom';
+import StorefrontWrapper from './components/StorefrontWrapper';
 import './index.css';
 
 function App() {
@@ -25,10 +27,11 @@ function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
         
         {/* Storefront - Public/Client */}
-        <Route element={<div className="storefront"><CartProvider><Outlet /></CartProvider></div>}>
+        <Route element={<div className="storefront"><CartProvider><StorefrontWrapper /></CartProvider></div>}>
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<Products />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/profile" element={<Profile />} />
         </Route>
 
         {/* All other routes are protected by AuthWrapper (Staff/Admin area) */}
