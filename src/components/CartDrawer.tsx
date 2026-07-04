@@ -1,8 +1,18 @@
-import { X, Plus, Minus, ShoppingBag, ArrowRight, ArrowLeft, User } from "lucide-react";
+import { X, Plus, Minus, ShoppingBag, ArrowRight, ArrowLeft, User, ChevronDown } from "lucide-react";
 import { useCartContext } from "@/context/CartContext";
 import { useAuthStore } from "@/store/authStore";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
+
+const INDIAN_STATES = [
+  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", 
+  "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", 
+  "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", 
+  "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", 
+  "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal", 
+  "Andaman and Nicobar Islands", "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", 
+  "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry"
+];
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -32,22 +42,87 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [deliveryType, setDeliveryType] = useState<"pickup" | "delivery">("pickup");
-  const [address, setAddress] = useState("");
+  const [addressLine1, setAddressLine1] = useState("");
+  const [addressLine2, setAddressLine2] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [pincode, setPincode] = useState("");
   const [notes, setNotes] = useState("");
+  const [isStateDropdownOpen, setIsStateDropdownOpen] = useState(false);
   const [offerCode, setOfferCode] = useState("");
+
+  const formattedAddress = [
+    addressLine1.trim(),
+    addressLine2.trim(),
+    city.trim(),
+    state.trim(),
+    pincode.trim()
+  ].filter(Boolean).join(", ");
+
+  const isAddressValid = deliveryType === "pickup" || (
+    addressLine1.trim() !== "" &&
+    city.trim() !== "" &&
+    state.trim() !== "" &&
+    pincode.trim() !== ""
+  );
+
+  const canPlaceOrder = customerName.trim() !== "" && customerPhone.trim() !== "" && isAddressValid;
+
+  useEffect(() => {
+    if (isOpen) {
+      try {
+        const saved = localStorage.getItem("user_address_details");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          setAddressLine1(parsed.addressLine1 || "");
+          setAddressLine2(parsed.addressLine2 || "");
+          setCity(parsed.city || "");
+          setState(parsed.state || "");
+          setPincode(parsed.pincode || "");
+          return;
+        }
+      } catch (e) {}
+
+      const legacy = localStorage.getItem("user_address") || "";
+      if (legacy) {
+        const parts = legacy.split(",").map((p) => p.trim());
+        setAddressLine1(parts[0] || "");
+        setAddressLine2(parts.length > 2 ? parts.slice(1, -1).join(", ") : parts[1] || "");
+        setCity(parts[parts.length - 1] || "");
+        setState("");
+        setPincode("");
+      }
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (addressLine1 || city || state || pincode) {
+      const details = {
+        addressLine1: addressLine1.trim(),
+        addressLine2: addressLine2.trim(),
+        city: city.trim(),
+        state: state.trim(),
+        pincode: pincode.trim(),
+      };
+      localStorage.setItem("user_address_details", JSON.stringify(details));
+      localStorage.setItem("user_address", formattedAddress);
+      window.dispatchEvent(new Event("storage"));
+    }
+  }, [addressLine1, addressLine2, city, state, pincode, formattedAddress]);
+
   const [orderSuccess, setOrderSuccess] = useState<{
     whatsappUrl: string;
   } | null>(null);
 
   const handleCheckout = () => {
-    if (!customerName || !customerPhone) return;
+    if (!canPlaceOrder) return;
 
     let text = `*New Order - Bake & Joy*\n\n`;
     text += `*Customer:* ${customerName}\n`;
     text += `*Phone:* ${customerPhone}\n`;
     if (customerEmail) text += `*Email:* ${customerEmail}\n`;
     text += `*Delivery Type:* ${deliveryType}\n`;
-    if (deliveryType === "delivery") text += `*Address:* ${address}\n`;
+    if (deliveryType === "delivery") text += `*Address:* ${formattedAddress}\n`;
     if (notes) text += `*Notes:* ${notes}\n`;
     if (offerCode) text += `*Offer Code:* ${offerCode}\n`;
     text += `\n*Items:*\n`;
@@ -244,17 +319,116 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 </div>
               </div>
               {deliveryType === "delivery" && (
-                <div>
-                  <label className="block text-base font-semibold text-espresso mb-2">
-                    Delivery Address *
-                  </label>
-                  <textarea
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    className="w-full px-5 py-6 rounded-xl border border-espresso/15 focus:border-burnt-orange focus:ring-2 focus:ring-burnt-orange/20 outline-none transition-all resize-none text-base"
-                    rows={3}
-                    placeholder="Enter your delivery address"
-                  />
+                <div className="space-y-4">
+                  <h4 className="text-base font-bold text-espresso border-b border-espresso/10 pb-2">Delivery Address</h4>
+                  
+                  <div>
+                    <label className="block text-sm font-semibold text-espresso mb-1">
+                      Address Line 1 *
+                    </label>
+                    <input
+                      type="text"
+                      value={addressLine1}
+                      onChange={(e) => setAddressLine1(e.target.value)}
+                      className="w-full px-5 py-4 rounded-xl border border-espresso/15 focus:border-burnt-orange focus:ring-2 focus:ring-burnt-orange/20 outline-none transition-all text-base"
+                      placeholder="Flat / House no., Building, Apartment"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-espresso mb-1">
+                      Address Line 2 (optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={addressLine2}
+                      onChange={(e) => setAddressLine2(e.target.value)}
+                      className="w-full px-5 py-4 rounded-xl border border-espresso/15 focus:border-burnt-orange focus:ring-2 focus:ring-burnt-orange/20 outline-none transition-all text-base"
+                      placeholder="Street, Sector, Area, Landmark"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                  {isStateDropdownOpen ? (
+                    <div className="col-span-2">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-bold text-espresso">Select State</span>
+                        <button 
+                          type="button"
+                          onClick={() => setIsStateDropdownOpen(false)}
+                          className="text-taupe hover:text-espresso text-sm font-bold"
+                        >
+                          Close
+                        </button>
+                      </div>
+                      <div 
+                        className="rounded-xl border border-espresso/10 bg-white max-h-64 overflow-y-auto"
+                        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+                      >
+                        {INDIAN_STATES.map((stateName) => (
+                          <button
+                            key={stateName}
+                            type="button"
+                            onClick={() => {
+                              setState(stateName);
+                              setIsStateDropdownOpen(false);
+                            }}
+                            className="w-full text-left px-5 py-3.5 text-base font-medium transition-colors border-b border-espresso/5 last:border-b-0"
+                            style={{
+                              backgroundColor: state === stateName ? "#FEF2EB" : "white",
+                              color: state === stateName ? "#D95B35" : "#3D2B1F",
+                            }}
+                          >
+                            {stateName}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div>
+                        <label className="block text-sm font-semibold text-espresso mb-1">
+                          State *
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setIsStateDropdownOpen(true)}
+                          className="w-full px-5 py-4 rounded-xl border border-espresso/15 focus:border-burnt-orange focus:ring-2 focus:ring-burnt-orange/20 outline-none transition-all text-base bg-white h-[58px] flex items-center justify-between text-left"
+                        >
+                          <span className={state ? "text-espresso font-medium truncate" : "text-taupe/50"}>
+                            {state || "Select State"}
+                          </span>
+                          <ChevronDown className="w-5 h-5 text-taupe shrink-0" />
+                        </button>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-espresso mb-1">
+                          City *
+                        </label>
+                        <input
+                          type="text"
+                          value={city}
+                          onChange={(e) => setCity(e.target.value)}
+                          className="w-full px-5 py-4 rounded-xl border border-espresso/15 focus:border-burnt-orange focus:ring-2 focus:ring-burnt-orange/20 outline-none transition-all text-base h-[58px]"
+                          placeholder="Enter City"
+                        />
+                      </div>
+                    </>
+                  )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-espresso mb-1">
+                      Pincode *
+                    </label>
+                    <input
+                      type="text"
+                      value={pincode}
+                      onChange={(e) => setPincode(e.target.value)}
+                      className="w-full px-5 py-4 rounded-xl border border-espresso/15 focus:border-burnt-orange focus:ring-2 focus:ring-burnt-orange/20 outline-none transition-all text-base"
+                      placeholder="6-digit pincode"
+                    />
+                  </div>
                 </div>
               )}
               <div>
@@ -349,7 +523,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
         {/* Footer */}
         {user && items.length > 0 && !showCheckout && (
-          <div className="border-t border-espresso/10 px-6 pt-7 pb-7 space-y-5 bg-white text-espresso rounded-t-[50px] shadow-[0_-8px_30px_rgba(61,43,31,0.06)]">
+          <div className="border-t border-espresso/10 px-6 pt-6 pb-6 space-y-4 bg-cream text-espresso rounded-t-[32px] shadow-none">
             <div className="flex justify-between items-center px-2">
               <span className="text-espresso font-semibold text-lg">Subtotal</span>
               <span className="font-sans text-2xl font-bold text-burnt-orange">
@@ -371,7 +545,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         )}
 
         {user && showCheckout && (
-          <div className="border-t border-espresso/10 px-6 pt-7 pb-7 space-y-5 bg-white text-espresso rounded-t-[50px] shadow-[0_-8px_30px_rgba(61,43,31,0.06)]">
+          <div className="border-t border-espresso/10 px-6 pt-6 pb-6 space-y-4 bg-cream text-espresso rounded-t-[32px] shadow-none">
             <div className="flex justify-between items-center px-2">
               <span className="text-espresso font-semibold text-lg">Total</span>
               <span className="font-sans text-2xl font-bold text-burnt-orange">
@@ -380,9 +554,9 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             </div>
             <button
               onClick={handleCheckout}
-              disabled={!customerName || !customerPhone}
-              style={(!customerName || !customerPhone) ? { backgroundColor: "rgba(61,43,31,0.1)", color: "rgba(61,43,31,0.4)" } : { backgroundColor: "#D95B35", color: "#FFFFFF" }}
-              className={`w-full h-16 font-bold rounded-full transition-all duration-300 flex items-center justify-center gap-2 text-xl ${(!customerName || !customerPhone)
+              disabled={!canPlaceOrder}
+              style={!canPlaceOrder ? { backgroundColor: "rgba(61,43,31,0.1)", color: "rgba(61,43,31,0.4)" } : { backgroundColor: "#D95B35", color: "#FFFFFF" }}
+              className={`w-full h-16 font-bold rounded-full transition-all duration-300 flex items-center justify-center gap-2 text-xl ${!canPlaceOrder
                 ? "cursor-not-allowed shadow-none"
                 : "hover:bg-[#C44D2A] hover:shadow-[0_0_22px_rgba(217,91,53,0.55),0_12px_28px_rgba(61,43,31,0.18)]"
                 }`}

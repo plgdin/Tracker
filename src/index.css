@@ -4,6 +4,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Hide scrollbars on mobile bottom sheets and lists */
+.no-scrollbar::-webkit-scrollbar,
+.state-list::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar,
+.state-list {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 .storefront {
   & *, & ::before, & ::after {
     box-sizing: border-box;
@@ -298,4 +309,14 @@ html {
 
 .animate-pulse-soft {
   animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-none {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }

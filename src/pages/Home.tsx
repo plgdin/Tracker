@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import HeroCarousel from "@/components/HeroCarousel";
 import ProductCard from "@/components/ProductCard";
-import CartDrawer from "@/components/CartDrawer";
 import { useCartContext } from "@/context/CartContext";
 import { supabase } from "@/lib/supabase";
 import { useLocation } from "react-router-dom";
@@ -74,10 +73,10 @@ const getCategoryImage = (name: string) =>
   categoryImages[name.toLowerCase()] || "/cat-baking-materials.jpg";
 
 export default function Home() {
-  const [isCartOpen, setIsCartOpen] = useState(false);
+  const { setIsCartOpen } = useCartContext();
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
   const [searchQuery, setSearchQuery] = useState("");
-  useCartContext();
+  const [inStockOnly, setInStockOnly] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -133,7 +132,8 @@ export default function Home() {
       !searchQuery ||
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.categoryName?.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchCategory && matchSearch;
+    const matchInStock = !inStockOnly || p.inStock;
+    return matchCategory && matchSearch && matchInStock;
   });
 
   const displayedCategories = categories;
@@ -171,10 +171,43 @@ export default function Home() {
         onCartClick={() => setIsCartOpen(true)}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        categories={categories}
+        inStockOnly={inStockOnly}
+        setInStockOnly={setInStockOnly}
       />
 
       {/* Hero */}
       <HeroCarousel />
+
+      {/* Mobile-Only Banners & Favourites */}
+      <div className="md:hidden">
+        {/* Favourites */}
+        {products.length > 0 && (
+          <div className="px-4 mt-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-heading text-xl font-bold text-espresso">Trending Favourites</h2>
+              <span className="text-xs font-bold text-burnt-orange">Swipe All ➔</span>
+            </div>
+            <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-none">
+              {products.slice(0, 6).map((product) => (
+                <div key={`fav-${product.id}`} className="w-40 shrink-0">
+                  <ProductCard
+                    id={product.id}
+                    name={product.name}
+                    description={product.description}
+                    price={product.price}
+                    image={product.image}
+                    categoryName={product.categoryName}
+                    inStock={product.inStock}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Featured Category Section */}
       {categories && categories.length > 0 && (
@@ -294,7 +327,7 @@ export default function Home() {
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+            <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-8">
               {featuredProducts.map((product) => (
                 <div key={`featured-${product.id}`} className="reveal">
                   <ProductCard
@@ -347,11 +380,11 @@ export default function Home() {
 
           {/* Product Grid */}
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+            <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-8">
               {Array.from({ length: 8 }).map((_, i) => (
                 <div
                   key={i}
-                  className="bg-white rounded-tl-[10px] rounded-tr-[50px] rounded-br-[10px] rounded-bl-[50px] overflow-hidden shadow-soft animate-pulse"
+                  className="bg-white rounded-tl-[10px] rounded-tr-[30px] md:rounded-tr-[50px] rounded-br-[10px] rounded-bl-[30px] md:rounded-bl-[50px] overflow-hidden shadow-soft animate-pulse"
                 >
                   <div className="aspect-square bg-espresso/10" />
                   <div className="p-4 space-y-2">
@@ -363,7 +396,7 @@ export default function Home() {
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+            <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-8">
               {filteredProducts?.map((product) => (
                 <div key={product.id} className="reveal">
                   <ProductCard
@@ -395,7 +428,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="bg-dark-chocolate text-white py-12 px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
+          <div className="grid md:grid-cols-3 gap-8 mb-8">
             <div>
               <h3 className="font-heading text-2xl font-bold mb-4">
                 Bake & Joy
@@ -414,7 +447,7 @@ export default function Home() {
                       .getElementById("hero")
                       ?.scrollIntoView({ behavior: "smooth" })
                   }
-                  className="block text-white/60 hover:text-burnt-orange transition-colors text-sm"
+                  className="block text-white/60 hover:text-burnt-orange transition-colors text-sm text-left"
                 >
                   Home
                 </button>
@@ -424,7 +457,7 @@ export default function Home() {
                       .getElementById("products")
                       ?.scrollIntoView({ behavior: "smooth" })
                   }
-                  className="block text-white/60 hover:text-burnt-orange transition-colors text-sm"
+                  className="block text-white/60 hover:text-burnt-orange transition-colors text-sm text-left"
                 >
                   Products
                 </button>
@@ -434,29 +467,10 @@ export default function Home() {
                       .getElementById("offers")
                       ?.scrollIntoView({ behavior: "smooth" })
                   }
-                  className="block text-white/60 hover:text-burnt-orange transition-colors text-sm"
+                  className="block text-white/60 hover:text-burnt-orange transition-colors text-sm text-left"
                 >
                   Offers
                 </button>
-              </div>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Categories</h4>
-              <div className="space-y-2">
-                {categories?.slice(0, 5).map((cat) => (
-                  <button
-                    key={cat.id}
-                    onClick={() => {
-                      setSelectedCategory(cat.name);
-                      document
-                        .getElementById("products")
-                        ?.scrollIntoView({ behavior: "smooth" });
-                    }}
-                    className="block text-white/60 hover:text-burnt-orange transition-colors text-sm"
-                  >
-                    {cat.name}
-                  </button>
-                ))}
               </div>
             </div>
             <div>
@@ -475,9 +489,6 @@ export default function Home() {
           </div>
         </div>
       </footer>
-
-      {/* Cart Drawer */}
-      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </div>
   );
 }

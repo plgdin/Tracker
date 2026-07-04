@@ -52,7 +52,10 @@ export default function HeroCarousel() {
   }, [next]);
 
   return (
-    <section id="hero" className="relative w-full h-screen overflow-hidden">
+    <section 
+      id="hero" 
+      className="relative w-full h-[220px] md:h-screen overflow-hidden rounded-b-[40px] md:rounded-b-none"
+    >
       {/* Slides */}
       {heroSlides.map((slide, index) => (
         <div
@@ -72,35 +75,34 @@ export default function HeroCarousel() {
       ))}
 
       {/* Content */}
-      <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6">
-        <p className="font-accent text-2xl md:text-3xl text-white/90 mb-4 animate-fade-in-up">
+      <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4 md:px-6">
+        <p className="font-accent text-sm md:text-3xl text-white/90 mb-1 md:mb-4 animate-fade-in-up">
           Fresh from the oven
         </p>
-        <h1 className="font-heading text-4xl md:text-6xl lg:text-7xl font-bold text-white hero-text-shadow max-w-4xl animate-fade-in-up">
+        <h1 className="font-heading text-xl md:text-6xl lg:text-7xl font-bold text-white hero-text-shadow max-w-4xl animate-fade-in-up">
           {heroSlides[current].title}
         </h1>
-        <p className="mt-6 text-lg md:text-xl text-white/85 max-w-2xl font-body animate-fade-in-up">
+        <p className="mt-2 md:mt-6 text-xs md:text-xl text-white/85 max-w-2xl font-body animate-fade-in-up max-w-[85%] truncate md:whitespace-normal">
           {heroSlides[current].subtitle}
         </p>
-
       </div>
 
-      {/* Navigation Arrows */}
+      {/* Navigation Arrows - Desktop Only */}
       <button
         onClick={prev}
-        className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors"
+        className="hidden md:flex absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm items-center justify-center hover:bg-white/30 transition-colors"
       >
         <ChevronLeft className="w-6 h-6 text-white" />
       </button>
       <button
         onClick={next}
-        className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors"
+        className="hidden md:flex absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm items-center justify-center hover:bg-white/30 transition-colors"
       >
         <ChevronRight className="w-6 h-6 text-white" />
       </button>
 
-      {/* Dots */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+      {/* Dots - Desktop Only */}
+      <div className="hidden md:flex absolute bottom-8 left-1/2 -translate-x-1/2 z-20 gap-2">
         {heroSlides.map((_, index) => (
           <button
             key={index}

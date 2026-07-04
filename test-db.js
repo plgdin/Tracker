@@ -10,13 +10,15 @@ envFile.split('\n').forEach(line => {
 });
 
 async function run() {
-  const res = await fetch(`${env.VITE_SUPABASE_URL}/rest/v1/items?select=price&limit=1`, {
+  const res = await fetch(`${env.VITE_SUPABASE_URL}/rest/v1/items?select=origin`, {
     headers: {
       apikey: env.VITE_SUPABASE_ANON_KEY,
       Authorization: `Bearer ${env.VITE_SUPABASE_ANON_KEY}`
     }
   });
   const data = await res.json();
-  console.log(data);
+  const origins = Array.from(new Set(data.map(d => d.origin)));
+  console.log('Origins in DB:', origins);
+  console.log('Full data:', data);
 }
 run();

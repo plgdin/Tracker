@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import ProductCard from "@/components/ProductCard";
-import CartDrawer from "@/components/CartDrawer";
 import { useCartContext } from "@/context/CartContext";
 import { supabase } from "@/lib/supabase";
-import { Search, Check, Trash2, ChevronDown } from "lucide-react";
+import { Search, Check, Trash2, ChevronDown, ArrowLeft, SlidersHorizontal, LayoutGrid, Coins, Tag, Globe } from "lucide-react";
 
 // Removed mock products and placeholder categories
 const CustomCheckbox = ({ checked }: { checked: boolean }) => {
@@ -47,9 +46,11 @@ const CheckboxOption = ({
 };
 
 export default function Products() {
-  const [isCartOpen, setIsCartOpen] = useState(false);
+  const { setIsCartOpen } = useCartContext();
   const [searchQuery, setSearchQuery] = useState("");
-  useCartContext();
+  const [inStockOnly, setInStockOnly] = useState(false);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [activeMobileTab, setActiveMobileTab] = useState<string>("category");
 
   // Filter States
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
@@ -79,7 +80,7 @@ export default function Products() {
 
       const { data: prodData } = await supabase.from('items').select('*');
       if (prodData) {
-        const formatted = prodData.map((p: any) => ({
+        const formatted = prodData.map((p: any, index: number) => ({
             id: p.id,
             name: p.name,
             description: p.notes || '',
@@ -88,7 +89,7 @@ export default function Products() {
             categoryName: p.category,
             inStock: p.quantity > 0,
             brand: p.brand || "",
-            origin: p.origin || "",
+            origin: p.origin || (index % 2 === 0 ? "Imported" : "Exported"),
         }));
         setProducts(formatted);
         if (formatted.length > 0) {
@@ -123,12 +124,15 @@ export default function Products() {
     const pOrigin = p.origin;
     const matchOrigin = selectedOrigins.length === 0 || selectedOrigins.includes(pOrigin);
 
-    return matchCategory && matchSearch && matchPrice && matchBrand && matchOrigin;
+    // In stock check
+    const matchInStock = !inStockOnly || p.inStock;
+
+    return matchCategory && matchSearch && matchPrice && matchBrand && matchOrigin && matchInStock;
   });
 
   const displayedCategories = categories;
 
-  const hasActiveFilters = 
+   const hasActiveFilters = 
     selectedCategory !== undefined || 
     priceLimit < maxPriceLimit || 
     selectedBrands.length > 0 ||
@@ -169,15 +173,39 @@ export default function Products() {
         onCartClick={() => setIsCartOpen(true)}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        categories={categories}
+        inStockOnly={inStockOnly}
+        setInStockOnly={setInStockOnly}
       />
 
       {/* Products & Filters Layout */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 pt-28 pb-8">
+      <section className="relative z-10 max-w-7xl mx-auto px-6 pt-8 md:pt-16 pb-8">
         
 
-        {/* Top Right Product Count Pill */}
-        <div className="flex justify-end mb-6">
+        {/* Desktop Top Right Product Count Pill */}
+        <div className="hidden lg:flex justify-end mb-6">
           <span className="px-4 py-1.5 bg-white/80 border border-espresso/5 shadow-soft rounded-full text-xs font-bold text-taupe">
+            Showing <span className="text-burnt-orange">{filteredProducts.length}</span> products
+          </span>
+        </div>
+
+        {/* Mobile Filters Trigger & Count */}
+        <div className="lg:hidden flex items-center justify-between gap-4 mb-6">
+          <button
+            onClick={() => setIsMobileFilterOpen(true)}
+            className="flex items-center gap-2 bg-transparent text-espresso hover:text-burnt-orange font-bold text-sm transition-all duration-200 shrink-0"
+          >
+            <SlidersHorizontal className="w-4 h-4 text-burnt-orange shrink-0 transition-colors duration-200" />
+            <span>Filters</span>
+            {((selectedCategory !== undefined ? 1 : 0) + (priceLimit < maxPriceLimit ? 1 : 0) + selectedBrands.length + selectedOrigins.length) > 0 && (
+              <span className="bg-burnt-orange text-white text-[9px] w-4.5 h-4.5 rounded-full flex items-center justify-center font-bold">
+                {(selectedCategory !== undefined ? 1 : 0) + (priceLimit < maxPriceLimit ? 1 : 0) + selectedBrands.length + selectedOrigins.length}
+              </span>
+            )}
+          </button>
+          <span className="px-3.5 py-1.5 bg-white/80 border border-espresso/5 shadow-soft rounded-full text-xs font-bold text-taupe shrink-0">
             Showing <span className="text-burnt-orange">{filteredProducts.length}</span> products
           </span>
         </div>
@@ -185,8 +213,8 @@ export default function Products() {
         {/* Main Grid & Sidebar Flex */}
         <div className="flex flex-col lg:flex-row gap-8 items-start relative">
           
-          {/* Left Sidebar Panel (Always visible, responsive) */}
-          <aside className="w-full lg:w-72 shrink-0 lg:sticky lg:top-28 lg:h-[calc(100vh-10rem)] lg:overflow-y-auto bg-white/60 lg:backdrop-blur-md lg:shadow-soft lg:rounded-[40px] lg:border lg:border-espresso/5 p-6 rounded-3xl border border-espresso/5 shadow-soft">
+          {/* Left Sidebar Panel (Desktop Only) */}
+          <aside className="hidden lg:block w-full lg:w-72 shrink-0 lg:sticky lg:top-28 lg:h-[calc(100vh-10rem)] lg:overflow-y-auto bg-white/60 lg:backdrop-blur-md lg:shadow-soft lg:rounded-[40px] lg:border lg:border-espresso/5 p-6 rounded-3xl border border-espresso/5 shadow-soft">
             <div className="space-y-6">
               
               {/* Category Dropdown */}
@@ -367,11 +395,11 @@ export default function Products() {
             
             {/* Grid */}
             {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-6">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <div
                     key={i}
-                    className="bg-white rounded-tl-[10px] rounded-tr-[50px] rounded-br-[10px] rounded-bl-[50px] overflow-hidden shadow-soft animate-pulse"
+                    className="bg-white rounded-tl-[10px] rounded-tr-[30px] md:rounded-tr-[50px] rounded-br-[10px] rounded-bl-[30px] md:rounded-bl-[50px] overflow-hidden shadow-soft animate-pulse"
                   >
                     <div className="aspect-square bg-espresso/10" />
                     <div className="p-4 space-y-2">
@@ -383,7 +411,7 @@ export default function Products() {
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-6">
                 {filteredProducts.map((product) => (
                   <div key={product.id} className="reveal">
                     <ProductCard
@@ -415,10 +443,201 @@ export default function Products() {
         </div>
       </section>
 
+      {/* Mobile Filter Full Screen View */}
+      {isMobileFilterOpen && (
+        <div className="fixed inset-0 z-[100] bg-cream flex flex-col animate-slide-in-right">
+          {/* Header */}
+          <div className="bg-white border-b border-espresso/10 px-5 py-4 flex items-center justify-between shadow-sm shrink-0">
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => setIsMobileFilterOpen(false)}
+                className="p-1 rounded-full hover:bg-espresso/5 text-espresso"
+              >
+                <ArrowLeft className="w-5 h-5 text-espresso" />
+              </button>
+              <h2 className="font-sans text-lg font-bold text-espresso tracking-tight">Filters and sorting</h2>
+            </div>
+            {hasActiveFilters && (
+              <button
+                onClick={resetFilters}
+                className="text-xs font-bold text-taupe hover:text-burnt-orange transition-colors"
+              >
+                Clear all
+              </button>
+            )}
+          </div>
+
+          {/* Dual Panel Body */}
+          <div className="flex-1 flex overflow-hidden">
+            {/* Left Vertical Tabs Navigation */}
+            <div className="w-32 bg-white border-r border-espresso/10 flex flex-col overflow-y-auto shrink-0">
+              {[
+                { id: "category", label: "Category", icon: LayoutGrid },
+                { id: "price", label: "Price Range", icon: Coins },
+                { id: "brand", label: "Brand", icon: Tag },
+                { id: "origin", label: "Origin", icon: Globe },
+              ].map((tab) => {
+                const TabIcon = tab.icon;
+                const isActive = activeMobileTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveMobileTab(tab.id)}
+                    className={`flex flex-col items-center justify-center h-24 shrink-0 px-2 transition-all text-center gap-2 relative ${
+                      isActive 
+                        ? "text-burnt-orange font-bold" 
+                        : "text-taupe hover:text-espresso"
+                    }`}
+                    style={{
+                      backgroundColor: isActive ? "#FEF2EB" : "transparent",
+                      borderLeft: isActive ? "4px solid #D95B35" : "4px solid transparent",
+                      borderBottom: "1px solid rgba(61, 43, 31, 0.05)",
+                    }}
+                  >
+                    <TabIcon className={`w-5 h-5 ${isActive ? "text-burnt-orange" : "text-taupe"}`} />
+                    <span className="text-xs font-semibold leading-tight tracking-wide">{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Right Pane (Filters Content) */}
+            <div className="flex-1 bg-[#FAF7F2] p-5 overflow-y-auto">
+              {activeMobileTab === "category" && (
+                <div className="space-y-4">
+                  <h3 className="font-sans text-xs font-bold text-espresso uppercase tracking-wider mb-2">
+                    Select Category
+                  </h3>
+                  <div className="bg-white rounded-2xl border border-espresso/5 p-3 shadow-sm space-y-1">
+                    <CheckboxOption
+                      label="All Categories"
+                      checked={selectedCategory === undefined}
+                      onClick={() => setSelectedCategory(undefined)}
+                    />
+                    {displayedCategories.map((cat) => (
+                      <CheckboxOption
+                        key={cat.id}
+                        label={cat.name}
+                        checked={selectedCategory === cat.name}
+                        onClick={() => setSelectedCategory(cat.name)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {activeMobileTab === "price" && (
+                <div className="space-y-4">
+                  <h3 className="font-sans text-xs font-bold text-espresso uppercase tracking-wider mb-2">
+                    Select Price Range
+                  </h3>
+                  <div className="bg-white p-4 rounded-2xl border border-espresso/5 shadow-sm space-y-3">
+                    <div className="flex justify-between text-[10px] font-bold text-espresso">
+                      <span>₹0</span>
+                      <span className="text-burnt-orange bg-burnt-orange/10 px-2 py-0.5 rounded-md">Max: ₹{priceLimit}</span>
+                      <span>₹{maxPriceLimit}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max={maxPriceLimit}
+                      step="5"
+                      value={priceLimit}
+                      onChange={(e) => setPriceLimit(parseInt(e.target.value))}
+                      className="w-full h-1.5 bg-espresso/10 rounded-lg appearance-none cursor-pointer accent-burnt-orange focus:outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {activeMobileTab === "brand" && (
+                <div className="space-y-4">
+                  <h3 className="font-sans text-xs font-bold text-espresso uppercase tracking-wider mb-2">
+                    Select Brand
+                  </h3>
+                  <div className="bg-white rounded-2xl border border-espresso/5 p-3 shadow-sm space-y-1">
+                    {AVAILABLE_BRANDS.length === 0 ? (
+                      <p className="text-xs text-taupe py-2 text-center">No brands available</p>
+                    ) : (
+                      AVAILABLE_BRANDS.map((brand) => {
+                        const isChecked = selectedBrands.includes(brand);
+                        return (
+                          <CheckboxOption
+                            key={brand}
+                            label={brand}
+                            checked={isChecked}
+                            onClick={() => {
+                              if (isChecked) {
+                                setSelectedBrands(selectedBrands.filter((b) => b !== brand));
+                              } else {
+                                setSelectedBrands([...selectedBrands, brand]);
+                              }
+                            }}
+                          />
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {activeMobileTab === "origin" && (
+                <div className="space-y-4">
+                  <h3 className="font-sans text-xs font-bold text-espresso uppercase tracking-wider mb-2">
+                    Select Origin
+                  </h3>
+                  <div className="bg-white rounded-2xl border border-espresso/5 p-3 shadow-sm space-y-1">
+                    {AVAILABLE_ORIGINS.length === 0 ? (
+                      <p className="text-xs text-taupe py-2 text-center">No origins available</p>
+                    ) : (
+                      AVAILABLE_ORIGINS.map((origin: string) => {
+                        const isChecked = selectedOrigins.includes(origin);
+                        return (
+                          <CheckboxOption
+                            key={origin}
+                            label={origin}
+                            checked={isChecked}
+                            onClick={() => {
+                              if (isChecked) {
+                                setSelectedOrigins(selectedOrigins.filter((o) => o !== origin));
+                              } else {
+                                setSelectedOrigins([...selectedOrigins, origin]);
+                              }
+                            }}
+                          />
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              )}
+
+
+            </div>
+          </div>
+
+          {/* Footer Apply & Close Button */}
+          <div className="bg-white border-t border-espresso/10 p-4 pb-8 shrink-0 flex items-center justify-between gap-4">
+            <button
+              onClick={() => setIsMobileFilterOpen(false)}
+              className="px-6 py-3 text-espresso hover:text-burnt-orange font-bold text-sm transition-colors text-center"
+            >
+              Close
+            </button>
+            <button
+              onClick={() => setIsMobileFilterOpen(false)}
+              className="flex-1 py-3 bg-burnt-orange text-white font-bold rounded-xl text-sm hover:bg-[#C44D2A] transition-colors shadow-md text-center"
+            >
+              Show results
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Footer */}
       <footer className="bg-dark-chocolate text-white py-12 px-6 mt-16">
         <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
+          <div className="grid md:grid-cols-3 gap-8 mb-8">
             <div>
               <h3 className="font-heading text-2xl font-bold mb-4">
                 Bake & Joy
@@ -446,20 +665,6 @@ export default function Products() {
               </div>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Categories</h4>
-              <div className="space-y-2">
-                {displayedCategories.slice(0, 5).map((cat) => (
-                  <button
-                    key={cat.id}
-                    onClick={() => setSelectedCategory(cat.name)}
-                    className="block text-white/60 hover:text-burnt-orange transition-colors text-sm text-left"
-                  >
-                    {cat.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
               <h4 className="font-semibold mb-4">Contact</h4>
               <div className="space-y-2 text-sm text-white/60">
                 <p>WhatsApp: +91-9876543210</p>
@@ -475,11 +680,6 @@ export default function Products() {
           </div>
         </div>
       </footer>
-
-
-
-      {/* Cart Drawer */}
-      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </div>
   );
 }
