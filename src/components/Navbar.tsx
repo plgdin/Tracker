@@ -240,9 +240,13 @@ export default function Navbar({
       </nav>
 
       {/* Mobile Swiggy-like Header */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 w-full bg-espresso text-white pb-3 pt-2.5 px-4 shadow-md flex flex-col gap-2">
+      <div className={`md:hidden fixed top-0 left-0 right-0 z-50 w-full bg-espresso text-white px-4 shadow-md flex flex-col transition-all duration-300 ${
+        scrolled ? "pb-2 pt-2 gap-0" : "pb-3 pt-2.5 gap-2"
+      }`}>
         {/* Top Row: Location & Profile */}
-        <div className="flex items-center justify-between">
+        <div className={`flex items-center justify-between transition-all duration-300 ${
+          scrolled ? "opacity-0 max-h-0 overflow-hidden pointer-events-none" : "opacity-100 max-h-10"
+        }`}>
           <div 
             onClick={() => {
               if (addressLabel === "Home" || addressLabel === "Work") {
@@ -302,7 +306,7 @@ export default function Navbar({
         </div>
 
         {/* Middle Row: Search */}
-        <div className="flex items-center gap-2 mt-2">
+        <div className={`flex items-center gap-2 transition-all duration-300 ${scrolled ? "mt-0" : "mt-2"}`}>
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-taupe" />
             <input
