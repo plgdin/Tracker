@@ -14,7 +14,6 @@ import Products from './pages/Products';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
 import { CartProvider } from './context/CartContext';
-import { Outlet } from 'react-router-dom';
 import StorefrontWrapper from './components/StorefrontWrapper';
 import './index.css';
 

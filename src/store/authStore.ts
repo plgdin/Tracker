@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
 
-type Role = 'admin' | 'worker' | 'pending' | 'disabled';
+type Role = 'admin' | 'worker' | 'pending' | 'disabled' | 'customer';
 
 interface Profile {
   id: string;
