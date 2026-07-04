@@ -5,12 +5,12 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 const INDIAN_STATES = [
-  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", 
-  "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", 
-  "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", 
-  "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", 
-  "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal", 
-  "Andaman and Nicobar Islands", "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", 
+  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
+  "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka",
+  "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram",
+  "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu",
+  "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal",
+  "Andaman and Nicobar Islands", "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu",
   "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry"
 ];
 
@@ -81,7 +81,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           setPincode(parsed.pincode || "");
           return;
         }
-      } catch (e) {}
+      } catch (e) { }
 
       const legacy = localStorage.getItem("user_address") || "";
       if (legacy) {
@@ -235,22 +235,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
-          {!user ? (
-            <div className="h-full flex flex-col items-center justify-center text-center p-8">
-              <User className="w-16 h-16 text-taupe/40 mb-4" />
-              <h3 className="font-heading text-xl font-bold text-espresso mb-2">Sign In Required</h3>
-              <p className="text-taupe text-base mb-6">
-                Please sign in to view and manage your cart.
-              </p>
-              <Link
-                to="/login"
-                onClick={onClose}
-                className="w-full py-4 bg-burnt-orange text-white font-bold rounded-full hover:bg-[#C44D2A] shadow-md shadow-burnt-orange/20 transition-all flex justify-center items-center"
-              >
-                Sign In
-              </Link>
-            </div>
-          ) : items.length === 0 && !showCheckout ? (
+          {items.length === 0 && !showCheckout ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-8">
               <ShoppingBag className="w-16 h-16 text-taupe/40 mb-4" />
               <p className="text-taupe text-lg">Your cart is empty</p>
@@ -321,7 +306,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               {deliveryType === "delivery" && (
                 <div className="space-y-4">
                   <h4 className="text-base font-bold text-espresso border-b border-espresso/10 pb-2">Delivery Address</h4>
-                  
+
                   <div>
                     <label className="block text-sm font-semibold text-espresso mb-1">
                       Address Line 1 *
@@ -349,72 +334,72 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
-                  {isStateDropdownOpen ? (
-                    <div className="col-span-2">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-bold text-espresso">Select State</span>
-                        <button 
-                          type="button"
-                          onClick={() => setIsStateDropdownOpen(false)}
-                          className="text-taupe hover:text-espresso text-sm font-bold"
-                        >
-                          Close
-                        </button>
-                      </div>
-                      <div 
-                        className="rounded-xl border border-espresso/10 bg-white max-h-64 overflow-y-auto"
-                        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-                      >
-                        {INDIAN_STATES.map((stateName) => (
+                    {isStateDropdownOpen ? (
+                      <div className="col-span-2">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-bold text-espresso">Select State</span>
                           <button
-                            key={stateName}
                             type="button"
-                            onClick={() => {
-                              setState(stateName);
-                              setIsStateDropdownOpen(false);
-                            }}
-                            className="w-full text-left px-5 py-3.5 text-base font-medium transition-colors border-b border-espresso/5 last:border-b-0"
-                            style={{
-                              backgroundColor: state === stateName ? "#FEF2EB" : "white",
-                              color: state === stateName ? "#D95B35" : "#3D2B1F",
-                            }}
+                            onClick={() => setIsStateDropdownOpen(false)}
+                            className="text-taupe hover:text-espresso text-sm font-bold"
                           >
-                            {stateName}
+                            Close
                           </button>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <div>
-                        <label className="block text-sm font-semibold text-espresso mb-1">
-                          State *
-                        </label>
-                        <button
-                          type="button"
-                          onClick={() => setIsStateDropdownOpen(true)}
-                          className="w-full px-5 py-4 rounded-xl border border-espresso/15 focus:border-burnt-orange focus:ring-2 focus:ring-burnt-orange/20 outline-none transition-all text-base bg-white h-[58px] flex items-center justify-between text-left"
+                        </div>
+                        <div
+                          className="rounded-xl border border-espresso/10 bg-white max-h-64 overflow-y-auto"
+                          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
                         >
-                          <span className={state ? "text-espresso font-medium truncate" : "text-taupe/50"}>
-                            {state || "Select State"}
-                          </span>
-                          <ChevronDown className="w-5 h-5 text-taupe shrink-0" />
-                        </button>
+                          {INDIAN_STATES.map((stateName) => (
+                            <button
+                              key={stateName}
+                              type="button"
+                              onClick={() => {
+                                setState(stateName);
+                                setIsStateDropdownOpen(false);
+                              }}
+                              className="w-full text-left px-5 py-3.5 text-base font-medium transition-colors border-b border-espresso/5 last:border-b-0"
+                              style={{
+                                backgroundColor: state === stateName ? "#FEF2EB" : "white",
+                                color: state === stateName ? "#D95B35" : "#3D2B1F",
+                              }}
+                            >
+                              {stateName}
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-espresso mb-1">
-                          City *
-                        </label>
-                        <input
-                          type="text"
-                          value={city}
-                          onChange={(e) => setCity(e.target.value)}
-                          className="w-full px-5 py-4 rounded-xl border border-espresso/15 focus:border-burnt-orange focus:ring-2 focus:ring-burnt-orange/20 outline-none transition-all text-base h-[58px]"
-                          placeholder="Enter City"
-                        />
-                      </div>
-                    </>
-                  )}
+                    ) : (
+                      <>
+                        <div>
+                          <label className="block text-sm font-semibold text-espresso mb-1">
+                            State *
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => setIsStateDropdownOpen(true)}
+                            className="w-full px-5 py-4 rounded-xl border border-espresso/15 focus:border-burnt-orange focus:ring-2 focus:ring-burnt-orange/20 outline-none transition-all text-base bg-white h-[58px] flex items-center justify-between text-left"
+                          >
+                            <span className={state ? "text-espresso font-medium truncate" : "text-taupe/50"}>
+                              {state || "Select State"}
+                            </span>
+                            <ChevronDown className="w-5 h-5 text-taupe shrink-0" />
+                          </button>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-espresso mb-1">
+                            City *
+                          </label>
+                          <input
+                            type="text"
+                            value={city}
+                            onChange={(e) => setCity(e.target.value)}
+                            className="w-full px-5 py-4 rounded-xl border border-espresso/15 focus:border-burnt-orange focus:ring-2 focus:ring-burnt-orange/20 outline-none transition-all text-base h-[58px]"
+                            placeholder="Enter City"
+                          />
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   <div>
@@ -522,7 +507,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         </div>
 
         {/* Footer */}
-        {user && items.length > 0 && !showCheckout && (
+        {items.length > 0 && !showCheckout && (
           <div className="border-t border-espresso/10 px-6 pt-6 pb-6 space-y-4 bg-cream text-espresso rounded-t-[32px] shadow-none">
             <div className="flex justify-between items-center px-2">
               <span className="text-espresso font-semibold text-lg">Subtotal</span>
@@ -544,7 +529,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           </div>
         )}
 
-        {user && showCheckout && (
+        {showCheckout && (
           <div className="border-t border-espresso/10 px-6 pt-6 pb-6 space-y-4 bg-cream text-espresso rounded-t-[32px] shadow-none">
             <div className="flex justify-between items-center px-2">
               <span className="text-espresso font-semibold text-lg">Total</span>

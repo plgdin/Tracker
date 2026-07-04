@@ -24,11 +24,7 @@ export default function StorefrontWrapper() {
   }
 
   const handleCartClick = () => {
-    if (!user) {
-      navigate("/login");
-    } else {
-      setIsCartOpen(true);
-    }
+    setIsCartOpen(true);
   };
 
   const isHomeActive = location.pathname === "/";
@@ -45,9 +41,8 @@ export default function StorefrontWrapper() {
       <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t border-espresso/10 flex justify-around items-center py-2.5 shadow-[0_-4px_12px_rgba(61,43,31,0.06)] rounded-t-[20px]">
         <Link
           to="/"
-          className={`flex flex-col items-center justify-center w-16 py-1 transition-all ${
-            isHomeActive ? "text-burnt-orange scale-105" : "text-taupe"
-          }`}
+          className={`flex flex-col items-center justify-center w-16 py-1 transition-all ${isHomeActive ? "text-burnt-orange scale-105" : "text-taupe"
+            }`}
         >
           <Home className="w-5 h-5 mb-0.5" />
           <span className="text-[10px] font-bold tracking-tight">Home</span>
@@ -55,9 +50,8 @@ export default function StorefrontWrapper() {
 
         <Link
           to="/products"
-          className={`flex flex-col items-center justify-center w-16 py-1 transition-all ${
-            isShopActive ? "text-burnt-orange scale-105" : "text-taupe"
-          }`}
+          className={`flex flex-col items-center justify-center w-16 py-1 transition-all ${isShopActive ? "text-burnt-orange scale-105" : "text-taupe"
+            }`}
         >
           <ShoppingBag className="w-5 h-5 mb-0.5" />
           <span className="text-[10px] font-bold tracking-tight">Shop</span>
@@ -80,9 +74,8 @@ export default function StorefrontWrapper() {
 
         <Link
           to={user ? "/profile" : "/login"}
-          className={`flex flex-col items-center justify-center w-16 py-1 transition-all ${
-            isProfileActive ? "text-burnt-orange scale-105" : "text-taupe"
-          }`}
+          className={`flex flex-col items-center justify-center w-16 py-1 transition-all ${isProfileActive ? "text-burnt-orange scale-105" : "text-taupe"
+            }`}
         >
           <User className="w-5 h-5 mb-0.5" />
           <span className="text-[10px] font-bold tracking-tight">Profile</span>

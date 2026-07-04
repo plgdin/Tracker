@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ShoppingCart, User, ChefHat, Search, MapPin, ChevronDown } from "lucide-react";
+import { ShoppingCart, User, ChefHat, Search, MapPin, ChevronDown, Compass, Plus, MessageCircle, MoreVertical, Home, ArrowLeft, Navigation, Building, Hash, Briefcase, Tag } from "lucide-react";
 import { useCartContext } from "@/context/CartContext";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
@@ -36,8 +36,8 @@ export default function Navbar({
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [addressLabel, setAddressLabel] = useState(() => localStorage.getItem("address_label") || "Work");
-  const [addressValue, setAddressValue] = useState(() => localStorage.getItem("user_address") || "12 Bakery Lane, Sweet City");
+  const [addressLabel, setAddressLabel] = useState(() => localStorage.getItem("address_label") || "Select Location");
+  const [addressValue, setAddressValue] = useState(() => localStorage.getItem("user_address") || "Choose delivery address");
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [tempLabel, setTempLabel] = useState("Work");
   const [customLabel, setCustomLabel] = useState("");
@@ -48,6 +48,16 @@ export default function Navbar({
   const [tempCity, setTempCity] = useState("");
   const [tempState, setTempState] = useState("");
   const [tempPincode, setTempPincode] = useState("");
+
+  const [addressSheetView, setAddressSheetView] = useState<'select' | 'add'>('select');
+  const [locationSearchQuery, setLocationSearchQuery] = useState("");
+  const [savedAddresses, setSavedAddresses] = useState<any[]>(() => {
+    try {
+      const saved = localStorage.getItem("saved_addresses");
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return [];
+  });
 
   const getFormattedAddress = (details: { addressLine1: string; addressLine2?: string; city: string; state: string; pincode: string }) => {
     return [
@@ -218,13 +228,16 @@ export default function Navbar({
               if (addressLabel === "Home" || addressLabel === "Work") {
                 setTempLabel(addressLabel);
                 setCustomLabel("");
+              } else if (addressLabel === "Select Location" || !addressLabel) {
+                setTempLabel("Home");
+                setCustomLabel("");
               } else {
                 setTempLabel("Other");
                 setCustomLabel(addressLabel);
               }
               try {
                 const saved = localStorage.getItem("user_address_details");
-                if (saved) {
+                if (saved && localStorage.getItem("user_address") !== "Choose delivery address") {
                   const parsed = JSON.parse(saved);
                   setTempAddressLine1(parsed.addressLine1 || "");
                   setTempAddressLine2(parsed.addressLine2 || "");
@@ -232,11 +245,9 @@ export default function Navbar({
                   setTempState(parsed.state || "");
                   setTempPincode(parsed.pincode || "");
                 } else {
-                  // legacy fallback
-                  const parts = addressValue.split(",").map(p => p.trim());
-                  setTempAddressLine1(parts[0] || "");
-                  setTempAddressLine2(parts.length > 2 ? parts.slice(1, -1).join(", ") : parts[1] || "");
-                  setTempCity(parts[parts.length - 1] || "");
+                  setTempAddressLine1("");
+                  setTempAddressLine2("");
+                  setTempCity("");
                   setTempState("");
                   setTempPincode("");
                 }
@@ -291,10 +302,10 @@ export default function Navbar({
       {isAddressModalOpen && (
         <div 
           className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/50 backdrop-blur-sm transition-all"
-          onClick={() => setIsAddressModalOpen(false)}
+          onClick={() => { setIsAddressModalOpen(false); setAddressSheetView('select'); }}
         >
           <div 
-            className="w-full max-w-md bg-white rounded-t-[30px] p-6 shadow-xl flex flex-col gap-4 overflow-y-auto no-scrollbar"
+            className="w-full max-w-md bg-[#F4F3F6] rounded-t-[30px] p-6 shadow-xl flex flex-col gap-4 overflow-y-auto no-scrollbar"
             onClick={(e) => e.stopPropagation()}
             style={{
               maxHeight: "85vh",
@@ -304,179 +315,383 @@ export default function Navbar({
             }}
           >
             {/* Sheet Handle */}
-            <div className="w-12 h-1.5 bg-espresso/15 rounded-full mx-auto mb-2 shrink-0" />
+            <div className="w-12 h-1.5 bg-espresso/15 rounded-full mx-auto mb-1 shrink-0" />
             
-            {/* Title */}
-            <div className="flex items-center justify-between shrink-0">
-              <h3 className="font-sans text-base font-bold text-espresso">Select Delivery Address</h3>
-              <button 
-                onClick={() => { setIsAddressModalOpen(false); setIsStateDropdownOpen(false); }}
-                className="text-taupe hover:text-espresso font-bold text-sm"
-              >
-                Cancel
-              </button>
-            </div>
-
-            {/* Address Inputs */}
-            <div className="space-y-3 flex-1">
-              <div>
-                <label className="text-[10px] font-bold text-taupe uppercase tracking-wider block mb-1">Address Line 1 *</label>
-                <input
-                  type="text"
-                  value={tempAddressLine1}
-                  onChange={(e) => setTempAddressLine1(e.target.value)}
-                  placeholder="Flat / House no., Building, Apartment"
-                  className="w-full bg-[#FAFAFA] border border-espresso/15 rounded-xl px-3 py-2.5 text-xs text-espresso placeholder:text-taupe/50 focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange/20 outline-none transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] font-bold text-taupe uppercase tracking-wider block mb-1">Address Line 2 (optional)</label>
-                <input
-                  type="text"
-                  value={tempAddressLine2}
-                  onChange={(e) => setTempAddressLine2(e.target.value)}
-                  placeholder="Street, Sector, Area, Landmark"
-                  className="w-full bg-[#FAFAFA] border border-espresso/15 rounded-xl px-3 py-2.5 text-xs text-espresso placeholder:text-taupe/50 focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange/20 outline-none transition-all"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div className="relative">
-                  <label className="text-[10px] font-bold text-taupe uppercase tracking-wider block mb-1">State *</label>
-                  <button
-                    type="button"
-                    onClick={() => setIsStateDropdownOpen(!isStateDropdownOpen)}
-                    className="w-full bg-[#FAFAFA] border border-espresso/15 rounded-xl px-3 text-xs focus:border-burnt-orange outline-none transition-all h-9 flex items-center justify-between text-left"
-                  >
-                    <span className={tempState ? "text-espresso font-medium text-[11px] leading-tight" : "text-taupe/50 text-[11px]"}>
-                      {tempState || "Select"}
-                    </span>
-                    <ChevronDown className={`w-3.5 h-3.5 text-taupe shrink-0 ml-1 transition-transform ${isStateDropdownOpen ? "rotate-180" : ""}`} />
-                  </button>
-
-                  {isStateDropdownOpen && (
-                    <div 
-                      className="absolute left-0 right-0 bg-white border border-espresso/10 rounded-xl shadow-2xl z-50 overflow-y-auto no-scrollbar top-[calc(100%+4px)]"
-                      style={{ maxHeight: "200px", scrollbarWidth: "none" }}
+            {/* SELECT VIEW */}
+            {addressSheetView === 'select' ? (
+              <>
+                {/* Header */}
+                <div className="flex items-center justify-between shrink-0 mb-1">
+                  <div className="flex items-center gap-3">
+                    <button 
+                      onClick={() => setIsAddressModalOpen(false)}
+                      className="p-1 rounded-full hover:bg-espresso/5 text-espresso"
                     >
-                      {INDIAN_STATES.map((stateName) => (
-                        <button
-                          key={stateName}
-                          type="button"
-                          onClick={() => {
-                            setTempState(stateName);
-                            setIsStateDropdownOpen(false);
-                          }}
-                          className="w-full text-left px-3 py-2.5 text-[11px] font-medium transition-colors border-b border-espresso/5 last:border-b-0"
-                          style={{
-                            backgroundColor: tempState === stateName ? "#FEF2EB" : "white",
-                            color: tempState === stateName ? "#D95B35" : "#3D2B1F",
-                          }}
-                        >
-                          {stateName}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                      <ArrowLeft className="w-5 h-5 text-espresso" />
+                    </button>
+                    <h3 className="font-heading text-lg font-bold text-espresso">Select Your Location</h3>
+                  </div>
+                  <button 
+                    onClick={() => setIsAddressModalOpen(false)}
+                    className="text-espresso hover:text-burnt-orange font-bold text-sm"
+                  >
+                    Cancel
+                  </button>
                 </div>
-                <div>
-                  <label className="text-[10px] font-bold text-taupe uppercase tracking-wider block mb-1">City *</label>
+
+                {/* Search Bar */}
+                <div className="relative shrink-0">
                   <input
                     type="text"
-                    value={tempCity}
-                    onChange={(e) => setTempCity(e.target.value)}
-                    placeholder="Enter City"
-                    className="w-full bg-[#FAFAFA] border border-espresso/15 rounded-xl px-3 text-xs text-espresso placeholder:text-taupe/50 focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange/20 outline-none transition-all h-9"
+                    value={locationSearchQuery}
+                    onChange={(e) => setLocationSearchQuery(e.target.value)}
+                    placeholder="Search an area or address"
+                    className="w-full bg-white border border-espresso/10 rounded-2xl py-3.5 pl-4 pr-10 text-xs font-semibold text-espresso placeholder:text-taupe/40 focus:border-burnt-orange outline-none transition-all shadow-sm"
                   />
+                  <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-taupe" />
                 </div>
-              </div>
 
-              <div>
-                <label className="text-[10px] font-bold text-taupe uppercase tracking-wider block mb-1">Pincode *</label>
-                <input
-                  type="text"
-                  value={tempPincode}
-                  onChange={(e) => setTempPincode(e.target.value)}
-                  placeholder="6-digit pincode"
-                  className="w-full bg-[#FAFAFA] border border-espresso/15 rounded-xl px-3 py-2.5 text-xs text-espresso placeholder:text-taupe/50 focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange/20 outline-none transition-all"
-                />
-              </div>
-            </div>
-
-            {/* Address Label Selector */}
-            <div className="space-y-2 shrink-0 border-t border-espresso/10 pt-3">
-              <span className="text-[10px] font-bold text-taupe uppercase tracking-wider block">Save address as</span>
-              <div className="flex gap-2">
-                {["Home", "Work", "Other"].map((label) => (
+                {/* Horizontal Action Cards */}
+                <div className="grid grid-cols-2 gap-3 my-2 shrink-0">
                   <button
-                    key={label}
                     onClick={() => {
-                      setTempLabel(label);
-                      if (label !== "Other") {
-                        setCustomLabel("");
+                      if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition((position) => {
+                          const mockAddr = {
+                            id: "addr-current",
+                            label: "Location",
+                            addressLine1: `Lat: ${position.coords.latitude.toFixed(4)}`,
+                            addressLine2: `Lon: ${position.coords.longitude.toFixed(4)}`,
+                            city: "Sweet City",
+                            state: "Kerala",
+                            pincode: "695013"
+                          };
+                          const formatted = getFormattedAddress(mockAddr);
+                          setAddressLabel("Location");
+                          setAddressValue(formatted);
+                          localStorage.setItem("address_label", "Location");
+                          localStorage.setItem("user_address", formatted);
+                          localStorage.setItem("user_address_details", JSON.stringify(mockAddr));
+                          window.dispatchEvent(new Event("storage"));
+                          setIsAddressModalOpen(false);
+                        }, () => {
+                          alert("Could not access your location. Please enter manually.");
+                        });
                       }
                     }}
-                    type="button"
-                    className="py-1.5 px-3 rounded-lg border text-[10px] font-bold transition-all text-center"
-                    style={{
-                      borderColor: tempLabel === label ? "#D95B35" : "rgba(61, 43, 31, 0.15)",
-                      backgroundColor: tempLabel === label ? "#D95B35" : "white",
-                      color: tempLabel === label ? "white" : "#3D2B1F",
-                    }}
+                    className="bg-white rounded-[20px] border border-espresso/5 p-3 flex flex-col items-center justify-center text-center gap-2 shadow-sm hover:scale-[1.02] active:scale-98 transition-all h-[105px]"
                   >
-                    {label}
+                    <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
+                      <Compass className="w-4.5 h-4.5" />
+                    </div>
+                    <span className="text-[10px] font-bold text-espresso leading-tight">Use Current Location</span>
                   </button>
-                ))}
-              </div>
-              
-              {tempLabel === "Other" && (
-                <div className="mt-1">
-                  <input
-                    type="text"
-                    value={customLabel}
-                    onChange={(e) => setCustomLabel(e.target.value)}
-                    placeholder="Name this address (e.g. Gym, Friend's house)"
-                    className="w-full bg-[#FAFAFA] border border-espresso/15 rounded-xl px-3 py-2 text-xs text-espresso placeholder:text-taupe/50 focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange/20 outline-none transition-all"
-                  />
-                </div>
-              )}
-            </div>
 
-            {/* Save Button */}
-            <button
-              onClick={() => {
-                if (!tempAddressLine1.trim() || !tempCity.trim() || !tempState.trim() || !tempPincode.trim()) return;
-                const finalLabel = tempLabel === "Other" && customLabel.trim() !== "" ? customLabel.trim() : tempLabel;
-                const newDetails = {
-                  addressLine1: tempAddressLine1.trim(),
-                  addressLine2: tempAddressLine2.trim(),
-                  city: tempCity.trim(),
-                  state: tempState.trim(),
-                  pincode: tempPincode.trim()
-                };
-                const formatted = getFormattedAddress(newDetails);
-                setAddressLabel(finalLabel);
-                setAddressValue(formatted);
-                localStorage.setItem("address_label", finalLabel);
-                localStorage.setItem("user_address", formatted);
-                localStorage.setItem("user_address_details", JSON.stringify(newDetails));
-                window.dispatchEvent(new Event("storage"));
-                setIsStateDropdownOpen(false);
-                setIsAddressModalOpen(false);
-              }}
-              disabled={!tempAddressLine1.trim() || !tempCity.trim() || !tempState.trim() || !tempPincode.trim() || (tempLabel === "Other" && !customLabel.trim())}
-              className="w-full py-4 font-bold rounded-2xl text-sm transition-all text-center shrink-0 flex items-center justify-center"
-              style={{
-                backgroundColor: (!tempAddressLine1.trim() || !tempCity.trim() || !tempState.trim() || !tempPincode.trim() || (tempLabel === "Other" && !customLabel.trim()))
-                  ? "#E8D5C4" : "#D95B35",
-                color: (!tempAddressLine1.trim() || !tempCity.trim() || !tempState.trim() || !tempPincode.trim() || (tempLabel === "Other" && !customLabel.trim()))
-                  ? "#A08979" : "#FFFFFF",
-                boxShadow: "0 4px 14px rgba(217, 91, 53, 0.25)",
-              }}
-            >
-              Save Address
-            </button>
+                  <button
+                    onClick={() => setAddressSheetView('add')}
+                    className="bg-white rounded-[20px] border border-espresso/5 p-3 flex flex-col items-center justify-center text-center gap-2 shadow-sm hover:scale-[1.02] active:scale-98 transition-all h-[105px]"
+                  >
+                    <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
+                      <Plus className="w-4.5 h-4.5" />
+                    </div>
+                    <span className="text-[10px] font-bold text-espresso leading-tight">Add New Address</span>
+                  </button>
+                </div>
+
+                {/* Saved Addresses Section */}
+                <div className="flex flex-col gap-2 flex-1">
+                  <span className="text-[10px] font-bold text-taupe uppercase tracking-wider block pl-1">Saved Addresses</span>
+                  <div className="bg-white rounded-[24px] border border-espresso/5 shadow-sm p-1.5 flex flex-col">
+                    {savedAddresses.filter(addr => getFormattedAddress(addr).toLowerCase().includes(locationSearchQuery.toLowerCase()) || addr.label.toLowerCase().includes(locationSearchQuery.toLowerCase())).length === 0 ? (
+                      <div className="text-center py-6 text-xs text-taupe/65 font-medium">
+                        No saved addresses found.
+                      </div>
+                    ) : (
+                      savedAddresses
+                        .filter(addr => getFormattedAddress(addr).toLowerCase().includes(locationSearchQuery.toLowerCase()) || addr.label.toLowerCase().includes(locationSearchQuery.toLowerCase()))
+                        .map((addr) => {
+                          const formatted = getFormattedAddress(addr);
+                          const isSelected = addressLabel === addr.label && addressValue === formatted;
+                          const isHome = addr.label.toLowerCase() === 'home';
+                          const Icon = isHome ? Home : Navigation;
+                          return (
+                            <div 
+                              key={addr.id}
+                              onClick={() => {
+                                setAddressLabel(addr.label);
+                                setAddressValue(formatted);
+                                localStorage.setItem("address_label", addr.label);
+                                localStorage.setItem("user_address", formatted);
+                                localStorage.setItem("user_address_details", JSON.stringify(addr));
+                                window.dispatchEvent(new Event("storage"));
+                                setIsAddressModalOpen(false);
+                              }}
+                              className="flex items-center gap-3.5 py-3.5 px-3 border-b border-espresso/5 last:border-b-0 cursor-pointer hover:bg-espresso/5 transition-colors rounded-[18px]"
+                            >
+                              <div className="w-9 h-9 rounded-xl bg-espresso/5 flex items-center justify-center text-espresso shrink-0">
+                                <Icon className="w-4.5 h-4.5 text-espresso/80" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-bold text-sm text-espresso leading-tight">{addr.label}</span>
+                                  {isSelected && (
+                                    <span className="bg-[#E2F6EC] text-[#22C55E] text-[9px] font-bold px-1.5 py-0.5 rounded-md">
+                                      SELECTED
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-xs text-taupe mt-1 truncate leading-normal">
+                                  {formatted}
+                                </p>
+                              </div>
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (confirm(`Remove address "${addr.label}"?`)) {
+                                    const updated = savedAddresses.filter(a => a.id !== addr.id);
+                                    setSavedAddresses(updated);
+                                    localStorage.setItem("saved_addresses", JSON.stringify(updated));
+                                  }
+                                }}
+                                className="p-1 rounded-full hover:bg-espresso/5 text-taupe hover:text-espresso shrink-0"
+                              >
+                                <MoreVertical className="w-4.5 h-4.5" />
+                              </button>
+                            </div>
+                          );
+                        })
+                    )}
+                  </div>
+                  
+                  {/* View All */}
+                  <button className="py-2 text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors flex items-center justify-center gap-1 mt-1 shrink-0">
+                    View all <ChevronDown className="w-3 h-3" />
+                  </button>
+                </div>
+              </>
+            ) : (
+              /* ADD NEW ADDRESS VIEW */
+              <>
+                {/* Header */}
+                <div className="flex items-center justify-between shrink-0 mb-1">
+                  <div className="flex items-center gap-3">
+                    <button 
+                      onClick={() => setAddressSheetView('select')}
+                      className="p-1 rounded-full hover:bg-espresso/5 text-espresso"
+                    >
+                      <ArrowLeft className="w-5 h-5 text-espresso" />
+                    </button>
+                    <h3 className="font-heading text-lg font-bold text-espresso">Select Delivery Address</h3>
+                  </div>
+                  <button 
+                    onClick={() => { setIsAddressModalOpen(false); setAddressSheetView('select'); }}
+                    className="text-espresso hover:text-burnt-orange font-bold text-sm"
+                  >
+                    Cancel
+                  </button>
+                </div>
+
+                {/* Address Inputs */}
+                <div className="space-y-3 flex-1">
+                  <div>
+                    <label className="text-[10px] font-bold text-taupe uppercase tracking-wider block mb-1">Address Line 1 *</label>
+                    <div className="relative">
+                      <Building size={16} className="text-taupe/70 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <input
+                        type="text"
+                        value={tempAddressLine1}
+                        onChange={(e) => setTempAddressLine1(e.target.value)}
+                        placeholder="Flat / House no., Building, Apartment"
+                        className="w-full bg-[#FAFAFA] border border-espresso/15 rounded-xl px-3 py-2.5 text-sm text-espresso placeholder:text-taupe/50 focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange/20 outline-none transition-all input-with-icon"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-taupe uppercase tracking-wider block mb-1">Address Line 2 (optional)</label>
+                    <div className="relative">
+                      <MapPin size={16} className="text-taupe/70 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <input
+                        type="text"
+                        value={tempAddressLine2}
+                        onChange={(e) => setTempAddressLine2(e.target.value)}
+                        placeholder="Street, Sector, Area, Landmark"
+                        className="w-full bg-[#FAFAFA] border border-espresso/15 rounded-xl px-3 py-2.5 text-sm text-espresso placeholder:text-taupe/50 focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange/20 outline-none transition-all input-with-icon"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="relative">
+                      <label className="text-[10px] font-bold text-taupe uppercase tracking-wider block mb-1">State *</label>
+                      <button
+                        type="button"
+                        onClick={() => setIsStateDropdownOpen(!isStateDropdownOpen)}
+                        className="w-full bg-[#FAFAFA] outline-none transition-all flex items-center justify-between text-left text-sm text-espresso"
+                        style={{
+                          borderWidth: '1.5px',
+                          borderStyle: 'solid',
+                          borderColor: 'rgba(61, 43, 31, 0.18)',
+                          padding: '0.75rem 1rem 0.75rem 2.5rem',
+                          height: 'auto',
+                          borderRadius: '0.75rem',
+                          position: 'relative'
+                        }}
+                      >
+                        <Compass size={16} className="text-taupe/70 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <span className={tempState ? "text-espresso font-medium truncate" : "text-taupe/50"}>
+                          {tempState || "Select"}
+                        </span>
+                        <ChevronDown className={`w-3.5 h-3.5 text-taupe shrink-0 ml-1 transition-transform ${isStateDropdownOpen ? "rotate-180" : ""}`} />
+                      </button>
+
+                      {isStateDropdownOpen && (
+                        <div 
+                          className="absolute left-0 right-0 bg-white border border-espresso/10 rounded-xl shadow-2xl z-50 overflow-y-auto no-scrollbar top-[calc(100%+4px)]"
+                          style={{ maxHeight: "200px", scrollbarWidth: "none" }}
+                        >
+                          {INDIAN_STATES.map((stateName) => (
+                            <button
+                              key={stateName}
+                              type="button"
+                              onClick={() => {
+                                setTempState(stateName);
+                                setIsStateDropdownOpen(false);
+                              }}
+                              className="w-full text-left px-3 py-2.5 text-xs font-medium transition-colors border-b border-espresso/5 last:border-b-0"
+                              style={{
+                                backgroundColor: tempState === stateName ? "#FEF2EB" : "white",
+                                color: tempState === stateName ? "#D95B35" : "#3D2B1F",
+                              }}
+                            >
+                              {stateName}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-taupe uppercase tracking-wider block mb-1">City *</label>
+                      <div className="relative">
+                        <Home size={16} className="text-taupe/70 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <input
+                          type="text"
+                          value={tempCity}
+                          onChange={(e) => setTempCity(e.target.value)}
+                          placeholder="Enter City"
+                          className="w-full bg-[#FAFAFA] border border-espresso/15 rounded-xl px-3 text-sm text-espresso placeholder:text-taupe/50 focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange/20 outline-none transition-all input-with-icon"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-taupe uppercase tracking-wider block mb-1">Pincode *</label>
+                    <div className="relative">
+                      <Hash size={16} className="text-taupe/70 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <input
+                        type="text"
+                        value={tempPincode}
+                        onChange={(e) => setTempPincode(e.target.value)}
+                        placeholder="6-digit pincode"
+                        className="w-full bg-[#FAFAFA] border border-espresso/15 rounded-xl px-3 py-2.5 text-sm text-espresso placeholder:text-taupe/50 focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange/20 outline-none transition-all input-with-icon"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                 {/* Address Label Selector */}
+                 <div className="space-y-3 shrink-0 border-t border-espresso/10 pt-3">
+                   <span className="text-[10px] font-bold text-taupe uppercase tracking-wider block">Save address as</span>
+                   <div className="flex gap-2">
+                     {["Home", "Work", "Other"].map((label) => {
+                       const isSelected = tempLabel === label;
+                       const IconComponent = label === "Home" ? Home : label === "Work" ? Briefcase : Tag;
+                       return (
+                         <button
+                           key={label}
+                           onClick={() => {
+                             setTempLabel(label);
+                             if (label !== "Other") {
+                               setCustomLabel("");
+                             }
+                           }}
+                           type="button"
+                           className="flex items-center gap-1.5 border text-xs font-bold transition-all shadow-sm hover:scale-[1.02] active:scale-[0.98] outline-none"
+                           style={{
+                             borderColor: isSelected ? "#D95B35" : "rgba(61, 43, 31, 0.12)",
+                             backgroundColor: isSelected ? "#D95B35" : "white",
+                             color: isSelected ? "white" : "#3D2B1F",
+                             padding: '0.5rem 1rem',
+                             borderRadius: '9999px',
+                           }}
+                         >
+                           <IconComponent size={14} className={isSelected ? "text-white" : "text-taupe/80"} />
+                           {label}
+                         </button>
+                       );
+                     })}
+                   </div>
+                   
+                   {tempLabel === "Other" && (
+                     <div className="mt-2 relative">
+                       <Tag size={16} className="text-taupe/70 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                       <input
+                         type="text"
+                         value={customLabel}
+                         onChange={(e) => setCustomLabel(e.target.value)}
+                         placeholder="Name this address (e.g. Gym, Friend's house)"
+                         className="w-full bg-[#FAFAFA] border border-espresso/15 rounded-xl px-3 py-2.5 text-sm text-espresso placeholder:text-taupe/50 focus:border-burnt-orange focus:ring-1 focus:ring-burnt-orange/20 outline-none transition-all input-with-icon"
+                       />
+                     </div>
+                   )}
+                 </div>
+
+                {/* Save Button */}
+                <button
+                  onClick={() => {
+                    if (!tempAddressLine1.trim() || !tempCity.trim() || !tempState.trim() || !tempPincode.trim()) return;
+                    const finalLabel = tempLabel === "Other" && customLabel.trim() !== "" ? customLabel.trim() : tempLabel;
+                    const newDetails = {
+                      id: "addr-" + Date.now(),
+                      label: finalLabel,
+                      addressLine1: tempAddressLine1.trim(),
+                      addressLine2: tempAddressLine2.trim(),
+                      city: tempCity.trim(),
+                      state: tempState.trim(),
+                      pincode: tempPincode.trim()
+                    };
+                    const formatted = getFormattedAddress(newDetails);
+                    
+                    const updated = [newDetails, ...savedAddresses.filter(a => a.label !== finalLabel)];
+                    setSavedAddresses(updated);
+                    localStorage.setItem("saved_addresses", JSON.stringify(updated));
+
+                    setAddressLabel(finalLabel);
+                    setAddressValue(formatted);
+                    localStorage.setItem("address_label", finalLabel);
+                    localStorage.setItem("user_address", formatted);
+                    localStorage.setItem("user_address_details", JSON.stringify(newDetails));
+                    window.dispatchEvent(new Event("storage"));
+                    
+                    setIsStateDropdownOpen(false);
+                    setAddressSheetView('select');
+                    setIsAddressModalOpen(false);
+                  }}
+                  disabled={!tempAddressLine1.trim() || !tempCity.trim() || !tempState.trim() || !tempPincode.trim() || (tempLabel === "Other" && !customLabel.trim())}
+                  className="w-full py-2.5 font-bold rounded-xl text-sm transition-all text-center shrink-0 flex items-center justify-center shadow-md hover:scale-[1.01] active:scale-[0.99]"
+                  style={{
+                    backgroundColor: (!tempAddressLine1.trim() || !tempCity.trim() || !tempState.trim() || !tempPincode.trim() || (tempLabel === "Other" && !customLabel.trim()))
+                      ? "#E8D5C4" : "#D95B35",
+                    color: (!tempAddressLine1.trim() || !tempCity.trim() || !tempState.trim() || !tempPincode.trim() || (tempLabel === "Other" && !customLabel.trim()))
+                      ? "#A08979" : "#FFFFFF",
+                    boxShadow: "0 4px 14px rgba(217, 91, 53, 0.2)",
+                  }}
+                >
+                  Save Address
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
