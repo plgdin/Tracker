@@ -1,4 +1,17 @@
 import { useState, useEffect } from "react";
+import type { Category, Item } from "@/lib/db";
+
+export interface FormattedProduct {
+  id: string;
+  name: string;
+  description: string;
+  price: string;
+  image: string | null;
+  categoryName: string;
+  inStock: boolean;
+  brand: string;
+  origin: string;
+}
 import Navbar from "@/components/Navbar";
 import HeroCarousel from "@/components/HeroCarousel";
 import ProductCard from "@/components/ProductCard";
@@ -44,9 +57,9 @@ const BakeryPattern = ({ dense = false }: { dense?: boolean }) => {
 
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-      {icons.map(({ name, className }) => (
+      {icons.map(({ name, className }, index) => (
         <img
-          key={name}
+          key={`${name}-${index}`}
           src={`https://api.iconify.design/lucide/${name}.svg?color=%238C8C8C`}
           alt=""
           loading="lazy"
@@ -91,8 +104,8 @@ export default function Home() {
     }
   }, [location.hash]);
 
-  const [categories, setCategories] = useState<any[]>([]);
-  const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [products, setProducts] = useState<FormattedProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -100,16 +113,16 @@ export default function Home() {
       setIsLoading(true);
       // Fetch Categories
       const { data: catData } = await supabase.from('categories').select('*');
-      if (catData) setCategories(catData);
+      if (catData) setCategories(catData as Category[]);
 
       // Fetch Products
       const { data: prodData } = await supabase.from('items').select('*');
       if (prodData) {
-        const formatted = prodData.map((p: any) => ({
+        const formatted = (prodData as (Item & { brand?: string; origin?: string })[]).map((p) => ({
             id: p.id,
             name: p.name,
             description: p.notes || '',
-            price: p.price || 0,
+            price: String(p.price || 0),
             image: p.image_url || null,
             categoryName: p.category,
             inStock: p.quantity > 0,

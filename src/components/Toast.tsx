@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useToastStore } from '../store/toastStore';
 import { Sparkles } from 'lucide-react';
 
@@ -6,11 +6,13 @@ export default function Toast() {
   const { message, hideToast } = useToastStore();
   const [animId, setAnimId] = useState(0);
 
-  useEffect(() => {
+  const [prevMessage, setPrevMessage] = useState(message);
+  if (message !== prevMessage) {
+    setPrevMessage(message);
     if (message) {
       setAnimId(prev => prev + 1);
     }
-  }, [message]);
+  }
 
   if (!message) return null;
 

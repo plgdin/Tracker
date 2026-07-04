@@ -127,7 +127,7 @@ export default function ReportsPage() {
 
   // Fix #4: Proper report print using new window
   const handlePrint = () => {
-    let bodyHtml = '';
+    let bodyHtml: string;
     const periodStr = `${from} → ${to}`;
     if (type === 'purchase') {
       const rows = purchaseData.map((p,i) => `<tr><td>${i+1}</td><td><strong>${p.invoice_number}</strong></td><td>${p.purchase_date}</td><td>${p.brand_name}</td><td>${p.payment_method.toUpperCase()}</td><td><strong>${fmt(p.total_amount)}</strong></td></tr>`).join('');
@@ -167,7 +167,7 @@ export default function ReportsPage() {
   };
 
   const handleExportCSV = () => {
-    let csv = '';
+    let csv: string;
     if (type === 'purchase') {
       csv = 'Invoice,Date,Brand,Payment,Total\n' + purchaseData.map(p => `${p.invoice_number},${p.purchase_date},${p.brand_name},${p.payment_method},${p.total_amount}`).join('\n');
     } else if (type === 'sales') {

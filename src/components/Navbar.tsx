@@ -1,8 +1,19 @@
 import { useState, useEffect } from "react";
-import { ShoppingCart, User, ChefHat, Search, MapPin, ChevronDown, Compass, Plus, MessageCircle, MoreVertical, Home, ArrowLeft, Navigation, Building, Hash, Briefcase, Tag } from "lucide-react";
+import { ShoppingCart, User, ChefHat, Search, MapPin, ChevronDown, Compass, Plus, MoreVertical, Home, ArrowLeft, Navigation, Building, Hash, Briefcase, Tag } from "lucide-react";
 import { useCartContext } from "@/context/CartContext";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
+import type { Category } from "@/lib/db";
+
+interface SavedAddress {
+  id: string;
+  label: string;
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  state: string;
+  pincode: string;
+}
 
 const INDIAN_STATES = [
   "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", 
@@ -20,7 +31,7 @@ interface NavbarProps {
   setSearchQuery: (query: string) => void;
   selectedCategory?: string;
   setSelectedCategory?: (category: string | undefined) => void;
-  categories?: any[];
+  categories?: Category[];
   inStockOnly?: boolean;
   setInStockOnly?: (inStock: boolean) => void;
 }
@@ -51,11 +62,13 @@ export default function Navbar({
 
   const [addressSheetView, setAddressSheetView] = useState<'select' | 'add'>('select');
   const [locationSearchQuery, setLocationSearchQuery] = useState("");
-  const [savedAddresses, setSavedAddresses] = useState<any[]>(() => {
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>(() => {
     try {
       const saved = localStorage.getItem("saved_addresses");
       if (saved) return JSON.parse(saved);
-    } catch (e) {}
+    } catch {
+      // ignore
+    }
     return [];
   });
 
@@ -106,13 +119,20 @@ export default function Navbar({
 
   const [bounce, setBounce] = useState(false);
 
-  useEffect(() => {
+  const [prevTotalItems, setPrevTotalItems] = useState(totalItems);
+  if (totalItems !== prevTotalItems) {
+    setPrevTotalItems(totalItems);
     if (totalItems > 0) {
       setBounce(true);
+    }
+  }
+
+  useEffect(() => {
+    if (bounce) {
       const timer = setTimeout(() => setBounce(false), 400);
       return () => clearTimeout(timer);
     }
-  }, [totalItems]);
+  }, [bounce]);
 
   return (
     <>
@@ -251,7 +271,7 @@ export default function Navbar({
                   setTempState("");
                   setTempPincode("");
                 }
-              } catch (e) {
+              } catch {
                 setTempAddressLine1("");
                 setTempAddressLine2("");
                 setTempCity("");

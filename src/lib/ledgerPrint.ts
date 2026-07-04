@@ -46,7 +46,7 @@ const openPrint = (body: string, title: string) => {
 </style>
 </head><body>${body}
 <div class="footer">Printed from Bake N Joy Ledger · ${new Date().toLocaleString('en-IN')}</div>
-<script>window.onload=()=>{setTimeout(()=>{window.print()},350)}<\/script>
+<script>window.onload=()=>{setTimeout(()=>{window.print()},350)}</script>
 </body></html>`);
   w.document.close();
 };

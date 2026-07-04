@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 
 export interface CartItem {
-  productId: number;
+  productId: string;
   name: string;
   price: string;
   quantity: number;
@@ -36,7 +36,7 @@ export function useCart() {
   );
 
   const removeItem = useCallback(
-    (productId: number) => {
+    (productId: string) => {
       setItems((prev) => {
         const newItems = prev.filter((i) => i.productId !== productId);
         localStorage.setItem("cart", JSON.stringify(newItems));
@@ -47,7 +47,7 @@ export function useCart() {
   );
 
   const updateQuantity = useCallback(
-    (productId: number, quantity: number) => {
+    (productId: string, quantity: number) => {
       if (quantity <= 0) {
         removeItem(productId);
         return;

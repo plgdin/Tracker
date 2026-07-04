@@ -117,7 +117,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     // 4. Trigger Supabase API sign out in the background without blocking the UI
     try {
-      supabase.auth.signOut({ scope: 'local' } as any).catch(err => {
+      supabase.auth.signOut({ scope: 'local' } as { scope: 'local' | 'global' | 'others' }).catch(err => {
         console.warn('Supabase auth.signOut background call failed:', err);
       });
     } catch (e) {

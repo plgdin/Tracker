@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useAuthStore } from "@/store/authStore";
-import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
+import { Outlet, Link, useLocation } from "react-router-dom";
 import { Loader2, Home, ShoppingBag, ShoppingCart, User } from "lucide-react";
 import { useCartContext } from "@/context/CartContext";
 import CartDrawer from "@/components/CartDrawer";
@@ -8,7 +8,6 @@ import CartDrawer from "@/components/CartDrawer";
 export default function StorefrontWrapper() {
   const { initialize, isLoading, isInitialized, user } = useAuthStore();
   const { isCartOpen, setIsCartOpen, totalItems } = useCartContext();
-  const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {

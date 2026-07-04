@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import type { Category, Item } from "@/lib/db";
+import type { FormattedProduct } from "./Home";
 import Navbar from "@/components/Navbar";
 import ProductCard from "@/components/ProductCard";
 import { useCartContext } from "@/context/CartContext";
@@ -64,8 +66,8 @@ export default function Products() {
   const [isBrandMenuOpen, setIsBrandMenuOpen] = useState(false);
   const [isOriginMenuOpen, setIsOriginMenuOpen] = useState(false);
 
-  const [categories, setCategories] = useState<any[]>([]);
-  const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [products, setProducts] = useState<FormattedProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
 
@@ -76,15 +78,15 @@ export default function Products() {
     async function fetchData() {
       setIsLoading(true);
       const { data: catData } = await supabase.from('categories').select('*');
-      if (catData) setCategories(catData);
+      if (catData) setCategories(catData as Category[]);
 
       const { data: prodData } = await supabase.from('items').select('*');
       if (prodData) {
-        const formatted = prodData.map((p: any, index: number) => ({
+        const formatted = (prodData as (Item & { brand?: string; origin?: string })[]).map((p, index: number) => ({
             id: p.id,
             name: p.name,
             description: p.notes || '',
-            price: p.price || 0,
+            price: String(p.price || 0),
             image: p.image_url || null,
             categoryName: p.category,
             inStock: p.quantity > 0,
@@ -93,7 +95,7 @@ export default function Products() {
         }));
         setProducts(formatted);
         if (formatted.length > 0) {
-          const calculatedMax = Math.max(...formatted.map((item: any) => Math.ceil(parseFloat(item.price) || 0)), 300);
+          const calculatedMax = Math.max(...formatted.map((item) => Math.ceil(parseFloat(item.price as string) || 0)), 300);
           setMaxPriceLimit(calculatedMax);
           setPriceLimit(calculatedMax);
         }

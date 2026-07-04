@@ -1,0 +1,160 @@
+
+E:\STARTUP WEBSITES\tracker\Tracker\src\components\CartDrawer.tsx
+   1:62  error  'User' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+   4:10  error  'Link' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+  23:11  error  'user' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+  30:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\STARTUP WEBSITES\tracker\Tracker\src\components\CartDrawer.tsx:30:7
+  28 |   useEffect(() => {
+  29 |     if (isOpen) {
+> 30 |       setShowCheckout(true);
+     |       ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  31 |     }
+  32 |   }, [isOpen]);
+  33 |                                                                                                                                                                         react-hooks/set-state-in-effect
+  77:11  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\STARTUP WEBSITES\tracker\Tracker\src\components\CartDrawer.tsx:77:11
+  75 |         if (saved) {
+  76 |           const parsed = JSON.parse(saved);
+> 77 |           setAddressLine1(parsed.addressLine1 || "");
+     |           ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  78 |           setAddressLine2(parsed.addressLine2 || "");
+  79 |           setCity(parsed.city || "");
+  80 |           setState(parsed.state || "");  react-hooks/set-state-in-effect
+  84:16  error  'e' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+  84:19  error  Empty block statement                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                no-empty
+
+E:\STARTUP WEBSITES\tracker\Tracker\src\components\Navbar.tsx
+    2:83  error  'MessageCircle' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+   23:16  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-explicit-any
+   54:56  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-explicit-any
+   58:14  error  'e' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+   58:17  error  Empty block statement                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              no-empty
+  111:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\STARTUP WEBSITES\tracker\Tracker\src\components\Navbar.tsx:111:7
+  109 |   useEffect(() => {
+  110 |     if (totalItems > 0) {
+> 111 |       setBounce(true);
+      |       ^^^^^^^^^ Avoid calling setState() directly within an effect
+  112 |       const timer = setTimeout(() => setBounce(false), 400);
+  113 |       return () => clearTimeout(timer);
+  114 |     }  react-hooks/set-state-in-effect
+  254:24  error  'e' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+
+E:\STARTUP WEBSITES\tracker\Tracker\src\components\StorefrontWrapper.tsx
+  11:9  error  'navigate' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+E:\STARTUP WEBSITES\tracker\Tracker\src\components\Toast.tsx
+  11:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\STARTUP WEBSITES\tracker\Tracker\src\components\Toast.tsx:11:7
+   9 |   useEffect(() => {
+  10 |     if (message) {
+> 11 |       setAnimId(prev => prev + 1);
+     |       ^^^^^^^^^ Avoid calling setState() directly within an effect
+  12 |     }
+  13 |   }, [message]);
+  14 |  react-hooks/set-state-in-effect
+
+E:\STARTUP WEBSITES\tracker\Tracker\src\components\ui\badge.tsx
+  46:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+E:\STARTUP WEBSITES\tracker\Tracker\src\components\ui\button-group.tsx
+  82:3  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+E:\STARTUP WEBSITES\tracker\Tracker\src\components\ui\button.tsx
+  62:18  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+E:\STARTUP WEBSITES\tracker\Tracker\src\components\ui\calendar.tsx
+  135:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  145:57  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  166:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\STARTUP WEBSITES\tracker\Tracker\src\components\ui\form.tsx
+  159:3  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+E:\STARTUP WEBSITES\tracker\Tracker\src\components\ui\input-otp.tsx
+  44:64  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\STARTUP WEBSITES\tracker\Tracker\src\components\ui\navigation-menu.tsx
+  167:3  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+E:\STARTUP WEBSITES\tracker\Tracker\src\components\ui\sidebar.tsx
+  726:3  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+E:\STARTUP WEBSITES\tracker\Tracker\src\components\ui\toggle.tsx
+  45:18  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+E:\STARTUP WEBSITES\tracker\Tracker\src\context\CartContext.tsx
+    1:60  error  'useEffect' is defined but never used                                                                                           @typescript-eslint/no-unused-vars
+   32:11  error  'user' is assigned a value but never used                                                                                       @typescript-eslint/no-unused-vars
+   32:17  error  'isLoading' is assigned a value but never used                                                                                  @typescript-eslint/no-unused-vars
+  106:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+E:\STARTUP WEBSITES\tracker\Tracker\src\lib\ledgerDb.ts
+  193:21  error  'total' is assigned a value but never used                      @typescript-eslint/no-unused-vars
+  193:28  error  'id' is assigned a value but never used                         @typescript-eslint/no-unused-vars
+  199:19  error  Unexpected any. Specify a different type                        @typescript-eslint/no-explicit-any
+  202:11  error  There is no `cause` attached to the symptom error being thrown  preserve-caught-error
+  233:21  error  'total' is assigned a value but never used                      @typescript-eslint/no-unused-vars
+  233:32  error  'itemId' is assigned a value but never used                     @typescript-eslint/no-unused-vars
+  239:19  error  Unexpected any. Specify a different type                        @typescript-eslint/no-explicit-any
+  300:24  error  'balance_due' is assigned a value but never used                @typescript-eslint/no-unused-vars
+  307:21  error  'total' is assigned a value but never used                      @typescript-eslint/no-unused-vars
+  307:28  error  'id' is assigned a value but never used                         @typescript-eslint/no-unused-vars
+  313:19  error  Unexpected any. Specify a different type                        @typescript-eslint/no-explicit-any
+  316:11  error  There is no `cause` attached to the symptom error being thrown  preserve-caught-error
+  340:24  error  'balance_due' is assigned a value but never used                @typescript-eslint/no-unused-vars
+  347:21  error  'total' is assigned a value but never used                      @typescript-eslint/no-unused-vars
+  347:32  error  'itemId' is assigned a value but never used                     @typescript-eslint/no-unused-vars
+  353:19  error  Unexpected any. Specify a different type                        @typescript-eslint/no-explicit-any
+
+E:\STARTUP WEBSITES\tracker\Tracker\src\lib\ledgerPrint.ts
+  49:66  error  Unnecessary escape character: \/  no-useless-escape
+
+E:\STARTUP WEBSITES\tracker\Tracker\src\pages\Home.tsx
+   94:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   95:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  108:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\STARTUP WEBSITES\tracker\Tracker\src\pages\Products.tsx
+  67:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  68:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  83:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  96:66  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\STARTUP WEBSITES\tracker\Tracker\src\pages\ledger\ReportsPage.tsx
+  130:9  error  The value assigned to 'bodyHtml' is not used in subsequent statements  no-useless-assignment
+  170:9  error  The value assigned to 'csv' is not used in subsequent statements       no-useless-assignment
+
+E:\STARTUP WEBSITES\tracker\Tracker\src\store\authStore.ts
+  120:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 58 problems (58 errors, 0 warnings)

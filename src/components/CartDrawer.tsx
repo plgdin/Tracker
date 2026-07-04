@@ -1,7 +1,5 @@
-import { X, Plus, Minus, ShoppingBag, ArrowRight, ArrowLeft, User, ChevronDown } from "lucide-react";
+import { X, Plus, Minus, ShoppingBag, ArrowRight, ArrowLeft, ChevronDown } from "lucide-react";
 import { useCartContext } from "@/context/CartContext";
-import { useAuthStore } from "@/store/authStore";
-import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 const INDIAN_STATES = [
@@ -20,18 +18,19 @@ interface CartDrawerProps {
 }
 
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
-  const { user } = useAuthStore();
   const { items, removeItem, updateQuantity, totalAmount, clearCart } = useCartContext();
   const [showCheckout, setShowCheckout] = useState(false);
-  const [removingIds, setRemovingIds] = useState<number[]>([]);
+  const [removingIds, setRemovingIds] = useState<string[]>([]);
 
-  useEffect(() => {
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
     if (isOpen) {
-      setShowCheckout(true);
+      setShowCheckout(false);
     }
-  }, [isOpen]);
+  }
 
-  const handleRemoveClick = (productId: number) => {
+  const handleRemoveClick = (productId: string) => {
     setRemovingIds((prev) => [...prev, productId]);
     setTimeout(() => {
       removeItem(productId);
@@ -70,28 +69,30 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
   useEffect(() => {
     if (isOpen) {
-      try {
-        const saved = localStorage.getItem("user_address_details");
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          setAddressLine1(parsed.addressLine1 || "");
-          setAddressLine2(parsed.addressLine2 || "");
-          setCity(parsed.city || "");
-          setState(parsed.state || "");
-          setPincode(parsed.pincode || "");
-          return;
-        }
-      } catch (e) { }
+      setTimeout(() => {
+        try {
+          const saved = localStorage.getItem("user_address_details");
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            setAddressLine1(parsed.addressLine1 || "");
+            setAddressLine2(parsed.addressLine2 || "");
+            setCity(parsed.city || "");
+            setState(parsed.state || "");
+            setPincode(parsed.pincode || "");
+            return;
+          }
+        } catch { /* ignore */ }
 
-      const legacy = localStorage.getItem("user_address") || "";
-      if (legacy) {
-        const parts = legacy.split(",").map((p) => p.trim());
-        setAddressLine1(parts[0] || "");
-        setAddressLine2(parts.length > 2 ? parts.slice(1, -1).join(", ") : parts[1] || "");
-        setCity(parts[parts.length - 1] || "");
-        setState("");
-        setPincode("");
-      }
+        const legacy = localStorage.getItem("user_address") || "";
+        if (legacy) {
+          const parts = legacy.split(",").map((p) => p.trim());
+          setAddressLine1(parts[0] || "");
+          setAddressLine2(parts.length > 2 ? parts.slice(1, -1).join(", ") : parts[1] || "");
+          setCity(parts[parts.length - 1] || "");
+          setState("");
+          setPincode("");
+        }
+      }, 0);
     }
   }, [isOpen]);
 

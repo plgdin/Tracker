@@ -189,17 +189,21 @@ export const ledgerDb = {
         );
         if (invError) throw invError;
         if (invData) {
-          const dbItems = items.map(i => {
-            const { total, id, ...rest } = i;
-            return { ...rest, invoice_id: invData.id };
-          });
+          const dbItems = items.map(i => ({
+            item_name: i.item_name,
+            description: i.description,
+            quantity: i.quantity,
+            unit_price: i.unit_price,
+            invoice_id: invData.id,
+          }));
           const { error: itemsError } = await withTimeout(dbSupabase.from('ledger_purchase_items').insert(dbItems));
           if (itemsError) throw itemsError;
         }
-      } catch (e: any) {
-        console.warn('Supabase addPurchase error:', e?.message || e);
-        if (e?.code === '23505' || e?.message?.includes('duplicate key') || e?.message?.includes('already exists')) {
-          throw new Error(`Invoice "${data.invoice_number}" already exists.`);
+      } catch (e: unknown) {
+        const err = e as { code?: string; message?: string };
+        console.warn('Supabase addPurchase error:', err?.message || err);
+        if (err?.code === '23505' || err?.message?.includes('duplicate key') || err?.message?.includes('already exists')) {
+          throw new Error(`Invoice "${data.invoice_number}" already exists.`, { cause: e });
         }
         // Fall through to localStorage on all other errors (e.g. table missing)
       }
@@ -229,15 +233,18 @@ export const ledgerDb = {
         }
         if (items) {
           await withTimeout(dbSupabase.from('ledger_purchase_items').delete().eq('invoice_id', id));
-          const dbItems = items.map(i => {
-            const { total, id: itemId, ...rest } = i;
-            return { ...rest, invoice_id: id };
-          });
+          const dbItems = items.map(i => ({
+            item_name: i.item_name,
+            description: i.description,
+            quantity: i.quantity,
+            unit_price: i.unit_price,
+            invoice_id: id,
+          }));
           const { error: itemsError } = await withTimeout(dbSupabase.from('ledger_purchase_items').insert(dbItems));
           if (itemsError) throw itemsError;
         }
-      } catch (e: any) {
-        console.warn('Supabase updatePurchase error', e?.message || e);
+      } catch (e: unknown) {
+        console.warn('Supabase updatePurchase error', (e as Error)?.message || e);
         // Fall through to localStorage on Supabase errors
       }
     }
@@ -297,23 +304,29 @@ export const ledgerDb = {
 
     if (useSupabase && dbSupabase) {
       try {
-        const { items, balance_due, ...invoiceData } = data;
+        const invoiceData = { ...data } as Record<string, unknown>;
+        delete invoiceData.items;
+        delete invoiceData.balance_due;
         const { data: invData, error: invError } = await withTimeout(
           dbSupabase.from('ledger_sales_invoices').insert([invoiceData]).select().single()
         );
         if (invError) throw invError;
         if (invData) {
-          const dbItems = items.map(i => {
-            const { total, id, ...rest } = i;
-            return { ...rest, invoice_id: invData.id };
-          });
+          const dbItems = data.items.map(i => ({
+            item_name: i.item_name,
+            description: i.description,
+            quantity: i.quantity,
+            unit_price: i.unit_price,
+            invoice_id: invData.id,
+          }));
           const { error: itemsError } = await withTimeout(dbSupabase.from('ledger_sales_items').insert(dbItems));
           if (itemsError) throw itemsError;
         }
-      } catch (e: any) {
-        console.warn('Supabase addSale error:', e?.message || e);
-        if (e?.code === '23505' || e?.message?.includes('duplicate key') || e?.message?.includes('already exists')) {
-          throw new Error(`Invoice "${data.invoice_number}" already exists.`);
+      } catch (e: unknown) {
+        const err = e as { code?: string; message?: string };
+        console.warn('Supabase addSale error:', err?.message || err);
+        if (err?.code === '23505' || err?.message?.includes('duplicate key') || err?.message?.includes('already exists')) {
+          throw new Error(`Invoice "${data.invoice_number}" already exists.`, { cause: e });
         }
         // Fall through to localStorage on all other errors (e.g. table missing)
       }
@@ -337,21 +350,26 @@ export const ledgerDb = {
     const useSupabase = await getUseSupabase();
     if (useSupabase && dbSupabase) {
       try {
-        const { items, balance_due, ...invoiceData } = data;
+        const invoiceData = { ...data } as Record<string, unknown>;
+        delete invoiceData.items;
+        delete invoiceData.balance_due;
         if (Object.keys(invoiceData).length > 0) {
           await withTimeout(dbSupabase.from('ledger_sales_invoices').update(invoiceData).eq('id', id));
         }
-        if (items) {
+        if (data.items) {
           await withTimeout(dbSupabase.from('ledger_sales_items').delete().eq('invoice_id', id));
-          const dbItems = items.map(i => {
-            const { total, id: itemId, ...rest } = i;
-            return { ...rest, invoice_id: id };
-          });
+          const dbItems = data.items.map(i => ({
+            item_name: i.item_name,
+            description: i.description,
+            quantity: i.quantity,
+            unit_price: i.unit_price,
+            invoice_id: id,
+          }));
           const { error: itemsError } = await withTimeout(dbSupabase.from('ledger_sales_items').insert(dbItems));
           if (itemsError) throw itemsError;
         }
-      } catch (e: any) {
-        console.warn('Supabase updateSale error', e?.message || e);
+      } catch (e: unknown) {
+        console.warn('Supabase updateSale error', (e as Error)?.message || e);
         // Fall through to localStorage on Supabase errors
       }
     }
@@ -532,8 +550,8 @@ export const ledgerDb = {
     const now = new Date();
     const thisMonth = purchases.filter(p => { const d = new Date(p.purchase_date); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); });
     const cheques = purchases.filter(p => p.payment_method === 'cheque');
-    const brandTotals = purchases.reduce((acc: Record<string, number>, p) => { acc[p.brand_name] = r2((acc[p.brand_name] || 0) + p.total_amount); return acc; }, {});
-    const topBrands = Object.entries(brandTotals).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    const brandTotals = purchases.reduce((acc: Record<string, number>, p) => { acc[p.brand_name] = r2((acc[p.brand_name] || 0) + p.total_amount); return acc; }, {} as Record<string, number>);
+    const topBrands = (Object.entries(brandTotals) as [string, number][]).sort((a, b) => b[1] - a[1]).slice(0, 5);
     return {
       totalAmount: r2(purchases.reduce((s, p) => s + p.total_amount, 0)),
       totalCount: purchases.length,

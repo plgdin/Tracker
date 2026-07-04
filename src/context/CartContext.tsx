@@ -1,8 +1,8 @@
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
-import { useAuthStore } from "@/store/authStore";
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
 
 export interface CartItem {
-  productId: number;
+  productId: string;
   name: string;
   price: string;
   quantity: number;
@@ -12,8 +12,8 @@ export interface CartItem {
 interface CartContextType {
   items: CartItem[];
   addItem: (item: Omit<CartItem, "quantity">) => void;
-  removeItem: (productId: number) => void;
-  updateQuantity: (productId: number, quantity: number) => void;
+  removeItem: (productId: string) => void;
+  updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   totalItems: number;
   totalAmount: string;
@@ -29,7 +29,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return saved ? JSON.parse(saved) : [];
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const { user, isLoading } = useAuthStore();
 
   const addItem = useCallback((item: Omit<CartItem, "quantity">) => {
 
@@ -48,7 +47,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const removeItem = useCallback((productId: number) => {
+  const removeItem = useCallback((productId: string) => {
     setItems((prev) => {
       const newItems = prev.filter((i) => i.productId !== productId);
       localStorage.setItem("cart", JSON.stringify(newItems));
@@ -56,7 +55,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const updateQuantity = useCallback((productId: number, quantity: number) => {
+  const updateQuantity = useCallback((productId: string, quantity: number) => {
     if (quantity <= 0) {
       setItems((prev) => {
         const newItems = prev.filter((i) => i.productId !== productId);
