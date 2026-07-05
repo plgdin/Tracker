@@ -1,19 +1,10 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { ShoppingCart, User, ChefHat, Search, MapPin, ChevronDown, Compass, Plus, MoreVertical, Home, ArrowLeft, Navigation, Building, Hash, Briefcase, Tag } from "lucide-react";
 import { useCartContext } from "@/context/CartContext";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import type { Category } from "@/lib/db";
-
-interface SavedAddress {
-  id: string;
-  label: string;
-  addressLine1: string;
-  addressLine2?: string;
-  city: string;
-  state: string;
-  pincode: string;
-}
+import type { SavedAddress } from "@/store/authStore";
 
 const INDIAN_STATES = [
   "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", 
@@ -43,7 +34,7 @@ export default function Navbar({
 }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const { totalItems } = useCartContext();
-  const { user } = useAuthStore();
+  const { user, profile, updateProfile } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -62,7 +53,8 @@ export default function Navbar({
 
   const [addressSheetView, setAddressSheetView] = useState<'select' | 'add'>('select');
   const [locationSearchQuery, setLocationSearchQuery] = useState("");
-  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>(() => {
+  
+  const [localSavedAddresses, setLocalSavedAddresses] = useState<SavedAddress[]>(() => {
     try {
       const saved = localStorage.getItem("saved_addresses");
       if (saved) return JSON.parse(saved);
@@ -71,6 +63,17 @@ export default function Navbar({
     }
     return [];
   });
+
+  const savedAddresses = user && profile ? (profile.addresses || []) : localSavedAddresses;
+
+  const handleUpdateAddresses = (updated: SavedAddress[]) => {
+    if (user && profile) {
+      updateProfile({ addresses: updated });
+    } else {
+      setLocalSavedAddresses(updated);
+      localStorage.setItem("saved_addresses", JSON.stringify(updated));
+    }
+  };
 
   const getFormattedAddress = (details: { addressLine1: string; addressLine2?: string; city: string; state: string; pincode: string }) => {
     return [
@@ -90,12 +93,32 @@ export default function Navbar({
 
   useEffect(() => {
     const handleStorageChange = () => {
-      setAddressLabel(localStorage.getItem("address_label") || "Work");
-      setAddressValue(localStorage.getItem("user_address") || "12 Bakery Lane, Sweet City");
+      setAddressLabel(localStorage.getItem("address_label") || "Select Location");
+      setAddressValue(localStorage.getItem("user_address") || "Choose delivery address");
+      try {
+        const saved = localStorage.getItem("saved_addresses");
+        if (saved) setLocalSavedAddresses(JSON.parse(saved));
+        else setLocalSavedAddresses([]);
+      } catch {
+        setLocalSavedAddresses([]);
+      }
     };
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
+
+  // Reset local state when user signs out
+  useEffect(() => {
+    if (!user) {
+      setAddressLabel("Sign in to select");
+      setAddressValue("Tap to set delivery location");
+      setLocalSavedAddresses([]);
+    } else {
+      // When user logs in, load from profile or local storage
+      setAddressLabel(localStorage.getItem("address_label") || "Select Location");
+      setAddressValue(localStorage.getItem("user_address") || "Choose delivery address");
+    }
+  }, [user]);
 
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
@@ -249,6 +272,10 @@ export default function Navbar({
         }`}>
           <div 
             onClick={() => {
+              if (!user) {
+                navigate("/login");
+                return;
+              }
               if (addressLabel === "Home" || addressLabel === "Work") {
                 setTempLabel(addressLabel);
                 setCustomLabel("");
@@ -473,8 +500,7 @@ export default function Navbar({
                                   e.stopPropagation();
                                   if (confirm(`Remove address "${addr.label}"?`)) {
                                     const updated = savedAddresses.filter(a => a.id !== addr.id);
-                                    setSavedAddresses(updated);
-                                    localStorage.setItem("saved_addresses", JSON.stringify(updated));
+                                    handleUpdateAddresses(updated);
                                   }
                                 }}
                                 className="p-1 rounded-full hover:bg-espresso/5 text-taupe hover:text-espresso shrink-0"
@@ -688,8 +714,7 @@ export default function Navbar({
                     const formatted = getFormattedAddress(newDetails);
                     
                     const updated = [newDetails, ...savedAddresses.filter(a => a.label !== finalLabel)];
-                    setSavedAddresses(updated);
-                    localStorage.setItem("saved_addresses", JSON.stringify(updated));
+                    handleUpdateAddresses(updated);
 
                     setAddressLabel(finalLabel);
                     setAddressValue(formatted);

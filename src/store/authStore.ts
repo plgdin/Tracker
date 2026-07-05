@@ -4,11 +4,22 @@ import type { User } from '@supabase/supabase-js';
 
 type Role = 'admin' | 'worker' | 'pending' | 'disabled' | 'customer';
 
+export interface SavedAddress {
+  id: string;
+  label: string;
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  state: string;
+  pincode: string;
+}
+
 interface Profile {
   id: string;
   name: string;
   email?: string;
   role: Role;
+  addresses?: SavedAddress[];
 }
 
 interface AuthState {
@@ -19,6 +30,7 @@ interface AuthState {
   setUser: (user: User | null) => void;
   setProfile: (profile: Profile | null) => void;
   setAuthNotice: (notice: string) => void;
+  updateProfile: (updates: Partial<Profile>) => Promise<void>;
   signOut: () => Promise<void>;
   initialize: () => Promise<void>;
   isInitialized: boolean;
@@ -89,11 +101,30 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   setUser: (user) => set({ user }),
   setProfile: (profile) => set({ profile }),
   setAuthNotice: (authNotice) => set({ authNotice }),
+  updateProfile: async (updates) => {
+    const { user, profile } = get();
+    if (!user || !profile) return;
+    
+    // Optimistic update
+    set({ profile: { ...profile, ...updates } });
+    
+    // Background sync
+    try {
+      await supabase.from('profiles').update(updates).eq('id', user.id);
+    } catch (e) {
+      console.warn('Failed to sync profile updates to Supabase', e);
+    }
+  },
   signOut: async () => {
     // 1. Wipe our own session storage
     localStorage.removeItem('admin_session');
     localStorage.removeItem('worker_session');
     localStorage.removeItem('cart');
+    localStorage.removeItem('saved_addresses');
+    localStorage.removeItem('address_label');
+    localStorage.removeItem('user_address');
+    localStorage.removeItem('user_address_details');
+    window.dispatchEvent(new Event("storage"));
 
     // 2. Wipe Supabase's local storage and session storage keys directly to ensure no session persistence
     const wipeStorage = (storage: Storage) => {
