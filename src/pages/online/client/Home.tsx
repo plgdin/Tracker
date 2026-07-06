@@ -112,11 +112,11 @@ export default function Home() {
     async function fetchData() {
       setIsLoading(true);
       // Fetch Categories
-      const { data: catData } = await supabase.from('categories').select('*');
+      const { data: catData } = await supabase.from('categories').select('*').eq('store_type', 'online');
       if (catData) setCategories(catData as Category[]);
 
       // Fetch Products
-      const { data: prodData } = await supabase.from('items').select('*');
+      const { data: prodData } = await supabase.from('items').select('*').eq('store_type', 'online');
       if (prodData) {
         const formatted = (prodData as (Item & { brand?: string; origin?: string })[]).map((p) => ({
             id: p.id,
