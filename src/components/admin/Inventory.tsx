@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { db } from '../lib/db';
-import type { Item, Category } from '../lib/db';
+import { db } from '../../lib/db';
+import type { Item, Category } from '../../lib/db';
 import { Search, Trash2, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
-import { useToastStore } from '../store/toastStore';
-import MilkCarton from '../components/MilkCarton';
+import { useAuthStore } from '../../store/authStore';
+import { useToastStore } from '../../store/toastStore';
+import MilkCarton from '../../components/MilkCarton';
 
 export default function Inventory() {
   const navigate = useNavigate();

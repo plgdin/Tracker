@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Plus, Trash2, Edit2, Printer, ChevronRight, Users, FileText, AlertCircle } from 'lucide-react';
-import { ledgerDb, r2, parseAmt, type SalesInvoice, type SalesItem, type SalePaymentMethod, type Customer } from '../../lib/ledgerDb';
-import { printSaleInvoice } from '../../lib/ledgerPrint';
-import { useToastStore } from '../../store/toastStore';
+import { ledgerDb, r2, parseAmt, type SalesInvoice, type SalesItem, type SalePaymentMethod, type Customer } from '../../../lib/ledgerDb';
+import { printSaleInvoice } from '../../../lib/ledgerPrint';
+import { useToastStore } from '../../../store/toastStore';
 
 type View = 'dashboard' | 'customer-list' | 'customer-detail' | 'invoice-detail' | 'new' | 'edit';
 const fmt = (n: number) => '₹' + Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });

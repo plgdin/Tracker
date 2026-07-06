@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { db } from '../lib/db';
-import type { Category } from '../lib/db';
-import { useAuthStore } from '../store/authStore';
-import { useToastStore } from '../store/toastStore';
-import MilkCarton from '../components/MilkCarton';
+import { db } from '../../lib/db';
+import type { Category } from '../../lib/db';
+import { useAuthStore } from '../../store/authStore';
+import { useToastStore } from '../../store/toastStore';
+import MilkCarton from '../../components/MilkCarton';
 
 export default function AddItem() {
   const showToast = useToastStore(state => state.showToast);

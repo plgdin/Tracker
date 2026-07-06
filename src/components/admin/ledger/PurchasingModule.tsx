@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Trash2, Edit2, Printer, ChevronRight, Package, TrendingUp, FileText, AlertCircle } from 'lucide-react';
-import { ledgerDb, getLedgerBrands, saveLedgerBrand, r2, parseAmt, type PurchaseInvoice, type PurchaseItem, type PurchasePaymentMethod } from '../../lib/ledgerDb';
-import { printPurchaseInvoice } from '../../lib/ledgerPrint';
-import { useToastStore } from '../../store/toastStore';
+import { ledgerDb, getLedgerBrands, saveLedgerBrand, r2, parseAmt, type PurchaseInvoice, type PurchaseItem, type PurchasePaymentMethod } from '../../../lib/ledgerDb';
+import { printPurchaseInvoice } from '../../../lib/ledgerPrint';
+import { useToastStore } from '../../../store/toastStore';
 
 type View = 'dashboard' | 'brand-list' | 'brand-detail' | 'invoice-detail' | 'new' | 'edit';
 const fmt = (n: number) => '₹' + Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { db } from '../lib/db';
-import type { ShoppingItem, Item } from '../lib/db';
+import { db } from '../../lib/db';
+import type { ShoppingItem, Item } from '../../lib/db';
 import { Plus, Check, Trash2, ShoppingCart, AlertCircle } from 'lucide-react';
 
 export default function ShoppingList() {

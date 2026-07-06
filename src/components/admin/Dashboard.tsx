@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Plus, X, Settings as SettingsIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { db } from '../lib/db';
-import type { Item } from '../lib/db';
-import { useAuthStore } from '../store/authStore';
-import MilkCarton from '../components/MilkCarton';
+import { db } from '../../lib/db';
+import type { Item } from '../../lib/db';
+import { useAuthStore } from '../../store/authStore';
+import MilkCarton from '../../components/MilkCarton';
 
 export default function Dashboard() {
   const navigate = useNavigate();

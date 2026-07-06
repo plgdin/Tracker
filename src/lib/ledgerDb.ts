@@ -2,6 +2,7 @@
 // Ledger Management System — Data Layer (Supabase + localStorage)
 // ============================================================
 import { dbSupabase, getUseSupabase, withTimeout } from './db';
+import { useAppStore } from '../store/appStore';
 
 export type PurchasePaymentMethod = 'cash' | 'cheque';
 export type SalePaymentMethod = 'cash' | 'upi';
@@ -100,12 +101,12 @@ const setLocal = <T>(key: string, value: T): void => {
 };
 
 const KEYS = {
-  purchases: 'ledger_purchases',
-  sales: 'ledger_sales',
-  customers: 'ledger_customers',
-  payments: 'ledger_payments',
-  inventory: 'ledger_inventory',
-  brands: 'ledger_brand_names',
+  purchases: `ledger_purchases_${useAppStore.getState().storeType}`,
+  sales: `ledger_sales_${useAppStore.getState().storeType}`,
+  customers: `ledger_customers_${useAppStore.getState().storeType}`,
+  payments: `ledger_payments_${useAppStore.getState().storeType}`,
+  inventory: `ledger_inventory_${useAppStore.getState().storeType}`,
+  brands: `ledger_brand_names_${useAppStore.getState().storeType}`,
 };
 
 // ── Derived helpers ───────────────────────────────────────────
@@ -114,7 +115,7 @@ export const getLedgerBrands = async (): Promise<string[]> => {
   let fromDb: string[] = [];
   if (useSupabase && dbSupabase) {
     try {
-      const { data } = await withTimeout(dbSupabase.from('ledger_brands').select('name'));
+      const { data } = await withTimeout(dbSupabase.from('ledger_brands').eq('store_type', useAppStore.getState().storeType).select('name'));
       if (data) fromDb = data.map(d => d.name);
     } catch (e) { console.warn('Supabase brands error', e); }
   }
@@ -137,7 +138,7 @@ export const saveLedgerBrand = async (name: string): Promise<void> => {
   const useSupabase = await getUseSupabase();
   if (useSupabase && dbSupabase) {
     try {
-      await withTimeout(dbSupabase.from('ledger_brands').insert([{ name: trimmed }]).select());
+      await withTimeout(dbSupabase.from('ledger_brands').eq('store_type', useAppStore.getState().storeType).insert([{ name: trimmed , store_type: useAppStore.getState().storeType}]).select());
     } catch { /* ignore dups */ }
   }
 };
@@ -156,7 +157,7 @@ export const ledgerDb = {
     if (useSupabase && dbSupabase) {
       try {
         const { data, error } = await withTimeout(
-          dbSupabase.from('ledger_purchase_invoices').select('*, ledger_purchase_items(*)')
+          dbSupabase.from('ledger_purchase_invoices').eq('store_type', useAppStore.getState().storeType).select('*, ledger_purchase_items(*)')
         );
         if (error) throw error;
         if (data) {
@@ -185,7 +186,7 @@ export const ledgerDb = {
       try {
         const { items, ...invoiceData } = data;
         const { data: invData, error: invError } = await withTimeout(
-          dbSupabase.from('ledger_purchase_invoices').insert([invoiceData]).select().single()
+          dbSupabase.from('ledger_purchase_invoices').eq('store_type', useAppStore.getState().storeType).insert([{ ...invoiceData, store_type: useAppStore.getState().storeType }]).select().single()
         );
         if (invError) throw invError;
         if (invData) {
@@ -196,7 +197,7 @@ export const ledgerDb = {
             unit_price: i.unit_price,
             invoice_id: invData.id,
           }));
-          const { error: itemsError } = await withTimeout(dbSupabase.from('ledger_purchase_items').insert(dbItems));
+          const { error: itemsError } = await withTimeout(dbSupabase.from('ledger_purchase_items').eq('store_type', useAppStore.getState().storeType).insert(dbItems));
           if (itemsError) throw itemsError;
         }
       } catch (e: unknown) {
@@ -229,10 +230,10 @@ export const ledgerDb = {
       try {
         const { items, ...invoiceData } = data;
         if (Object.keys(invoiceData).length > 0) {
-          await withTimeout(dbSupabase.from('ledger_purchase_invoices').update(invoiceData).eq('id', id));
+          await withTimeout(dbSupabase.from('ledger_purchase_invoices').eq('store_type', useAppStore.getState().storeType).update(invoiceData).eq('id', id));
         }
         if (items) {
-          await withTimeout(dbSupabase.from('ledger_purchase_items').delete().eq('invoice_id', id));
+          await withTimeout(dbSupabase.from('ledger_purchase_items').eq('store_type', useAppStore.getState().storeType).delete().eq('invoice_id', id));
           const dbItems = items.map(i => ({
             item_name: i.item_name,
             description: i.description,
@@ -240,7 +241,7 @@ export const ledgerDb = {
             unit_price: i.unit_price,
             invoice_id: id,
           }));
-          const { error: itemsError } = await withTimeout(dbSupabase.from('ledger_purchase_items').insert(dbItems));
+          const { error: itemsError } = await withTimeout(dbSupabase.from('ledger_purchase_items').eq('store_type', useAppStore.getState().storeType).insert(dbItems));
           if (itemsError) throw itemsError;
         }
       } catch (e: unknown) {
@@ -262,7 +263,7 @@ export const ledgerDb = {
     const useSupabase = await getUseSupabase();
     if (useSupabase && dbSupabase) {
       try {
-        await withTimeout(dbSupabase.from('ledger_purchase_invoices').delete().eq('id', id));
+        await withTimeout(dbSupabase.from('ledger_purchase_invoices').eq('store_type', useAppStore.getState().storeType).delete().eq('id', id));
       } catch (e) { console.warn('Supabase deletePurchase error', e); }
     }
     const list = getLocal<PurchaseInvoice[]>(KEYS.purchases, []);
@@ -277,7 +278,7 @@ export const ledgerDb = {
     if (useSupabase && dbSupabase) {
       try {
         const { data, error } = await withTimeout(
-          dbSupabase.from('ledger_sales_invoices').select('*, ledger_sales_items(*)')
+          dbSupabase.from('ledger_sales_invoices').eq('store_type', useAppStore.getState().storeType).select('*, ledger_sales_items(*)')
         );
         if (error) throw error;
         if (data) {
@@ -308,7 +309,7 @@ export const ledgerDb = {
         delete invoiceData.items;
         delete invoiceData.balance_due;
         const { data: invData, error: invError } = await withTimeout(
-          dbSupabase.from('ledger_sales_invoices').insert([invoiceData]).select().single()
+          dbSupabase.from('ledger_sales_invoices').eq('store_type', useAppStore.getState().storeType).insert([{ ...invoiceData, store_type: useAppStore.getState().storeType }]).select().single()
         );
         if (invError) throw invError;
         if (invData) {
@@ -319,7 +320,7 @@ export const ledgerDb = {
             unit_price: i.unit_price,
             invoice_id: invData.id,
           }));
-          const { error: itemsError } = await withTimeout(dbSupabase.from('ledger_sales_items').insert(dbItems));
+          const { error: itemsError } = await withTimeout(dbSupabase.from('ledger_sales_items').eq('store_type', useAppStore.getState().storeType).insert(dbItems));
           if (itemsError) throw itemsError;
         }
       } catch (e: unknown) {
@@ -354,10 +355,10 @@ export const ledgerDb = {
         delete invoiceData.items;
         delete invoiceData.balance_due;
         if (Object.keys(invoiceData).length > 0) {
-          await withTimeout(dbSupabase.from('ledger_sales_invoices').update(invoiceData).eq('id', id));
+          await withTimeout(dbSupabase.from('ledger_sales_invoices').eq('store_type', useAppStore.getState().storeType).update(invoiceData).eq('id', id));
         }
         if (data.items) {
-          await withTimeout(dbSupabase.from('ledger_sales_items').delete().eq('invoice_id', id));
+          await withTimeout(dbSupabase.from('ledger_sales_items').eq('store_type', useAppStore.getState().storeType).delete().eq('invoice_id', id));
           const dbItems = data.items.map(i => ({
             item_name: i.item_name,
             description: i.description,
@@ -365,7 +366,7 @@ export const ledgerDb = {
             unit_price: i.unit_price,
             invoice_id: id,
           }));
-          const { error: itemsError } = await withTimeout(dbSupabase.from('ledger_sales_items').insert(dbItems));
+          const { error: itemsError } = await withTimeout(dbSupabase.from('ledger_sales_items').eq('store_type', useAppStore.getState().storeType).insert(dbItems));
           if (itemsError) throw itemsError;
         }
       } catch (e: unknown) {
@@ -388,7 +389,7 @@ export const ledgerDb = {
     const useSupabase = await getUseSupabase();
     if (useSupabase && dbSupabase) {
       try {
-        await withTimeout(dbSupabase.from('ledger_sales_invoices').delete().eq('id', id));
+        await withTimeout(dbSupabase.from('ledger_sales_invoices').eq('store_type', useAppStore.getState().storeType).delete().eq('id', id));
       } catch (e) { console.warn('Supabase deleteSale error', e); }
     }
     const list = getLocal<SalesInvoice[]>(KEYS.sales, []);
@@ -405,7 +406,7 @@ export const ledgerDb = {
     const useSupabase = await getUseSupabase();
     if (useSupabase && dbSupabase) {
       try {
-        const { data, error } = await withTimeout(dbSupabase.from('ledger_customers').select('*'));
+        const { data, error } = await withTimeout(dbSupabase.from(`ledger_customers_${useAppStore.getState().storeType}`).select('*'));
         if (error) throw error;
         if (data) {
           const sorted = data.sort((a, b) => b.outstanding_balance - a.outstanding_balance);
@@ -441,15 +442,15 @@ export const ledgerDb = {
     const useSupabase = await getUseSupabase();
     if (useSupabase && dbSupabase) {
       try {
-        const { data: existing } = await withTimeout(dbSupabase.from('ledger_customers').select('id, outstanding_balance').ilike('name', name).maybeSingle());
+        const { data: existing } = await withTimeout(dbSupabase.from(`ledger_customers_${useAppStore.getState().storeType}`).select('id, outstanding_balance').ilike('name', name).maybeSingle());
         if (existing) {
-          await withTimeout(dbSupabase.from('ledger_customers').update({ 
+          await withTimeout(dbSupabase.from(`ledger_customers_${useAppStore.getState().storeType}`).update({ 
             outstanding_balance: Math.max(0, r2(existing.outstanding_balance + balanceDelta)),
             ...(phone ? { phone } : {}),
             ...(purchaseDate ? { last_purchase_date: purchaseDate } : {})
           }).eq('id', existing.id));
         } else {
-          await withTimeout(dbSupabase.from('ledger_customers').insert([{ name, phone, outstanding_balance: newBalance, last_purchase_date: purchaseDate }]));
+          await withTimeout(dbSupabase.from(`ledger_customers_${useAppStore.getState().storeType}`).insert([{ name, phone, outstanding_balance: newBalance, last_purchase_date: purchaseDate , store_type: useAppStore.getState().storeType}]));
         }
       } catch (e) { console.warn('Supabase upsertCustomer error', e); }
     }
@@ -464,7 +465,7 @@ export const ledgerDb = {
     const useSupabase = await getUseSupabase();
     if (useSupabase && dbSupabase) {
       try {
-        const { data, error } = await withTimeout(dbSupabase.from('ledger_payments').select('*'));
+        const { data, error } = await withTimeout(dbSupabase.from(`ledger_payments_${useAppStore.getState().storeType}`).select('*'));
         if (error) throw error;
         if (data) {
           const sorted = data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
@@ -484,7 +485,7 @@ export const ledgerDb = {
     
     if (useSupabase && dbSupabase) {
       try {
-        await withTimeout(dbSupabase.from('ledger_payments').insert([data]));
+        await withTimeout(dbSupabase.from(`ledger_payments_${useAppStore.getState().storeType}`).insert([{ ...data, store_type: useAppStore.getState().storeType }]));
       } catch (e) { console.warn('Supabase addPayment error', e); }
     }
 
@@ -501,7 +502,7 @@ export const ledgerDb = {
     const useSupabase = await getUseSupabase();
     if (useSupabase && dbSupabase) {
       try {
-        const { data, error } = await withTimeout(dbSupabase.from('ledger_inventory').select('*'));
+        const { data, error } = await withTimeout(dbSupabase.from(`ledger_inventory_${useAppStore.getState().storeType}`).select('*'));
         if (error) throw error;
         if (data) {
           const sorted = data.sort((a, b) => a.stock - b.stock);
@@ -529,11 +530,11 @@ export const ledgerDb = {
     const useSupabase = await getUseSupabase();
     if (useSupabase && dbSupabase) {
       try {
-        const { data: existing } = await withTimeout(dbSupabase.from('ledger_inventory').select('stock').ilike('item_name', itemName).maybeSingle());
+        const { data: existing } = await withTimeout(dbSupabase.from(`ledger_inventory_${useAppStore.getState().storeType}`).select('stock').ilike('item_name', itemName).maybeSingle());
         if (existing) {
-          await withTimeout(dbSupabase.from('ledger_inventory').update({ stock: Math.max(0, r2(existing.stock + delta)), last_updated: new Date().toISOString() }).ilike('item_name', itemName));
+          await withTimeout(dbSupabase.from(`ledger_inventory_${useAppStore.getState().storeType}`).update({ stock: Math.max(0, r2(existing.stock + delta)), last_updated: new Date().toISOString() }).ilike('item_name', itemName));
         } else if (delta > 0) {
-          await withTimeout(dbSupabase.from('ledger_inventory').insert([{ item_name: itemName, stock: newStock }]));
+          await withTimeout(dbSupabase.from(`ledger_inventory_${useAppStore.getState().storeType}`).insert([{ item_name: itemName, stock: newStock , store_type: useAppStore.getState().storeType}]));
         }
       } catch (e) { console.warn('Supabase adjustStock error', e); }
     }

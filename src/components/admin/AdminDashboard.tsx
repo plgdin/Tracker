@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useAuthStore } from '../store/authStore';
-import { useToastStore } from '../store/toastStore';
-import { db } from '../lib/db';
-import { supabase } from '../lib/supabase';
-import { supabaseEphemeral } from '../lib/supabaseEphemeral';
-import type { Item, AuditLog, Category } from '../lib/db';
+import { useAuthStore } from '../../store/authStore';
+import { useToastStore } from '../../store/toastStore';
+import { db } from '../../lib/db';
+import { supabase } from '../../lib/supabase';
+import { supabaseEphemeral } from '../../lib/supabaseEphemeral';
+import type { Item, AuditLog, Category } from '../../lib/db';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ShieldCheck, Trash2, Lock, Activity, Key, Plus, Users, AlertTriangle, Tag, Package, ToggleLeft, ToggleRight, Eye, EyeOff } from 'lucide-react';
 

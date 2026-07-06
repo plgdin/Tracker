@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Printer, CreditCard } from 'lucide-react';
-import { ledgerDb, type Customer, type SalePaymentMethod } from '../../lib/ledgerDb';
-import { useToastStore } from '../../store/toastStore';
+import { ledgerDb, type Customer, type SalePaymentMethod } from '../../../lib/ledgerDb';
+import { useToastStore } from '../../../store/toastStore';
 
 const fmt = (n: number) => '₹' + n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 

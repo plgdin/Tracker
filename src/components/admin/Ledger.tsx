@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useAuthStore } from '../store/authStore';
+import { useAuthStore } from '../../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, ShoppingCart, TrendingUp, AlertCircle, BarChart2 } from 'lucide-react';
 import PurchasingModule from './ledger/PurchasingModule';
 import SellingModule from './ledger/SellingModule';
 import OutstandingPage from './ledger/OutstandingPage';
 import ReportsPage from './ledger/ReportsPage';
-import { ledgerDb } from '../lib/ledgerDb';
+import { ledgerDb } from '../../lib/ledgerDb';
 
 type Tab = 'purchasing' | 'selling' | 'outstanding' | 'reports';
 

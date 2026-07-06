@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Printer, Download, Eye, X } from 'lucide-react';
-import { ledgerDb, r2, type PurchaseInvoice, type SalesInvoice } from '../../lib/ledgerDb';
-import { printPurchaseInvoice, printSaleInvoice, printReport } from '../../lib/ledgerPrint';
+import { ledgerDb, r2, type PurchaseInvoice, type SalesInvoice } from '../../../lib/ledgerDb';
+import { printPurchaseInvoice, printSaleInvoice, printReport } from '../../../lib/ledgerPrint';
 
 const fmt = (n: number) => '₹' + Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 type ReportType = 'purchase' | 'sales' | 'outstanding';

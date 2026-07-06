@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { db } from '../lib/db';
-import type { Category } from '../lib/db';
+import { db } from '../../lib/db';
+import type { Category } from '../../lib/db';
 import { Tag, AlertCircle, LogIn, Eye, EyeOff, Save } from 'lucide-react';
-import { useAuthStore } from '../store/authStore';
-import { useToastStore } from '../store/toastStore';
-import { supabase } from '../lib/supabase';
+import { useAuthStore } from '../../store/authStore';
+import { useToastStore } from '../../store/toastStore';
+import { supabase } from '../../lib/supabase';
 
 export default function Settings() {
   const showToast = useToastStore(state => state.showToast);

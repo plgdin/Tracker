@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../../../lib/supabase';
 import { Eye, EyeOff, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
