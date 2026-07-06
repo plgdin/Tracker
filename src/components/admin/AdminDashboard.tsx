@@ -140,7 +140,7 @@ export default function AdminDashboard() {
         await db.approveWorker(signUpData.user.id);
       } else {
         // User already exists — look them up and approve
-        const { data: existingProfile } = await import('../lib/supabase').then(m =>
+        const { data: existingProfile } = await import('../../lib/supabase').then(m =>
           m.supabase.from('profiles').select('id').eq('email', em).maybeSingle()
         );
         if (existingProfile?.id) await db.approveWorker(existingProfile.id);

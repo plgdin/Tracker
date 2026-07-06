@@ -98,7 +98,7 @@ export default function ReportsPage() {
 
   const [purchaseData, setPurchaseData] = useState<PurchaseInvoice[]>([]);
   const [salesData, setSalesData] = useState<SalesInvoice[]>([]);
-  const [customers, setCustomers] = useState<import('../../lib/ledgerDb').Customer[]>([]);
+  const [customers, setCustomers] = useState<import('../../../lib/ledgerDb').Customer[]>([]);
 
   const [from, to] = getPeriodDates(period, customFrom, customTo);
 

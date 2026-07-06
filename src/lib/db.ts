@@ -160,8 +160,7 @@ export const db = {
         const { data: userData } = await withTimeout(dbSupabase.auth.getUser());
         const { data, error } = await withTimeout(
           dbSupabase
-            .from('items').eq('store_type', useAppStore.getState().storeType)
-            .insert([{ ...item, user_id: userData?.user?.id , store_type: useAppStore.getState().storeType}])
+            .from('items').insert([{ ...item, user_id: userData?.user?.id , store_type: useAppStore.getState().storeType}])
             .select()
             .single()
         );
@@ -273,8 +272,7 @@ export const db = {
         const { data: userData } = await withTimeout(dbSupabase.auth.getUser());
         const { data, error } = await withTimeout(
           dbSupabase
-            .from('categories').eq('store_type', useAppStore.getState().storeType)
-            .insert([{ ...category, user_id: userData?.user?.id , store_type: useAppStore.getState().storeType}])
+            .from('categories').insert([{ ...category, user_id: userData?.user?.id , store_type: useAppStore.getState().storeType}])
             .select()
             .single()
         );
@@ -348,8 +346,7 @@ export const db = {
         const { data: userData } = await withTimeout(dbSupabase.auth.getUser());
         const { data, error } = await withTimeout(
           dbSupabase
-            .from('shopping_list').eq('store_type', useAppStore.getState().storeType)
-            .insert([{ item_name: itemName, is_purchased: false, user_id: userData?.user?.id , store_type: useAppStore.getState().storeType}])
+            .from('shopping_list').insert([{ item_name: itemName, is_purchased: false, user_id: userData?.user?.id , store_type: useAppStore.getState().storeType}])
             .select()
             .single()
         );

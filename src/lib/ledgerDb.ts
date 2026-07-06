@@ -157,7 +157,7 @@ export const ledgerDb = {
     if (useSupabase && dbSupabase) {
       try {
         const { data, error } = await withTimeout(
-          dbSupabase.from('ledger_purchase_invoices').select('*, ledger_purchase_items(*).eq('store_type', useAppStore.getState().storeType)')
+          dbSupabase.from('ledger_purchase_invoices').select('*, ledger_purchase_items(*)').eq('store_type', useAppStore.getState().storeType)
         );
         if (error) throw error;
         if (data) {
@@ -278,7 +278,7 @@ export const ledgerDb = {
     if (useSupabase && dbSupabase) {
       try {
         const { data, error } = await withTimeout(
-          dbSupabase.from('ledger_sales_invoices').select('*, ledger_sales_items(*).eq('store_type', useAppStore.getState().storeType)')
+          dbSupabase.from('ledger_sales_invoices').select('*, ledger_sales_items(*)').eq('store_type', useAppStore.getState().storeType)
         );
         if (error) throw error;
         if (data) {
