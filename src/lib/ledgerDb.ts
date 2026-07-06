@@ -115,7 +115,7 @@ export const getLedgerBrands = async (): Promise<string[]> => {
   let fromDb: string[] = [];
   if (useSupabase && dbSupabase) {
     try {
-      const { data } = await withTimeout(dbSupabase.from('ledger_brands').eq('store_type', useAppStore.getState().storeType).select('name'));
+      const { data } = await withTimeout(dbSupabase.from('ledger_brands').select('name').eq('store_type', useAppStore.getState().storeType));
       if (data) fromDb = data.map(d => d.name);
     } catch (e) { console.warn('Supabase brands error', e); }
   }
@@ -138,7 +138,7 @@ export const saveLedgerBrand = async (name: string): Promise<void> => {
   const useSupabase = await getUseSupabase();
   if (useSupabase && dbSupabase) {
     try {
-      await withTimeout(dbSupabase.from('ledger_brands').eq('store_type', useAppStore.getState().storeType).insert([{ name: trimmed , store_type: useAppStore.getState().storeType}]).select());
+      await withTimeout(dbSupabase.from('ledger_brands').insert([{ name: trimmed , store_type: useAppStore.getState().storeType}]).select());
     } catch { /* ignore dups */ }
   }
 };
@@ -157,7 +157,7 @@ export const ledgerDb = {
     if (useSupabase && dbSupabase) {
       try {
         const { data, error } = await withTimeout(
-          dbSupabase.from('ledger_purchase_invoices').eq('store_type', useAppStore.getState().storeType).select('*, ledger_purchase_items(*)')
+          dbSupabase.from('ledger_purchase_invoices').select('*, ledger_purchase_items(*).eq('store_type', useAppStore.getState().storeType)')
         );
         if (error) throw error;
         if (data) {
@@ -186,7 +186,7 @@ export const ledgerDb = {
       try {
         const { items, ...invoiceData } = data;
         const { data: invData, error: invError } = await withTimeout(
-          dbSupabase.from('ledger_purchase_invoices').eq('store_type', useAppStore.getState().storeType).insert([{ ...invoiceData, store_type: useAppStore.getState().storeType }]).select().single()
+          dbSupabase.from('ledger_purchase_invoices').insert([{ ...invoiceData, store_type: useAppStore.getState().storeType }]).select().single()
         );
         if (invError) throw invError;
         if (invData) {
@@ -197,7 +197,7 @@ export const ledgerDb = {
             unit_price: i.unit_price,
             invoice_id: invData.id,
           }));
-          const { error: itemsError } = await withTimeout(dbSupabase.from('ledger_purchase_items').eq('store_type', useAppStore.getState().storeType).insert(dbItems));
+          const { error: itemsError } = await withTimeout(dbSupabase.from('ledger_purchase_items').insert(dbItems));
           if (itemsError) throw itemsError;
         }
       } catch (e: unknown) {
@@ -230,10 +230,10 @@ export const ledgerDb = {
       try {
         const { items, ...invoiceData } = data;
         if (Object.keys(invoiceData).length > 0) {
-          await withTimeout(dbSupabase.from('ledger_purchase_invoices').eq('store_type', useAppStore.getState().storeType).update(invoiceData).eq('id', id));
+          await withTimeout(dbSupabase.from('ledger_purchase_invoices').update(invoiceData).eq('store_type', useAppStore.getState().storeType).eq('id', id));
         }
         if (items) {
-          await withTimeout(dbSupabase.from('ledger_purchase_items').eq('store_type', useAppStore.getState().storeType).delete().eq('invoice_id', id));
+          await withTimeout(dbSupabase.from('ledger_purchase_items').delete().eq('store_type', useAppStore.getState().storeType).eq('invoice_id', id));
           const dbItems = items.map(i => ({
             item_name: i.item_name,
             description: i.description,
@@ -241,7 +241,7 @@ export const ledgerDb = {
             unit_price: i.unit_price,
             invoice_id: id,
           }));
-          const { error: itemsError } = await withTimeout(dbSupabase.from('ledger_purchase_items').eq('store_type', useAppStore.getState().storeType).insert(dbItems));
+          const { error: itemsError } = await withTimeout(dbSupabase.from('ledger_purchase_items').insert(dbItems));
           if (itemsError) throw itemsError;
         }
       } catch (e: unknown) {
@@ -263,7 +263,7 @@ export const ledgerDb = {
     const useSupabase = await getUseSupabase();
     if (useSupabase && dbSupabase) {
       try {
-        await withTimeout(dbSupabase.from('ledger_purchase_invoices').eq('store_type', useAppStore.getState().storeType).delete().eq('id', id));
+        await withTimeout(dbSupabase.from('ledger_purchase_invoices').delete().eq('store_type', useAppStore.getState().storeType).eq('id', id));
       } catch (e) { console.warn('Supabase deletePurchase error', e); }
     }
     const list = getLocal<PurchaseInvoice[]>(KEYS.purchases, []);
@@ -278,7 +278,7 @@ export const ledgerDb = {
     if (useSupabase && dbSupabase) {
       try {
         const { data, error } = await withTimeout(
-          dbSupabase.from('ledger_sales_invoices').eq('store_type', useAppStore.getState().storeType).select('*, ledger_sales_items(*)')
+          dbSupabase.from('ledger_sales_invoices').select('*, ledger_sales_items(*).eq('store_type', useAppStore.getState().storeType)')
         );
         if (error) throw error;
         if (data) {
@@ -309,7 +309,7 @@ export const ledgerDb = {
         delete invoiceData.items;
         delete invoiceData.balance_due;
         const { data: invData, error: invError } = await withTimeout(
-          dbSupabase.from('ledger_sales_invoices').eq('store_type', useAppStore.getState().storeType).insert([{ ...invoiceData, store_type: useAppStore.getState().storeType }]).select().single()
+          dbSupabase.from('ledger_sales_invoices').insert([{ ...invoiceData, store_type: useAppStore.getState().storeType }]).select().single()
         );
         if (invError) throw invError;
         if (invData) {
@@ -320,7 +320,7 @@ export const ledgerDb = {
             unit_price: i.unit_price,
             invoice_id: invData.id,
           }));
-          const { error: itemsError } = await withTimeout(dbSupabase.from('ledger_sales_items').eq('store_type', useAppStore.getState().storeType).insert(dbItems));
+          const { error: itemsError } = await withTimeout(dbSupabase.from('ledger_sales_items').insert(dbItems));
           if (itemsError) throw itemsError;
         }
       } catch (e: unknown) {
@@ -355,10 +355,10 @@ export const ledgerDb = {
         delete invoiceData.items;
         delete invoiceData.balance_due;
         if (Object.keys(invoiceData).length > 0) {
-          await withTimeout(dbSupabase.from('ledger_sales_invoices').eq('store_type', useAppStore.getState().storeType).update(invoiceData).eq('id', id));
+          await withTimeout(dbSupabase.from('ledger_sales_invoices').update(invoiceData).eq('store_type', useAppStore.getState().storeType).eq('id', id));
         }
         if (data.items) {
-          await withTimeout(dbSupabase.from('ledger_sales_items').eq('store_type', useAppStore.getState().storeType).delete().eq('invoice_id', id));
+          await withTimeout(dbSupabase.from('ledger_sales_items').delete().eq('store_type', useAppStore.getState().storeType).eq('invoice_id', id));
           const dbItems = data.items.map(i => ({
             item_name: i.item_name,
             description: i.description,
@@ -366,7 +366,7 @@ export const ledgerDb = {
             unit_price: i.unit_price,
             invoice_id: id,
           }));
-          const { error: itemsError } = await withTimeout(dbSupabase.from('ledger_sales_items').eq('store_type', useAppStore.getState().storeType).insert(dbItems));
+          const { error: itemsError } = await withTimeout(dbSupabase.from('ledger_sales_items').insert(dbItems));
           if (itemsError) throw itemsError;
         }
       } catch (e: unknown) {
@@ -389,7 +389,7 @@ export const ledgerDb = {
     const useSupabase = await getUseSupabase();
     if (useSupabase && dbSupabase) {
       try {
-        await withTimeout(dbSupabase.from('ledger_sales_invoices').eq('store_type', useAppStore.getState().storeType).delete().eq('id', id));
+        await withTimeout(dbSupabase.from('ledger_sales_invoices').delete().eq('store_type', useAppStore.getState().storeType).eq('id', id));
       } catch (e) { console.warn('Supabase deleteSale error', e); }
     }
     const list = getLocal<SalesInvoice[]>(KEYS.sales, []);

@@ -129,7 +129,7 @@ export const db = {
     if (useSupabase && dbSupabase) {
       try {
         const { data, error } = await withTimeout(
-          dbSupabase.from('items').eq('store_type', useAppStore.getState().storeType).select('*').order('expiration_date', { ascending: true })
+          dbSupabase.from('items').select('*').eq('store_type', useAppStore.getState().storeType).order('expiration_date', { ascending: true })
         );
         if (error) throw error;
         const result = data || [];
@@ -226,7 +226,7 @@ export const db = {
     const useSupabase = await getUseSupabase();
     if (useSupabase && dbSupabase) {
       try {
-        const { error } = await withTimeout(dbSupabase.from('items').eq('store_type', useAppStore.getState().storeType).delete().eq('id', id));
+        const { error } = await withTimeout(dbSupabase.from('items').delete().eq('store_type', useAppStore.getState().storeType).eq('id', id));
         if (error) throw error;
         return true;
       } catch (e) {
@@ -246,7 +246,7 @@ export const db = {
     if (useSupabase && dbSupabase) {
       try {
         const { data, error } = await withTimeout(
-          dbSupabase.from('categories').eq('store_type', useAppStore.getState().storeType).select('*').order('name', { ascending: true })
+          dbSupabase.from('categories').select('*').eq('store_type', useAppStore.getState().storeType).order('name', { ascending: true })
         );
         if (error) throw error;
         const result = data && data.length > 0 ? data : (hasLocalCategories() ? getLocalCategories() : DEFAULT_CATEGORIES);
@@ -296,7 +296,7 @@ export const db = {
     if (useSupabase && dbSupabase) {
       try {
         const { data, error } = await withTimeout(
-          dbSupabase.from('categories').eq('store_type', useAppStore.getState().storeType).delete().eq('id', id).select('id')
+          dbSupabase.from('categories').delete().eq('store_type', useAppStore.getState().storeType).eq('id', id).select('id')
         );
         if (error) throw error;
         if (data && data.length > 0) {
@@ -321,7 +321,7 @@ export const db = {
     if (useSupabase && dbSupabase) {
       try {
         const { data, error } = await withTimeout(
-          dbSupabase.from('shopping_list').eq('store_type', useAppStore.getState().storeType).select('*').order('created_at', { ascending: false })
+          dbSupabase.from('shopping_list').select('*').eq('store_type', useAppStore.getState().storeType).order('created_at', { ascending: false })
         );
         if (error) throw error;
         return data || [];
@@ -401,7 +401,7 @@ export const db = {
     const useSupabase = await getUseSupabase();
     if (useSupabase && dbSupabase) {
       try {
-        const { error } = await withTimeout(dbSupabase.from('shopping_list').eq('store_type', useAppStore.getState().storeType).delete().eq('id', id));
+        const { error } = await withTimeout(dbSupabase.from('shopping_list').delete().eq('store_type', useAppStore.getState().storeType).eq('id', id));
         if (error) throw error;
         return true;
       } catch (e) {
@@ -435,7 +435,7 @@ export const db = {
     if (useSupabase && dbSupabase) {
       try {
         const { data, error } = await withTimeout(
-          dbSupabase.from('audit_logs').eq('store_type', useAppStore.getState().storeType).select('*').order('created_at', { ascending: false })
+          dbSupabase.from('audit_logs').select('*').eq('store_type', useAppStore.getState().storeType).order('created_at', { ascending: false })
         );
         if (!error && data) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -470,7 +470,7 @@ export const db = {
       try {
         const { data: userData } = await withTimeout(dbSupabase.auth.getUser());
         await withTimeout(
-          dbSupabase.from('audit_logs').eq('store_type', useAppStore.getState().storeType).insert([{
+          dbSupabase.from('audit_logs').insert([{
             worker_id: userData?.user?.id,
             action,
             details: { item_name: itemName, worker_email: email, ...details }
