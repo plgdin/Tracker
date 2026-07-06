@@ -190,8 +190,7 @@ export const db = {
       try {
         const { data, error } = await withTimeout(
           dbSupabase
-            .from('items').eq('store_type', useAppStore.getState().storeType)
-            .update(updates)
+            .from('items').update(updates).eq('store_type', useAppStore.getState().storeType)
             .eq('id', id)
             .select()
             .single()
@@ -370,8 +369,7 @@ export const db = {
       try {
         const { data, error } = await withTimeout(
           dbSupabase
-            .from('shopping_list').eq('store_type', useAppStore.getState().storeType)
-            .update({ is_purchased: isPurchased })
+            .from('shopping_list').update({ is_purchased: isPurchased }).eq('store_type', useAppStore.getState().storeType)
             .eq('id', id)
             .select()
             .single()
