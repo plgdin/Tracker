@@ -82,7 +82,7 @@ export default function Dashboard() {
     <div className="container">
       {/* Header */}
       <header className="app-header">
-        <button className="header-icon-btn" onClick={() => navigate('/admin/settings')}>
+        <button className="header-icon-btn" onClick={() => navigate(`/admin${window.location.pathname.includes('online') ? 'online' : 'offline'}/settings`)}>
           <SettingsIcon size={24} />
         </button>
         <div style={{ textAlign: 'center' }}>
@@ -164,7 +164,7 @@ export default function Dashboard() {
               <div 
                 key={item.id} 
                 className="cute-card"
-                onClick={() => navigate(`/admin/add-item?edit=${item.id}`)}
+                onClick={() => navigate(`/admin${window.location.pathname.includes('online') ? 'online' : 'offline'}/add-item?edit=${item.id}`)}
               >
                 {/* Quantity badge top right */}
                 <div className="cute-card-qty">{item.quantity}</div>
@@ -191,7 +191,7 @@ export default function Dashboard() {
       )}
 
       {/* Center FAB plus button */}
-      <div className="fab" onClick={() => navigate('/admin/add-item')}>
+      <div className="fab" onClick={() => navigate(`/admin${window.location.pathname.includes('online') ? 'online' : 'offline'}/add-item`)}>
         <Plus size={28} />
       </div>
     </div>

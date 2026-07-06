@@ -128,7 +128,7 @@ export default function StaffRegister() {
               {isSubmitting ? 'Submitting...' : 'Submit Request'}
             </button>
 
-            <Link to="/admin" className="auth-reset" style={{ display: 'block', textAlign: 'center' }}>
+            <Link to={window.location.pathname.includes('online') ? '/adminonline' : '/adminoffline'} className="auth-reset" style={{ display: 'block', textAlign: 'center' }}>
               ← Back to Login
             </Link>
           </form>

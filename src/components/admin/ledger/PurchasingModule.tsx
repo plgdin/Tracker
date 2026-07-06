@@ -159,7 +159,7 @@ export default function PurchasingModule() {
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1rem', flexWrap:'wrap', gap:'0.5rem' }}>
         <h2 style={{ fontSize:'1.1rem', fontWeight:700, margin:0 }}>Purchasing</h2>
         <div style={{ display:'flex', gap:'0.5rem' }}>
-          <button className="btn btn-outline" style={{ padding:'0.5rem 1rem', fontSize:'0.8rem' }} onClick={() => navigate('/admin/add-item')}><Plus size={15}/> Add Item</button>
+          <button className="btn btn-outline" style={{ padding:'0.5rem 1rem', fontSize:'0.8rem' }} onClick={() => navigate(`/admin${window.location.pathname.includes('online') ? 'online' : 'offline'}/add-item`)}><Plus size={15}/> Add Item</button>
           <button className="btn btn-primary" style={{ padding:'0.5rem 1rem', fontSize:'0.8rem' }} onClick={() => { setForm(blank()); setView('new'); }}><Plus size={15}/> New Purchase</button>
         </div>
       </div>

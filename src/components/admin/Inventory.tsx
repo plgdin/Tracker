@@ -134,7 +134,7 @@ export default function Inventory() {
           <h1 style={{ margin: 0, textAlign: 'left' }}>All Items</h1>
           <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', margin: 0 }}>Your complete tracked inventory</p>
         </div>
-        <button className="btn btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }} onClick={() => navigate('/admin/add-item')}>
+        <button className="btn btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }} onClick={() => navigate(`/admin${window.location.pathname.includes('online') ? 'online' : 'offline'}/add-item`)}>
           <Plus size={15} /> Add Item
         </button>
       </header>
@@ -224,7 +224,7 @@ export default function Inventory() {
               <div 
                 key={item.id} 
                 className="cute-card"
-                onClick={() => navigate(`/admin/add-item?edit=${item.id}`)}
+                onClick={() => navigate(`/admin${window.location.pathname.includes('online') ? 'online' : 'offline'}/add-item?edit=${item.id}`)}
                 style={{ position: 'relative' }}
               >
                 <div className="cute-card-qty">{item.quantity}</div>
