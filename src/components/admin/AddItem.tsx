@@ -60,7 +60,7 @@ export default function AddItem() {
             price: itemToEdit.price || '',
             image_url: itemToEdit.image_url || '',
             gst_percentage: itemToEdit.gst_percentage || 0,
-            custom_gst: itemToEdit.gst_percentage && ![0, 5, 12, 18].includes(itemToEdit.gst_percentage) ? itemToEdit.gst_percentage.toString() : '',
+            custom_gst: itemToEdit.gst_percentage && ![0, 3, 5, 8, 12, 18, 28, 40].includes(itemToEdit.gst_percentage) ? itemToEdit.gst_percentage.toString() : '',
           });
         }
       } catch (err) {
@@ -113,7 +113,7 @@ export default function AddItem() {
         notes: formData.notes || undefined,
         price: formData.price || undefined,
         image_url: formData.image_url || undefined,
-        gst_percentage: itemStoreType === 'online' ? (formData.gst_percentage === -1 ? parseFloat(formData.custom_gst || '0') : formData.gst_percentage) : undefined,
+        gst_percentage: formData.gst_percentage === -1 ? parseFloat(formData.custom_gst || '0') : formData.gst_percentage,
         store_type: itemStoreType,
         added_by: profile?.id || undefined
       };
@@ -291,36 +291,60 @@ export default function AddItem() {
               <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginTop: '0.35rem' }}>Type the amount and unit (e.g., 450/kg). The ₹ symbol is added automatically.</p>
             </div>
 
-            {itemStoreType === 'online' && (
-              <div className="input-group" style={{ marginTop: '1.5rem' }}>
-                <label className="input-label">🧾 GST Percentage</label>
-                <select 
-                  className="input-field" 
-                  value={formData.gst_percentage}
-                  onChange={e => setFormData({ ...formData, gst_percentage: Number(e.target.value) })}
-                >
-                  <option value={0}>0% - Exempt / Nil Rated</option>
-                  <option value={5}>5% - Essential Food Items</option>
-                  <option value={12}>12% - Processed Food</option>
-                  <option value={18}>18% - Premium Food</option>
-                  <option value={-1}>Custom Percentage</option>
-                </select>
-                {formData.gst_percentage === -1 && (
-                  <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center' }}>
-                    <input 
-                      type="number" 
-                      className="input-field" 
-                      placeholder="Enter custom GST %"
-                      value={formData.custom_gst}
-                      onChange={e => setFormData({ ...formData, custom_gst: e.target.value })}
-                      style={{ borderTopRightRadius: 0, borderBottomRightRadius: 0, flex: 1 }}
-                    />
-                    <span style={{ padding: '0 0.75rem', background: 'rgba(230,57,70,0.1)', color: 'var(--color-primary)', fontWeight: 'bold', border: '1px solid rgba(230,57,70,0.2)', borderLeft: 'none', borderRadius: '0 12px 12px 0', height: '42px', display: 'flex', alignItems: 'center' }}>%</span>
-                  </div>
+            <div className="input-group" style={{ marginTop: '1.5rem' }}>
+              <label className="input-label">🧾 GST / Tax Percentage</label>
+              <select 
+                className="input-field" 
+                value={formData.gst_percentage}
+                onChange={e => setFormData({ ...formData, gst_percentage: Number(e.target.value) })}
+              >
+                {itemStoreType === 'online' ? (
+                  // Hotel Store GST slabs
+                  <>
+                    <option value={0}>0% — Exempt / Nil Rated (plain water, basic items)</option>
+                    <option value={3}>3% — Special items (precious metal components, specific raw inputs)</option>
+                    <option value={5}>5% — Restaurant / Food Service (AC &amp; non-AC)</option>
+                    <option value={8}>8% — Alternative/Local Services Tax</option>
+                    <option value={12}>12% — Processed / Packaged Food</option>
+                    <option value={18}>18% — Premium Food, Chocolates, Beverages</option>
+                    <option value={28}>28% — Luxury / Alcoholic Beverages</option>
+                    <option value={40}>40% — Luxury Surcharge / Sin Tax (specified beverages)</option>
+                    <option value={-1}>Custom Percentage</option>
+                  </>
+                ) : (
+                  // Bakery Store GST slabs
+                  <>
+                    <option value={0}>0% — Exempt (unbranded bread, fresh roti, plain flour)</option>
+                    <option value={3}>3% — Specialty Ingredients / Local Grains</option>
+                    <option value={5}>5% — Cakes, Pastries, Muffins, Branded Biscuits, Rusks</option>
+                    <option value={8}>8% — Alternative/Local Baked Goods Tax</option>
+                    <option value={12}>12% — Namkeen, Bhujia, Savoury Snacks, Dry Mixtures</option>
+                    <option value={18}>18% — Chocolate-coated Items, Waffles, Premium Desserts</option>
+                    <option value={28}>28% — Luxury / Speciality Confectionery</option>
+                    <option value={40}>40% — Luxury Imported / Sin Tax Items</option>
+                    <option value={-1}>Custom Percentage</option>
+                  </>
                 )}
-                <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginTop: '0.35rem' }}>GST will be added on top of the base price at checkout.</p>
-              </div>
-            )}
+              </select>
+              {formData.gst_percentage === -1 && (
+                <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center' }}>
+                  <input 
+                    type="number" 
+                    className="input-field" 
+                    placeholder="Enter custom GST %"
+                    value={formData.custom_gst}
+                    onChange={e => setFormData({ ...formData, custom_gst: e.target.value })}
+                    style={{ borderTopRightRadius: 0, borderBottomRightRadius: 0, flex: 1 }}
+                  />
+                  <span style={{ padding: '0 0.75rem', background: 'rgba(230,57,70,0.1)', color: 'var(--color-primary)', fontWeight: 'bold', border: '1px solid rgba(230,57,70,0.2)', borderLeft: 'none', borderRadius: '0 12px 12px 0', height: '42px', display: 'flex', alignItems: 'center' }}>%</span>
+                </div>
+              )}
+              <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginTop: '0.35rem' }}>
+                {itemStoreType === 'online'
+                  ? 'GST will be added on top of the base price at checkout (Hotel rates).'
+                  : 'GST will be added on top of the base price at checkout (Bakery rates).'}
+              </p>
+            </div>
 
             <div className="input-group" style={{ marginTop: '1.5rem' }}>
               <label className="input-label">🖼️ Image URL</label>
