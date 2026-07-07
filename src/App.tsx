@@ -14,6 +14,7 @@ import Products from './pages/online/client/Products';
 import Login from './pages/online/client/Login';
 import Profile from './pages/online/client/Profile';
 import ResetPassword from './pages/online/client/ResetPassword';
+import Receipt from './pages/online/client/Receipt';
 
 // Online Admin
 import OnlineDashboard from './pages/online/admin/Dashboard';
@@ -44,6 +45,7 @@ function App() {
           <Route path="/products" element={<Products />} />
           <Route path="/login" element={<Login />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/receipt" element={<Receipt />} />
         </Route>
 
         {/* Offline Admin */}

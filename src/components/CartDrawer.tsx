@@ -131,7 +131,11 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       text += `- ${item.name} x${item.quantity} (Rs.${Number(item.price) * item.quantity})\n`;
     });
     text += `\n*Total Amount: Rs.${totalAmount}*\n`;
+    const orderId = 'ORD-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2, 4).toUpperCase();
+    const receiptUrl = `${window.location.origin}/receipt?order=${orderId}&amount=${totalAmount}&name=${encodeURIComponent(customerName)}`;
+
     text += `\nPlease confirm my order and share payment QR.`;
+    text += `\n\n*View Receipt & Payment QR:*\n${receiptUrl}`;
 
     const encodedText = encodeURIComponent(text);
     const phoneNumber = import.meta.env.VITE_WHATSAPP_NUMBER || "919999999999";
