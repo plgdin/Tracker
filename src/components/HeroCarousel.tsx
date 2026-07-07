@@ -1,32 +1,57 @@
 import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { db } from "../lib/db";
+import type { HeroSlide } from "../lib/db";
 
-const heroSlides = [
+const DEFAULT_SLIDES: HeroSlide[] = [
   {
-    image: "/hero-1.jpg",
+    id: 'default-1',
+    image_url: "/hero-1.jpg",
     title: "Premium Culinary Ingredients",
     subtitle: "High-quality flour, oils, sauces, spices, and raw materials for every kitchen.",
+    order_index: 1,
   },
   {
-    image: "/hero-2.jpg",
+    id: 'default-2',
+    image_url: "/hero-2.jpg",
     title: "Professional Chef Supplies",
     subtitle: "Baking instruments, cooking utensils, and equipment designed for professionals.",
+    order_index: 2,
   },
   {
-    image: "/hero-3.jpg",
+    id: 'default-3',
+    image_url: "/hero-3.jpg",
     title: "Finest Raw Materials & Spices",
     subtitle: "Source premium spices, specialized baking supplies, and essential ingredients.",
+    order_index: 3,
   },
   {
-    image: "/hero-4.jpg",
+    id: 'default-4',
+    image_url: "/hero-4.jpg",
     title: "Equip Your Culinary Journey",
     subtitle: "From cooking utensils to premium raw materials, find everything you need to create.",
+    order_index: 4,
   },
 ];
 
 export default function HeroCarousel() {
+  const [heroSlides, setHeroSlides] = useState<HeroSlide[]>(DEFAULT_SLIDES);
   const [current, setCurrent] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
+
+  useEffect(() => {
+    async function loadSlides() {
+      try {
+        const slides = await db.getHeroSlides();
+        if (slides.length > 0) {
+          setHeroSlides(slides);
+        }
+      } catch (err) {
+        console.error("Failed to load hero slides:", err);
+      }
+    }
+    loadSlides();
+  }, []);
 
   const goTo = useCallback(
     (index: number) => {
@@ -40,16 +65,18 @@ export default function HeroCarousel() {
 
   const next = useCallback(() => {
     goTo((current + 1) % heroSlides.length);
-  }, [current, goTo]);
+  }, [current, goTo, heroSlides.length]);
 
   const prev = useCallback(() => {
     goTo((current - 1 + heroSlides.length) % heroSlides.length);
-  }, [current, goTo]);
+  }, [current, goTo, heroSlides.length]);
 
   useEffect(() => {
     const timer = setInterval(next, 5000);
     return () => clearInterval(timer);
   }, [next]);
+
+  if (heroSlides.length === 0) return null;
 
   return (
     <section 
@@ -59,13 +86,13 @@ export default function HeroCarousel() {
       {/* Slides */}
       {heroSlides.map((slide, index) => (
         <div
-          key={index}
+          key={slide.id}
           className={`absolute inset-0 transition-opacity duration-700 ${
             index === current ? "opacity-100" : "opacity-0"
           }`}
         >
           <img
-            src={slide.image}
+            src={slide.image_url}
             alt={slide.title}
             className="w-full h-full object-cover"
           />

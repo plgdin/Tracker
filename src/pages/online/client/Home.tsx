@@ -326,7 +326,7 @@ export default function Home() {
                 }`}
               >
                 <img
-                  src={getCategoryImage(cat.name)}
+                  src={cat.image_url || getCategoryImage(cat.name)}
                   alt={cat.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
@@ -401,19 +401,16 @@ export default function Home() {
           {/* Category Filter Tabs (no search input needed here now) */}
           <div className="flex justify-center mb-8">
             <div className="flex gap-2 overflow-x-auto pb-2 max-w-full">
-              {categories?.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.name)}
-                  className={`px-4 py-2 text-sm font-bold whitespace-nowrap transition-all duration-300 ${
-                    selectedCategory === cat.name
-                      ? "text-burnt-orange -translate-y-1"
-                      : "text-espresso hover:text-burnt-orange hover:-translate-y-1"
-                  }`}
-                >
-                  {cat.name}
-                </button>
-              ))}
+              <button
+                onClick={() => setSelectedCategory(undefined)}
+                className={`px-4 py-2 text-sm font-bold whitespace-nowrap transition-all duration-300 ${
+                  selectedCategory === undefined
+                    ? "text-burnt-orange -translate-y-1"
+                    : "text-espresso hover:text-burnt-orange hover:-translate-y-1"
+                }`}
+              >
+                All Items
+              </button>
             </div>
           </div>
 

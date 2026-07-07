@@ -24,6 +24,7 @@ export interface Category {
   name: string;
   color: string;
   icon: string;
+  image_url?: string;
   created_at: string;
 }
 
@@ -48,6 +49,21 @@ export interface AuditLog {
 
 export interface AppSettings {
   warning_period_days: number;
+}
+
+export interface StoreSettings {
+  id: string;
+  upi_id: string;
+  phone_number: string;
+  bank_details?: string;
+}
+
+export interface HeroSlide {
+  id: string;
+  image_url: string;
+  title: string;
+  subtitle: string;
+  order_index: number;
 }
 
 export interface OnlineOrderItem {
@@ -314,6 +330,30 @@ export const db = {
     categories.push(newCategory);
     setLocal(`tracker_categories_${useAppStore.getState().storeType}`, categories);
     return newCategory;
+  },
+
+  async updateCategory(id: string, updates: Partial<Category>): Promise<Category | null> {
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
+      try {
+        const { data, error } = await withTimeout(
+          dbSupabase.from('categories').update(updates).eq('store_type', useAppStore.getState().storeType).eq('id', id).select().single()
+        );
+        if (error) throw error;
+        return data as Category;
+      } catch (e) {
+        console.warn('Supabase update failed for category', e);
+      }
+    }
+
+    const categories = getLocalCategories();
+    const idx = categories.findIndex(c => c.id === id);
+    if (idx !== -1) {
+      categories[idx] = { ...categories[idx], ...updates };
+      setLocal(`tracker_categories_${useAppStore.getState().storeType}`, categories);
+      return categories[idx];
+    }
+    return null;
   },
 
   async deleteCategory(id: string): Promise<boolean> {
@@ -719,5 +759,119 @@ export const db = {
       console.error('Error uploading image:', error);
       return { success: false, error };
     }
+  },
+
+  async getHeroSlides(): Promise<HeroSlide[]> {
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
+      try {
+        const { data, error } = await withTimeout(
+          dbSupabase.from('hero_slides').select('*').order('order_index', { ascending: true })
+        );
+        if (error) throw error;
+        if (data && data.length > 0) {
+          setLocal('tracker_hero_slides', data);
+          return data as HeroSlide[];
+        }
+      } catch (e) {
+        console.warn('Supabase fetch failed for hero slides, falling back to local storage', e);
+      }
+    }
+    return getLocal<HeroSlide[]>('tracker_hero_slides', []);
+  },
+
+  async saveHeroSlide(slide: Omit<HeroSlide, 'id'> & { id?: string }): Promise<HeroSlide | null> {
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
+      try {
+        if (slide.id) {
+          const { data, error } = await withTimeout(
+            dbSupabase.from('hero_slides').update(slide).eq('id', slide.id).select().single()
+          );
+          if (error) throw error;
+          return data as HeroSlide;
+        } else {
+          const { data, error } = await withTimeout(
+            dbSupabase.from('hero_slides').insert([slide]).select().single()
+          );
+          if (error) throw error;
+          return data as HeroSlide;
+        }
+      } catch (e) {
+        console.warn('Supabase save failed for hero slide', e);
+      }
+    }
+    // Local fallback
+    const slides = getLocal<HeroSlide[]>('tracker_hero_slides', []);
+    if (slide.id) {
+      const idx = slides.findIndex(s => s.id === slide.id);
+      if (idx !== -1) {
+        slides[idx] = slide as HeroSlide;
+        setLocal('tracker_hero_slides', slides);
+        return slides[idx];
+      }
+    } else {
+      const newSlide = { ...slide, id: `hs-${Date.now()}` } as HeroSlide;
+      slides.push(newSlide);
+      setLocal('tracker_hero_slides', slides);
+      return newSlide;
+    }
+    return null;
+  },
+
+  async deleteHeroSlide(id: string): Promise<boolean> {
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
+      try {
+        const { error } = await withTimeout(
+          dbSupabase.from('hero_slides').delete().eq('id', id)
+        );
+        if (error) throw error;
+      } catch (e) {
+        console.warn('Supabase delete failed for hero slide', e);
+      }
+    }
+    const slides = getLocal<HeroSlide[]>('tracker_hero_slides', []);
+    setLocal('tracker_hero_slides', slides.filter(s => s.id !== id));
+    return true;
+  },
+
+  async getStoreSettings(): Promise<StoreSettings> {
+    const defaultSettings: StoreSettings = { id: 'default', upi_id: 'anshajshaji3-2@okicici', phone_number: '919778052356' };
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
+      try {
+        const { data, error } = await withTimeout(
+          dbSupabase.from('store_settings').select('*').eq('id', 'default').single()
+        );
+        if (error) throw error;
+        if (data) {
+          setLocal('tracker_store_settings', data);
+          return data as StoreSettings;
+        }
+      } catch (e) {
+        console.warn('Supabase settings fetch failed', e);
+      }
+    }
+    return getLocal<StoreSettings>('tracker_store_settings', defaultSettings);
+  },
+
+  async updateStoreSettings(updates: Partial<StoreSettings>): Promise<StoreSettings> {
+    const current = await this.getStoreSettings();
+    const updated = { ...current, ...updates };
+    const useSupabase = await getUseSupabase();
+    
+    if (useSupabase && dbSupabase) {
+      try {
+        const { error } = await withTimeout(
+          dbSupabase.from('store_settings').upsert(updated)
+        );
+        if (error) throw error;
+      } catch (e) {
+        console.warn('Supabase settings update failed', e);
+      }
+    }
+    setLocal('tracker_store_settings', updated);
+    return updated;
   }
 };

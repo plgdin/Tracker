@@ -177,7 +177,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       text += `\n\n*View Receipt & Payment QR:*\n${receiptUrl}`;
 
       const encodedText = encodeURIComponent(text);
-      const phoneNumber = import.meta.env.VITE_WHATSAPP_NUMBER || "919999999999";
+      const settings = await db.getStoreSettings();
+      const phoneNumber = settings.phone_number || import.meta.env.VITE_WHATSAPP_NUMBER || "919999999999";
       const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedText}`;
 
       setOrderSuccess({

@@ -4,12 +4,12 @@ import { useToastStore } from '../../store/toastStore';
 import { db } from '../../lib/db';
 import { supabase } from '../../lib/supabase';
 import { supabaseEphemeral } from '../../lib/supabaseEphemeral';
-import type { Item, AuditLog, Category, OnlineOrder } from '../../lib/db';
+import type { Item, AuditLog, Category, OnlineOrder, HeroSlide, StoreSettings } from '../../lib/db';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ShieldCheck, Trash2, Lock, Activity, Key, Plus, Users, AlertTriangle, Tag, Package, ToggleLeft, ToggleRight, Eye, EyeOff, ShoppingCart } from 'lucide-react';
+import { ShieldCheck, Trash2, Lock, Activity, Key, Plus, Users, AlertTriangle, Tag, Package, ToggleLeft, ToggleRight, Eye, EyeOff, ShoppingCart, Image as ImageIcon, Edit2 } from 'lucide-react';
 import { useAppStore } from '../../store/appStore';
 
-type TabKey = 'logs' | 'workers' | 'categories' | 'items' | 'security' | 'orders';
+type TabKey = 'logs' | 'workers' | 'categories' | 'items' | 'settings' | 'orders' | 'hero';
 
 interface WorkerData {
   id: string;
@@ -31,13 +31,28 @@ export default function AdminDashboard() {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
   const [onlineOrders, setOnlineOrders] = useState<OnlineOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [newAdminUser, setNewAdminUser] = useState('');
   const [newAdminPass, setNewAdminPass] = useState('');
   const [isSavingSecurity, setIsSavingSecurity] = useState(false);
+  const [storeUpiId, setStoreUpiId] = useState('anshajshaji3-2@okicici');
+  const [storePhoneNumber, setStorePhoneNumber] = useState('919778052356');
+  const [storeBankDetails, setStoreBankDetails] = useState('');
+  const [isSavingStoreSettings, setIsSavingStoreSettings] = useState(false);
   const [newCatName, setNewCatName] = useState('');
   const [newCatColor, setNewCatColor] = useState('#E63946');
+  const [newCatImageUrl, setNewCatImageUrl] = useState('');
+  const [isUploadingCatImage, setIsUploadingCatImage] = useState(false);
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+  
+  // Hero Slide Form State
+  const [newSlideTitle, setNewSlideTitle] = useState('');
+  const [newSlideSubtitle, setNewSlideSubtitle] = useState('');
+  const [newSlideImage, setNewSlideImage] = useState<File | null>(null);
+  const [newSlideImageUrl, setNewSlideImageUrl] = useState('');
+  const [isUploadingSlide, setIsUploadingSlide] = useState(false);
   const [workers, setWorkers] = useState<WorkerData[]>(() => {
     return JSON.parse(localStorage.getItem('worker_accounts') || '[]');
   });
@@ -50,7 +65,9 @@ export default function AdminDashboard() {
     (async () => {
       setLoading(true);
       try {
-        const [l, i, c, pw, wList, oList] = await Promise.all([db.getAuditLogs(), db.getItems(), db.getCategories(), db.getPendingWorkers(), db.getWorkers(), db.getOnlineOrders()]);
+        const [l, i, c, pw, wList, oList, hSlides, settings] = await Promise.all([
+          db.getAuditLogs(), db.getItems(), db.getCategories(), db.getPendingWorkers(), db.getWorkers(), db.getOnlineOrders(), db.getHeroSlides(), db.getStoreSettings()
+        ]);
         
         // Merge Supabase workers with local storage (to preserve passwords of admin-created ones)
         const localWorkers: WorkerData[] = JSON.parse(localStorage.getItem('worker_accounts') || '[]');
@@ -59,7 +76,12 @@ export default function AdminDashboard() {
           return { ...fw, ...localMatch, id: fw.id, email: fw.email || localMatch?.email || '', name: fw.name || localMatch?.name, password: localMatch?.password || 'User Managed' };
         });
 
-        setLogs(l); setItems(i); setCategories(c); setPendingWorkers(pw); setOnlineOrders(oList);
+        setLogs(l); setItems(i); setCategories(c); setPendingWorkers(pw); setOnlineOrders(oList); setHeroSlides(hSlides);
+        if (settings) {
+          setStoreUpiId(settings.upi_id);
+          setStorePhoneNumber(settings.phone_number);
+          setStoreBankDetails(settings.bank_details || '');
+        }
         setWorkers(mergedWorkers);
         localStorage.setItem('worker_accounts', JSON.stringify(mergedWorkers));
 
@@ -217,6 +239,24 @@ export default function AdminDashboard() {
   };
 
   // Security
+  const handleSaveStoreSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingStoreSettings(true);
+    try {
+      await db.updateStoreSettings({
+        upi_id: storeUpiId,
+        phone_number: storePhoneNumber,
+        bank_details: storeBankDetails
+      });
+      showToast('Store settings updated! ⚙️');
+      await db.addAuditLog('Updated Store Settings', `UPI: ${storeUpiId}`);
+    } catch (err) {
+      showToast('Failed to update settings');
+    } finally {
+      setIsSavingStoreSettings(false);
+    }
+  };
+
   const handleCustomizeAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profile) return;
@@ -289,6 +329,60 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleHeroImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    setNewSlideImage(file);
+    setIsUploadingSlide(true);
+    
+    try {
+      const result = await db.uploadProductImage(file);
+      if (result.success && result.url) {
+        setNewSlideImageUrl(result.url);
+        showToast('Image uploaded! ✅');
+      } else {
+        showToast(`Failed to upload image: ${result.error?.message || 'Unknown error'} ❌`);
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Error uploading image ❌');
+    } finally {
+      setIsUploadingSlide(false);
+    }
+  };
+
+  const handleAddSlide = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSlideTitle.trim() || !newSlideSubtitle.trim() || !newSlideImageUrl) {
+      showToast('Please fill all fields and upload an image.');
+      return;
+    }
+    const maxOrder = heroSlides.reduce((max, s) => Math.max(max, s.order_index), 0);
+    const newSlide = await db.saveHeroSlide({
+      title: newSlideTitle,
+      subtitle: newSlideSubtitle,
+      image_url: newSlideImageUrl,
+      order_index: maxOrder + 1
+    });
+    if (newSlide) {
+      setHeroSlides([...heroSlides, newSlide]);
+      setNewSlideTitle('');
+      setNewSlideSubtitle('');
+      setNewSlideImage(null);
+      setNewSlideImageUrl('');
+      showToast('Slide added successfully! ✅');
+      db.addAuditLog('Added Hero Slide', newSlide.title);
+    }
+  };
+
+  const handleDeleteSlide = async (id: string, title: string) => {
+    if (!confirm(`Delete slide "${title}"?`)) return;
+    await db.deleteHeroSlide(id);
+    setHeroSlides(heroSlides.filter(s => s.id !== id));
+    showToast('Slide deleted! 🗑️');
+    db.addAuditLog('Deleted Hero Slide', title);
+  };
+
 
   const handleDeleteItem = async (id: string, name: string) => {
     if (!confirm(`Delete "${name}"? Cannot undo.`)) return;
@@ -299,14 +393,52 @@ export default function AdminDashboard() {
   };
 
   // Categories
+  const handleCatImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    setIsUploadingCatImage(true);
+    
+    try {
+      const result = await db.uploadProductImage(file);
+      if (result.success && result.url) {
+        setNewCatImageUrl(result.url);
+        showToast('Category Image uploaded! ✅');
+      } else {
+        showToast(`Failed to upload image: ${result.error?.message || 'Unknown error'} ❌`);
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Error uploading image ❌');
+    } finally {
+      setIsUploadingCatImage(false);
+    }
+  };
+
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCatName.trim()) return;
-    await db.addCategory({ name: newCatName.trim(), color: newCatColor, icon: 'Tag' });
-    await db.addAuditLog('Added Category', newCatName.trim());
+    
+    if (editingCategoryId) {
+      await db.updateCategory(editingCategoryId, { name: newCatName.trim(), color: newCatColor, image_url: newCatImageUrl || undefined });
+      await db.addAuditLog('Updated Category', newCatName.trim());
+      showToast('Category updated! 🎨');
+    } else {
+      await db.addCategory({ name: newCatName.trim(), color: newCatColor, icon: 'Tag', image_url: newCatImageUrl || undefined });
+      await db.addAuditLog('Added Category', newCatName.trim());
+      showToast('Category added! 🎨');
+    }
+    
     setNewCatName('');
+    setNewCatImageUrl('');
+    setEditingCategoryId(null);
     await refreshData();
-    showToast('Category added! 🎨');
+  };
+
+  const handleEditCategoryClick = (cat: Category) => {
+    setEditingCategoryId(cat.id);
+    setNewCatName(cat.name);
+    setNewCatColor(cat.color);
+    setNewCatImageUrl(cat.image_url || '');
   };
 
   const handleDeleteCategory = async (id: string, name: string) => {
@@ -326,8 +458,9 @@ export default function AdminDashboard() {
     { key: 'workers', icon: Users, label: 'Workers' },
     { key: 'items', icon: Package, label: 'Items' },
     { key: 'categories', icon: Tag, label: 'Categories' },
+    { key: 'hero', icon: ImageIcon, label: 'Hero Slides' },
     { key: 'logs', icon: Activity, label: 'Logs' },
-    { key: 'security', icon: Key, label: 'Security' },
+    { key: 'settings', icon: Key, label: 'Settings' },
   ];
 
   const colors = ['#E63946','#E07A5F','#F2CC8F','#81B29A','#3D5A80','#98C1D9','#EE6C4D','#6366F1'];
@@ -497,19 +630,30 @@ export default function AdminDashboard() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.25rem' }}>
                 {categories.map(cat => (
                   <div key={cat.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.6rem 1rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', border: `1.5px solid ${cat.color}20` }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: cat.color, flexShrink: 0 }}></span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      {cat.image_url ? (
+                        <img src={cat.image_url} alt={cat.name} style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }} />
+                      ) : (
+                        <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: cat.color, flexShrink: 0 }}></span>
+                      )}
                       <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>{cat.name}</span>
                     </div>
-                    <button onClick={() => handleDeleteCategory(cat.id, cat.name)} style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer', padding: '0.3rem' }}>
-                      <Trash2 size={15} />
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                      <button onClick={() => handleEditCategoryClick(cat)} style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer', padding: '0.3rem' }}>
+                        <Edit2 size={15} />
+                      </button>
+                      <button onClick={() => handleDeleteCategory(cat.id, cat.name)} style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer', padding: '0.3rem' }}>
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
 
               <form onSubmit={handleAddCategory} style={{ borderTop: '1px solid rgba(230,57,70,0.08)', paddingTop: '1.25rem' }}>
-                <h3 style={{ fontSize: '0.9rem', margin: '0 0 0.75rem 0', fontWeight: 700 }}>➕ Add New Category</h3>
+                <h3 style={{ fontSize: '0.9rem', margin: '0 0 0.75rem 0', fontWeight: 700 }}>
+                  {editingCategoryId ? '✏️ Edit Category' : '➕ Add New Category'}
+                </h3>
                 <div className="input-group"><label className="input-label">Name</label>
                   <input type="text" className="input-field" placeholder="e.g., Snacks" value={newCatName} onChange={e => setNewCatName(e.target.value)} required />
                 </div>
@@ -521,7 +665,43 @@ export default function AdminDashboard() {
                     <input type="color" value={newCatColor} onChange={e => setNewCatColor(e.target.value)} style={{ width: '30px', height: '30px', border: 'none', background: 'transparent', cursor: 'pointer' }} />
                   </div>
                 </div>
-                <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }}><Plus size={16} /> Add Category</button>
+                <div className="input-group" style={{ marginTop: '0.75rem' }}>
+                  <label className="input-label">Category Image (Optional)</label>
+                  <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleCatImageUpload}
+                      disabled={isUploadingCatImage}
+                      style={{ fontSize: '0.8rem' }}
+                    />
+                    {isUploadingCatImage && <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>Uploading...</span>}
+                  </div>
+                  {newCatImageUrl && (
+                    <div style={{ marginTop: '0.5rem' }}>
+                      <img src={newCatImageUrl} alt="Preview" style={{ height: '40px', borderRadius: '6px', objectFit: 'cover' }} />
+                    </div>
+                  )}
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
+                  <button type="submit" className="btn btn-primary" disabled={isUploadingCatImage} style={{ flex: 1 }}>
+                    {editingCategoryId ? (
+                      <><Edit2 size={16} /> Update Category</>
+                    ) : (
+                      <><Plus size={16} /> Add Category</>
+                    )}
+                  </button>
+                  {editingCategoryId && (
+                    <button type="button" className="btn btn-outline" onClick={() => {
+                      setEditingCategoryId(null);
+                      setNewCatName('');
+                      setNewCatColor('#E63946');
+                      setNewCatImageUrl('');
+                    }} style={{ flex: 1 }}>
+                      Cancel
+                    </button>
+                  )}
+                </div>
               </form>
             </div>
           </div>
@@ -557,12 +737,38 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* SECURITY TAB */}
-        {activeTab === 'security' && (
-          <div className="panel" style={{ padding: '1.5rem' }}>
-            <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Key size={18} color="var(--color-primary)" /> Admin Credentials
-            </h2>
+        {/* SETTINGS TAB */}
+        {activeTab === 'settings' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            {useAppStore.getState().storeType === 'online' && (
+              <div className="panel" style={{ padding: '1.5rem' }}>
+                <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <ShoppingCart size={18} color="var(--color-primary)" /> Store Configuration
+                </h2>
+                <form onSubmit={handleSaveStoreSettings} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <div className="input-group">
+                    <label className="input-label">UPI ID for Payments</label>
+                    <input type="text" className="input-field" placeholder="e.g., yourname@bank" value={storeUpiId} onChange={e => setStoreUpiId(e.target.value)} required />
+                  </div>
+                  <div className="input-group">
+                    <label className="input-label">WhatsApp Number (include country code)</label>
+                    <input type="text" className="input-field" placeholder="e.g., 919876543210" value={storePhoneNumber} onChange={e => setStorePhoneNumber(e.target.value)} required />
+                  </div>
+                  <div className="input-group">
+                    <label className="input-label">Bank Details (Optional)</label>
+                    <textarea className="input-field" placeholder="Account Number, IFSC Code, Bank Name, etc." value={storeBankDetails} onChange={e => setStoreBankDetails(e.target.value)} rows={3} />
+                  </div>
+                  <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={isSavingStoreSettings}>
+                    {isSavingStoreSettings ? 'Saving...' : 'Save Configuration'}
+                  </button>
+                </form>
+              </div>
+            )}
+
+            <div className="panel" style={{ padding: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Key size={18} color="var(--color-primary)" /> Admin Credentials
+              </h2>
 
             
             <form onSubmit={handleCustomizeAdmin} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -585,6 +791,93 @@ export default function AdminDashboard() {
                 <Lock size={16} /> {isSavingSecurity ? 'Saving...' : 'Update Credentials'}
               </button>
             </form>
+          </div>
+          </div>
+        )}
+
+        {/* HERO TAB */}
+        {activeTab === 'hero' && (
+          <div className="panel" style={{ padding: '1.5rem' }}>
+            <h2 style={{ fontSize: '1.05rem', margin: '0 0 1rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <ImageIcon size={18} color="var(--color-primary)" /> Hero Slides ({heroSlides.length})
+            </h2>
+
+            {/* Add New Slide Form */}
+            <form onSubmit={handleAddSlide} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', backgroundColor: 'var(--color-bg-light)', padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem' }}>
+              <h3 style={{ fontSize: '0.9rem', margin: 0, fontWeight: 700 }}>Add New Slide</h3>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                <input 
+                  type="text" 
+                  className="input-field" 
+                  placeholder="Slide Title (e.g. Premium Ingredients)" 
+                  value={newSlideTitle} 
+                  onChange={e => setNewSlideTitle(e.target.value)} 
+                  required 
+                />
+                <input 
+                  type="text" 
+                  className="input-field" 
+                  placeholder="Slide Subtitle" 
+                  value={newSlideSubtitle} 
+                  onChange={e => setNewSlideSubtitle(e.target.value)} 
+                  required 
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '0.8rem', fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>Slide Image</label>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleHeroImageUpload}
+                    disabled={isUploadingSlide}
+                    style={{ fontSize: '0.8rem' }}
+                  />
+                  {isUploadingSlide && <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>Uploading...</span>}
+                </div>
+                {newSlideImageUrl && (
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <img src={newSlideImageUrl} alt="Preview" style={{ height: '60px', borderRadius: '8px', objectFit: 'cover' }} />
+                  </div>
+                )}
+              </div>
+
+              <button 
+                type="submit" 
+                className="btn btn-primary" 
+                disabled={isUploadingSlide || !newSlideImageUrl || !newSlideTitle.trim()}
+                style={{ alignSelf: 'flex-start', display: 'flex', gap: '0.5rem', alignItems: 'center' }}
+              >
+                <Plus size={16} /> Add Slide
+              </button>
+            </form>
+
+            {/* Slide List */}
+            {heroSlides.length === 0 ? (
+              <p style={{ color: 'var(--color-text-secondary)', textAlign: 'center', padding: '1rem' }}>No slides configured.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {heroSlides.sort((a,b) => a.order_index - b.order_index).map(slide => (
+                  <div key={slide.id} style={{ display: 'flex', gap: '1rem', padding: '1rem', backgroundColor: 'var(--color-bg-light)', borderRadius: '12px', border: '1px solid rgba(230,57,70,0.1)', alignItems: 'center' }}>
+                    <img src={slide.image_url} alt={slide.title} style={{ width: '120px', height: '80px', objectFit: 'cover', borderRadius: '8px' }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <h4 style={{ margin: '0 0 0.25rem 0', fontSize: '0.95rem', fontWeight: 700 }}>{slide.title}</h4>
+                      <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--color-text-secondary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{slide.subtitle}</p>
+                      <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.7rem', color: 'var(--color-primary)', fontWeight: 600 }}>Order: {slide.order_index}</p>
+                    </div>
+                    <button 
+                      onClick={() => handleDeleteSlide(slide.id, slide.title)}
+                      style={{ padding: '0.5rem', color: '#E63946', backgroundColor: 'rgba(230,57,70,0.1)', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+                      title="Delete Slide"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

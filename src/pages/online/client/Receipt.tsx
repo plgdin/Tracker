@@ -93,6 +93,8 @@ export default function Receipt() {
   const [transactionId, setTransactionId] = useState('');
   const [isSubmittingUtr, setIsSubmittingUtr] = useState(false);
   const [utrSubmitted, setUtrSubmitted] = useState(false);
+  const [storeUpiId, setStoreUpiId] = useState('anshajshaji3-2@okicici');
+  const [storeBankDetails, setStoreBankDetails] = useState('');
 
   // Default fallback items from the CHEF & JOY photo
   const DEFAULT_ITEMS: ReceiptItem[] = [
@@ -171,6 +173,14 @@ export default function Receipt() {
       setInvoiceNo('2241');
       setItems(DEFAULT_ITEMS);
     }
+
+    db.getStoreSettings().then(settings => {
+      if (settings) {
+        if (settings.upi_id) setStoreUpiId(settings.upi_id);
+        if (settings.bank_details) setStoreBankDetails(settings.bank_details);
+      }
+    }).catch(console.error);
+    
   }, [location.search]);
 
   // Compute receipt totals
@@ -205,7 +215,7 @@ export default function Receipt() {
   const dateLong = `${dd}-${mmm}-${yyyy} ${hh}:${min}:${ss}`;
 
   // UPI payment parameters
-  const upiId = 'anshajshaji3-2@okicici';
+  const upiId = storeUpiId;
   const payeeName = 'Chef and Joy';
   const upiUri = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${formattedTotal}&cu=INR&tn=Order%20${orderId}`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUri)}`;
@@ -375,12 +385,24 @@ export default function Receipt() {
               <img src={qrCodeUrl} alt="Payment QR Code" className="w-44 h-44" />
             </div>
             
-            <p className="text-[#c1b5a9] text-sm">Scan with any UPI app to pay</p>
-            <div className="flex items-center justify-center gap-4 mt-4 opacity-75">
+            <p className="text-[#c1b5a9] text-sm mb-4">Scan with any UPI app to pay</p>
+            
+            <a href={upiUri} className="inline-flex items-center gap-2 bg-burnt-orange hover:bg-[#c93b2b] text-white px-6 py-3 rounded-xl font-bold transition-colors shadow-lg shadow-burnt-orange/20 mb-6">
+              Pay with UPI App
+            </a>
+            
+            <div className="flex items-center justify-center gap-4 mt-2 opacity-75">
               <div className="font-bold text-xs bg-[#2c231e] px-3 py-1 rounded-full text-[#c1b5a9]">GPay</div>
               <div className="font-bold text-xs bg-[#2c231e] px-3 py-1 rounded-full text-[#c1b5a9]">PhonePe</div>
               <div className="font-bold text-xs bg-[#2c231e] px-3 py-1 rounded-full text-[#c1b5a9]">Paytm</div>
             </div>
+
+            {storeBankDetails && (
+              <div className="mt-8 bg-[#2c231e] p-4 rounded-xl border border-espresso/25 text-left inline-block max-w-full min-w-[280px]">
+                <h3 className="text-[#f4efe9] text-sm font-semibold mb-2">Direct Bank Transfer</h3>
+                <pre className="text-[#c1b5a9] text-xs font-mono whitespace-pre-wrap">{storeBankDetails}</pre>
+              </div>
+            )}
           </div>
 
           <div className="bg-[#2c231e] rounded-2xl p-5 mb-8 border border-espresso/25 flex flex-col gap-3">
