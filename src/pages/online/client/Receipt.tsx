@@ -222,6 +222,46 @@ export default function Receipt() {
     return `${col1}${col2}${col3}${col4}${col5}${col6}`;
   };
 
+  // Construct the full receipt text to avoid JSX whitespace trimming issues
+  const receiptText = [
+    centerText("BAKE N JOY"),
+    centerText("KAZHAKUTTOM,TRIVANDRUM"),
+    centerText("PH:+91-999507648"),
+    centerText("GSTIN:32AKIPA6398K2ZW"),
+    `Invoice No: ${invoiceNo.padEnd(10, ' ')} Date :${dateDMY}`,
+    `Customer Name : ${customerName ? customerName.toUpperCase().substring(0, 25) : ''}`,
+    `Address : ${customerAddress ? customerAddress.toUpperCase().substring(0, 30) : ''}`,
+    separator1,
+    "SI  Item       Qty  MRP    Rate GST%  Amount",
+    separator1,
+    ...items.map((item, idx) => {
+      const line1 = `${idx + 1} //${item.code}//${item.name}`;
+      const line2 = formatItemLine(item);
+      return `${line1}\n${line2}`;
+    }),
+    separator2,
+    formatSummaryLine("Tot.No", String(totalItemsCount), "Old Balance:", "0.00"),
+    formatSummaryLine("Total CGST:", formattedCGST, "Total SGST:", formattedSGST),
+    formatSummaryLine("Taxable Amt:", formattedTaxable, "Total KFCess:", "0.00"),
+    formatSummaryLine("", "", "Total :", formattedTotal),
+    separator2,
+    centerText("YOU HAVE SAVED: " + formattedSavings),
+    separator2,
+    formatSummaryLine("Terminal: ", "Primary", "Amount Tender", "0.00"),
+    formatSummaryLine("Billed by: ", "admin", "Amount Charged", formattedTotal),
+    formatSummaryLine("", dateLong, "Amount Returned", "-" + formattedTotal),
+    formatSummaryLine("Previous Balance", "    0", "", ""),
+    "Amount in words payable:",
+    numberToWords(totalAmountVal),
+    "                         For :  BAKE N JOY",
+    "   Thank you . . .      Visit Again . . .",
+    centerText("Copyright(C)EasyBiz, www.polosys.com"),
+    "",
+    "",
+    "",
+    "" // Extra blank lines for standard receipt tear-off length
+  ].join('\n');
+
   return (
     <div className="min-h-screen bg-[#161210] text-[#f4efe9] flex flex-col font-sans relative overflow-hidden">
       {/* Premium print-only styling */}
@@ -275,7 +315,7 @@ export default function Receipt() {
         setInStockOnly={() => {}}
       />
 
-      <div className="flex-1 flex flex-col lg:flex-row items-center lg:items-start justify-center gap-12 max-w-6xl w-full mx-auto py-12 px-6 relative z-10">
+      <div className="flex-1 flex flex-col lg:flex-row items-center lg:items-start justify-center gap-12 max-w-6xl w-full mx-auto pt-32 pb-12 px-6 relative z-10">
         
         {/* LEFT COLUMN: The Physical Monospace Thermal Receipt */}
         <div className="w-full max-w-[400px] relative transition-all duration-300 hover:scale-[1.01]">
@@ -294,39 +334,7 @@ export default function Receipt() {
             <div className="absolute inset-y-0 left-[50%] w-[1px] bg-black/[0.015] pointer-events-none" />
 
             <pre className="whitespace-pre font-mono text-[#1e1e1a]">
-{centerText("BAKE N JOY")}
-{centerText("KAZHAKUTTOM,TRIVANDRUM")}
-{centerText("PH:+91-999507648")}
-{centerText("GSTIN:32AKIPA6398K2ZW")}
-Invoice No: {invoiceNo.padEnd(10, ' ')} Date :{dateDMY}
-Customer Name : {customerName ? customerName.toUpperCase().substring(0, 25) : ''}
-Address : {customerAddress ? customerAddress.toUpperCase().substring(0, 30) : ''}
-{separator1}
-SI  Item       Qty  MRP    Rate GST%  Amount
-{separator1}
-{items.map((item, idx) => (
-  <div key={idx}>
-{idx + 1} //{item.code}//{item.name}
-{formatItemLine(item)}
-  </div>
-))}
-{separator2}
-{formatSummaryLine("Tot.No", String(totalItemsCount), "Old Balance:", "0.00")}
-{formatSummaryLine("Total CGST:", formattedCGST, "Total SGST:", formattedSGST)}
-{formatSummaryLine("Taxable Amt:", formattedTaxable, "Total KFCess:", "0.00")}
-{formatSummaryLine("", "", "Total :", formattedTotal)}
-{separator2}
-{centerText("YOU HAVE SAVED: " + formattedSavings)}
-{separator2}
-{formatSummaryLine("Terminal: ", "Primary", "Amount Tender", "0.00")}
-{formatSummaryLine("Billed by: ", "admin", "Amount Charged", formattedTotal)}
-{formatSummaryLine("", dateLong, "Amount Returned", "-" + formattedTotal)}
-{formatSummaryLine("Previous Balance", "    0", "", "")}
-Amount in words payable:
-{numberToWords(totalAmountVal)}
-                         For :  BAKE N JOY
-   Thank you . . .      Visit Again . . .
-{centerText("Copyright(C)EasyBiz, www.polosys.com")}
+{receiptText}
             </pre>
           </div>
 
