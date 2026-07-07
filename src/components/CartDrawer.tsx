@@ -131,8 +131,21 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       text += `- ${item.name} x${item.quantity} (Rs.${Number(item.price) * item.quantity})\n`;
     });
     text += `\n*Total Amount: Rs.${totalAmount}*\n`;
+    const receiptItems = items.map(item => ({
+      id: item.productId,
+      name: item.name,
+      price: item.price,
+      quantity: item.quantity
+    }));
+    const itemsParam = encodeURIComponent(JSON.stringify(receiptItems));
+    const phoneParam = encodeURIComponent(customerPhone);
+    const emailParam = encodeURIComponent(customerEmail || '');
+    const deliveryParam = encodeURIComponent(deliveryType);
+    const addressParam = encodeURIComponent(deliveryType === "delivery" ? formattedAddress : "Store Pickup");
+    const notesParam = encodeURIComponent(notes || '');
+
     const orderId = 'ORD-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2, 4).toUpperCase();
-    const receiptUrl = `${window.location.origin}/receipt?order=${orderId}&amount=${totalAmount}&name=${encodeURIComponent(customerName)}`;
+    const receiptUrl = `${window.location.origin}/receipt?order=${orderId}&amount=${totalAmount}&name=${encodeURIComponent(customerName)}&phone=${phoneParam}&email=${emailParam}&delivery=${deliveryParam}&address=${addressParam}&notes=${notesParam}&items=${itemsParam}`;
 
     text += `\nPlease confirm my order and share payment QR.`;
     text += `\n\n*View Receipt & Payment QR:*\n${receiptUrl}`;
