@@ -155,9 +155,8 @@ export default function Home() {
   const displayedCategories = showAllCategories ? categories : categories.slice(0, 8);
   const featuredProducts = products.slice(0, 3);
   const featuredCatName = categories[0]?.name || "Cakes";
-  const featuredCatProducts = products
-    .filter((p) => p.categoryName === featuredCatName)
-    .slice(0, 4);
+  // Display all products in the top section instead of just one category
+  const featuredCatProducts = products;
 
   // Scroll reveal animation
   useEffect(() => {
@@ -225,14 +224,14 @@ export default function Home() {
         )}
       </div>
 
-      {/* Featured Category Section */}
-      {categories && categories.length > 0 && (
+      {/* All Products Section */}
+      {products && products.length > 0 && (
         <section className="py-16 px-6 bg-white border-b border-espresso/5">
           <div className="max-w-6xl mx-auto">
             <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6 reveal">
               <div>
                 <span className="px-3 py-1 bg-burnt-orange/10 text-burnt-orange rounded-full text-xs font-bold uppercase tracking-wider">
-                  Featured Category
+                  All Products
                 </span>
                 <h2 className="font-heading text-4xl font-bold text-espresso mt-3">
                   Explore Our Finest Goods
@@ -242,7 +241,7 @@ export default function Home() {
               </div>
               <button
                 onClick={() => {
-                  setSelectedCategory(featuredCatName);
+                  setSelectedCategory(undefined);
                   document
                     .getElementById("products")
                     ?.scrollIntoView({ behavior: "smooth" });
