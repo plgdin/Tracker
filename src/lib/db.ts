@@ -739,7 +739,7 @@ export const db = {
       const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
       const filePath = `${fileName}`;
 
-      const { data, error } = await dbSupabase.storage
+      const { error } = await dbSupabase.storage
         .from('product-images')
         .upload(filePath, file, {
           cacheControl: '3600',

@@ -4,7 +4,7 @@ import { useToastStore } from '../../store/toastStore';
 import { db } from '../../lib/db';
 import { supabase } from '../../lib/supabase';
 import { supabaseEphemeral } from '../../lib/supabaseEphemeral';
-import type { Item, AuditLog, Category, OnlineOrder, HeroSlide, StoreSettings } from '../../lib/db';
+import type { Item, AuditLog, Category, OnlineOrder, HeroSlide } from '../../lib/db';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ShieldCheck, Trash2, Lock, Activity, Key, Plus, Users, AlertTriangle, Tag, Package, ToggleLeft, ToggleRight, Eye, EyeOff, ShoppingCart, Image as ImageIcon, Edit2 } from 'lucide-react';
 import { useAppStore } from '../../store/appStore';
@@ -50,7 +50,6 @@ export default function AdminDashboard() {
   // Hero Slide Form State
   const [newSlideTitle, setNewSlideTitle] = useState('');
   const [newSlideSubtitle, setNewSlideSubtitle] = useState('');
-  const [newSlideImage, setNewSlideImage] = useState<File | null>(null);
   const [newSlideImageUrl, setNewSlideImageUrl] = useState('');
   const [isUploadingSlide, setIsUploadingSlide] = useState(false);
   const [workers, setWorkers] = useState<WorkerData[]>(() => {
