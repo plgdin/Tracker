@@ -21,7 +21,7 @@ export default function Receipt() {
   }, [location.search]);
 
   // Replace with actual UPI ID for the store
-  const upiId = 'store@upi';
+  const upiId = 'anshajshaji3-2@okicici';
   const payeeName = 'Bake and Joy';
   const upiUri = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=Order%20${orderId}`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUri)}`;
