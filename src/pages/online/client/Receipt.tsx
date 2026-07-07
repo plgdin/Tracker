@@ -255,7 +255,6 @@ export default function Receipt() {
     numberToWords(totalAmountVal),
     "                         For :  BAKE N JOY",
     "   Thank you . . .      Visit Again . . .",
-    centerText("Copyright(C)EasyBiz, www.polosys.com"),
     "",
     "",
     "",
@@ -395,12 +394,6 @@ export default function Receipt() {
           </div>
 
           <div className="space-y-3 print-btn-container">
-            <button 
-              onClick={() => window.print()}
-              className="w-full py-4 bg-burnt-orange text-white font-semibold rounded-full hover:bg-[#D55A36] active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-md shadow-burnt-orange/20"
-            >
-              <Printer className="w-5 h-5" /> Print / Save Receipt
-            </button>
             <button 
               onClick={() => navigate('/')}
               className="w-full py-4 bg-espresso/45 text-[#f4efe9] border border-espresso/30 font-semibold rounded-full hover:bg-espresso/70 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
