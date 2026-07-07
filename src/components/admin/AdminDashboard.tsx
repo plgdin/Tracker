@@ -331,7 +331,6 @@ export default function AdminDashboard() {
   const handleHeroImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
     const file = e.target.files[0];
-    setNewSlideImage(file);
     setIsUploadingSlide(true);
     
     try {
@@ -367,7 +366,6 @@ export default function AdminDashboard() {
       setHeroSlides([...heroSlides, newSlide]);
       setNewSlideTitle('');
       setNewSlideSubtitle('');
-      setNewSlideImage(null);
       setNewSlideImageUrl('');
       showToast('Slide added successfully! ✅');
       db.addAuditLog('Added Hero Slide', newSlide.title);
