@@ -27,29 +27,29 @@ import {
 
 const BakeryPattern = ({ dense = false }: { dense?: boolean }) => {
   const baseIcons = [
-    { name: "croissant", className: "left-[6%] top-10 h-16 w-16 rotate-[-12deg]" },
-    { name: "cake-slice", className: "right-[8%] top-16 h-14 w-14 rotate-[10deg]" },
-    { name: "cookie", className: "left-[16%] top-[38%] h-12 w-12 rotate-[18deg]" },
+    { name: "flask-conical", className: "left-[6%] top-10 h-16 w-16 rotate-[-12deg]" },
+    { name: "droplet", className: "right-[8%] top-16 h-14 w-14 rotate-[10deg]" },
+    { name: "flame", className: "left-[16%] top-[38%] h-12 w-12 rotate-[18deg]" },
     { name: "wheat", className: "right-[22%] top-[46%] h-16 w-16 rotate-[-18deg]" },
     { name: "candy", className: "left-[47%] top-8 h-11 w-11 rotate-[22deg]" },
     { name: "chef-hat", className: "right-[42%] top-[58%] h-14 w-14 rotate-[-8deg]" },
     { name: "cup-soda", className: "left-[31%] top-[27%] h-12 w-12 rotate-[-20deg]" },
-    { name: "ice-cream-cone", className: "right-[31%] top-[18%] h-12 w-12 rotate-[14deg]" },
-    { name: "sandwich", className: "left-[38%] top-[70%] h-12 w-12 rotate-[8deg]" },
-    { name: "pizza", className: "right-[15%] top-[67%] h-12 w-12 rotate-[-14deg]" },
-    { name: "popcorn", className: "left-[72%] top-[32%] h-12 w-12 rotate-[18deg]" },
+    { name: "citrus", className: "right-[31%] top-[18%] h-12 w-12 rotate-[14deg]" },
+    { name: "package", className: "left-[38%] top-[70%] h-12 w-12 rotate-[8deg]" },
+    { name: "leaf", className: "right-[15%] top-[67%] h-12 w-12 rotate-[-14deg]" },
+    { name: "grape", className: "left-[72%] top-[32%] h-12 w-12 rotate-[18deg]" },
     { name: "utensils-crossed", className: "left-[9%] top-[72%] h-12 w-12 rotate-[16deg]" },
-    { name: "cupcake", className: "left-[58%] top-[76%] h-12 w-12 rotate-[-10deg]" },
+    { name: "soup", className: "left-[58%] top-[76%] h-12 w-12 rotate-[-10deg]" },
     { name: "coffee", className: "right-[6%] top-[45%] h-12 w-12 rotate-[12deg]" },
     { name: "milk", className: "left-[24%] top-[62%] h-11 w-11 rotate-[-8deg]" },
     { name: "egg", className: "right-[34%] top-[73%] h-10 w-10 rotate-[20deg]" },
   ];
   const denseIcons = [
-    { name: "croissant", className: "left-[5%] top-[18%] h-12 w-12 rotate-[18deg]" },
-    { name: "cake-slice", className: "right-[5%] top-[26%] h-12 w-12 rotate-[-12deg]" },
-    { name: "cookie", className: "left-[12%] top-[55%] h-10 w-10 rotate-[-8deg]" },
+    { name: "flask-conical", className: "left-[5%] top-[18%] h-12 w-12 rotate-[18deg]" },
+    { name: "droplet", className: "right-[5%] top-[26%] h-12 w-12 rotate-[-12deg]" },
+    { name: "pipette", className: "left-[12%] top-[55%] h-10 w-10 rotate-[-8deg]" },
     { name: "candy", className: "right-[13%] top-[58%] h-10 w-10 rotate-[20deg]" },
-    { name: "ice-cream-cone", className: "left-[52%] top-[35%] h-11 w-11 rotate-[-18deg]" },
+    { name: "citrus", className: "left-[52%] top-[35%] h-11 w-11 rotate-[-18deg]" },
     { name: "chef-hat", className: "right-[47%] top-[88%] h-12 w-12 rotate-[12deg]" },
     { name: "wheat", className: "left-[70%] top-[82%] h-12 w-12 rotate-[-22deg]" },
     { name: "coffee", className: "left-[28%] top-[84%] h-11 w-11 rotate-[16deg]" },
@@ -75,8 +75,20 @@ const BakeryPattern = ({ dense = false }: { dense?: boolean }) => {
 const categoryImages: Record<string, string> = {
   chocolate: "/cat-chocolate.jpg",
   "baking materials": "/cat-baking-materials.jpg",
+  "raw materials": "/cat-baking-materials.jpg",
+  "baking ingredients": "/cat-baking-materials.jpg",
+  "culinary ingredients": "/cat-baking-materials.jpg",
+  "cooking materials": "/cat-baking-materials.jpg",
+  "chef supplies": "/cat-baking-materials.jpg",
   "cake decorations": "/cat-cake-decorations.jpg",
+  "culinary garnishes": "/cat-cake-decorations.jpg",
   flavors: "/cat-flavors.jpg",
+  essences: "/cat-flavors.jpg",
+  "essences & flavors": "/cat-flavors.jpg",
+  "essences & flavorings": "/cat-flavors.jpg",
+  spices: "/cat-flavors.jpg",
+  sauces: "/cat-flavors.jpg",
+  oils: "/cat-flavors.jpg",
   packaging: "/cat-packaging.jpg",
   "frozen food": "/cat-frozen-food.jpg",
   "gift hampers": "/cat-gift-hampers.jpg",
@@ -154,9 +166,10 @@ export default function Home() {
 
   const displayedCategories = showAllCategories ? categories : categories.slice(0, 8);
   const featuredProducts = products.slice(0, 3);
-  const featuredCatName = categories[0]?.name || "Cakes";
-  // Display all products in the top section instead of just one category
-  const featuredCatProducts = products;
+  const featuredCatName = categories[0]?.name || "Essences";
+  const featuredCatProducts = products
+    .filter((p) => p.categoryName === featuredCatName)
+    .slice(0, 4);
 
   // Scroll reveal animation
   useEffect(() => {
@@ -457,11 +470,11 @@ export default function Home() {
           <div className="grid md:grid-cols-3 gap-8 mb-8">
             <div>
               <h3 className="font-heading text-2xl font-bold mb-4">
-                Bake & Joy
+                Chef & Joy
               </h3>
               <p className="text-white/60 text-sm leading-relaxed">
-                Your one-stop shop for all baking supplies, decorations, and
-                professional bakery equipment.
+                Your premier source for premium cooking and baking ingredients,
+                raw materials, professional utensils, and chef supplies.
               </p>
             </div>
             <div>
@@ -510,7 +523,7 @@ export default function Home() {
           </div>
           <div className="border-t border-white/10 pt-6 text-center">
             <p className="text-white/40 text-sm">
-              &copy; {new Date().getFullYear()} Bake & Joy. All rights reserved.
+              &copy; {new Date().getFullYear()} Chef & Joy. All rights reserved.
             </p>
           </div>
         </div>

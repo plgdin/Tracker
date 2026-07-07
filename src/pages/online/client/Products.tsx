@@ -657,11 +657,11 @@ export default function Products() {
           <div className="grid md:grid-cols-3 gap-8 mb-8">
             <div>
               <h3 className="font-heading text-2xl font-bold mb-4">
-                Bake & Joy
+                Chef & Joy
               </h3>
               <p className="text-white/60 text-sm leading-relaxed">
-                Your one-stop shop for all baking supplies, decorations, and
-                professional bakery equipment.
+                Your premier source for premium cooking and baking ingredients,
+                raw materials, professional utensils, and chef supplies.
               </p>
             </div>
             <div>
@@ -692,7 +692,7 @@ export default function Products() {
           </div>
           <div className="border-t border-white/10 pt-6 text-center">
             <p className="text-white/40 text-sm">
-              &copy; {new Date().getFullYear()} Bake & Joy. All rights reserved.
+              &copy; {new Date().getFullYear()} Chef & Joy. All rights reserved.
             </p>
           </div>
         </div>

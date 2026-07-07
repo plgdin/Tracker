@@ -64,7 +64,7 @@ export default function StaffRegister() {
           <div className="auth-logo-icon">
             <ChefHat size={32} strokeWidth={2.5} />
           </div>
-          <h1 className="auth-title">Bake & Joy</h1>
+          <h1 className="auth-title">Chef & Joy</h1>
           <p className="auth-subtitle">Staff Registration</p>
         </div>
 

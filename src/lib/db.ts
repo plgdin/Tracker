@@ -120,7 +120,7 @@ const DEFAULT_CATEGORIES: Category[] = [
   { id: 'cat-1', name: 'Dairy', color: '#6366F1', icon: 'Milk', created_at: new Date().toISOString() },
   { id: 'cat-2', name: 'Meat', color: '#EF4444', icon: 'Beef', created_at: new Date().toISOString() },
   { id: 'cat-3', name: 'Vegetables', color: '#10B981', icon: 'Carrot', created_at: new Date().toISOString() },
-  { id: 'cat-4', name: 'Bakery', color: '#F59E0B', icon: 'Croissant', created_at: new Date().toISOString() },
+  { id: 'cat-4', name: 'Chef Supplies', color: '#F59E0B', icon: 'Utensils', created_at: new Date().toISOString() },
   { id: 'cat-5', name: 'Pantry', color: '#8B5CF6', icon: 'Package', created_at: new Date().toISOString() },
   { id: 'cat-6', name: 'Uncategorized', color: '#6B7280', icon: 'Tag', created_at: new Date().toISOString() }
 ];

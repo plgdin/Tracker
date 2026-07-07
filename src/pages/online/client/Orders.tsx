@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Clock, Package, Send, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Package, Send, CheckCircle2 } from 'lucide-react';
 import Navbar from '../../../components/Navbar';
 import { useCartContext } from '../../../context/CartContext';
 import { useAuthStore } from '../../../store/authStore';

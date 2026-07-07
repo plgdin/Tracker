@@ -86,7 +86,7 @@ export default function Dashboard() {
           <SettingsIcon size={24} />
         </button>
         <div style={{ textAlign: 'center' }}>
-          <h1 style={{ margin: 0, fontFamily: "'Playfair Display', serif", fontWeight: 800, letterSpacing: '-0.5px', fontSize: '1.75rem' }}>Bake N Joy</h1>
+          <h1 style={{ margin: 0, fontFamily: "'Playfair Display', serif", fontWeight: 800, letterSpacing: '-0.5px', fontSize: '1.75rem' }}>Chef N Joy</h1>
           {profile?.name && (
             <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.8rem', marginTop: '0.1rem' }}>
               Welcome back, {profile.name}

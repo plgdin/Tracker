@@ -57,7 +57,7 @@ export default function TermsAndConditions() {
               Terms & Conditions
             </h1>
             <p className="text-taupe mt-4 text-lg leading-relaxed">
-              Welcome to Bake & Joy. Please read these terms and conditions carefully before using our website or placing an order. By accessing or using any part of the site, you agree to be bound by these Terms of Service.
+              Welcome to Chef & Joy. Please read these terms and conditions carefully before using our website or placing an order. By accessing or using any part of the site, you agree to be bound by these Terms of Service.
             </p>
             <p className="text-taupe/80 text-sm mt-4">
               Last updated: {new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
@@ -94,10 +94,10 @@ export default function TermsAndConditions() {
                   1. Introduction & Acceptance
                 </h2>
                 <p>
-                  These Terms & Conditions ("Terms") govern your use of the website operated by <strong>Bake & Joy</strong>, located at this domain, and any related services, tools, and products offered through this platform.
+                  These Terms & Conditions ("Terms") govern your use of the website operated by <strong>Chef & Joy</strong>, located at this domain, and any related services, tools, and products offered through this platform.
                 </p>
                 <p className="mt-3">
-                  Throughout the site, the terms "we", "us", and "our" refer to Bake & Joy. We offer this website, including all information, tools, and services available from this site to you, the user, conditioned upon your acceptance of all terms, conditions, policies, and notices stated here.
+                  Throughout the site, the terms "we", "us", and "our" refer to Chef & Joy. We offer this website, including all information, tools, and services available from this site to you, the user, conditioned upon your acceptance of all terms, conditions, policies, and notices stated here.
                 </p>
                 <p className="mt-3">
                   By visiting our site and/or purchasing something from us, you engage in our "Service" and agree to be bound by the following terms and conditions, including those additional terms and conditions and policies referenced herein and/or available by hyperlink.
@@ -139,7 +139,7 @@ export default function TermsAndConditions() {
                   4. Shipping, Deliveries & Pickup
                 </h2>
                 <p>
-                  Bake & Joy offers shipping, local delivery, and in-store pickup options depending on your location and preferences.
+                  Chef & Joy offers shipping, local delivery, and in-store pickup options depending on your location and preferences.
                 </p>
                 <p className="mt-3">
                   Delivery dates and times are estimates only and cannot be guaranteed. We are not responsible for delays caused by shipping carriers, weather, incorrect delivery address information, or other circumstances beyond our reasonable control.
@@ -154,11 +154,11 @@ export default function TermsAndConditions() {
                   5. Returns, Refunds & Cancellations
                 </h2>
                 <p>
-                  Due to the perishable nature of many of our baking ingredients and food supplies, certain items are non-returnable and non-refundable once they have left our store or been shipped.
+                  Due to the perishable nature of many of our culinary ingredients and food supplies, certain items are non-returnable and non-refundable once they have left our store or been shipped.
                 </p>
                 <ul className="list-disc pl-6 mt-3 space-y-2">
                   <li><strong>Non-perishable items:</strong> May be returned within 7 days of delivery or pickup, provided they are in their original, unopened packaging.</li>
-                  <li><strong>Perishable ingredients & custom orders:</strong> All sales are final. Cancellations for custom cakes or large orders must be requested at least 48 hours in advance to be eligible for a refund or store credit.</li>
+                  <li><strong>Perishable ingredients & custom orders:</strong> All sales are final. Cancellations for custom essences or large orders must be requested at least 48 hours in advance to be eligible for a refund or store credit.</li>
                   <li><strong>Damaged goods:</strong> If you receive a damaged or incorrect product, please contact us within 24 hours of receipt with photo proof to arrange a replacement or refund.</li>
                 </ul>
               </section>
@@ -168,7 +168,7 @@ export default function TermsAndConditions() {
                   6. Intellectual Property
                 </h2>
                 <p>
-                  The Service and its original content, features, and functionality (including but not limited to all information, software, text, displays, images, video, and audio, and the design, selection, and arrangement thereof) are owned by Bake & Joy, its licensors, or other providers of such material and are protected by copyright, trademark, patent, trade secret, and other intellectual property or proprietary rights laws.
+                  The Service and its original content, features, and functionality (including but not limited to all information, software, text, displays, images, video, and audio, and the design, selection, and arrangement thereof) are owned by Chef & Joy, its licensors, or other providers of such material and are protected by copyright, trademark, patent, trade secret, and other intellectual property or proprietary rights laws.
                 </p>
               </section>
 
@@ -179,7 +179,7 @@ export default function TermsAndConditions() {
                 <div className="bg-espresso/5 border-l-4 border-burnt-orange p-4 rounded-r-xl mb-4 flex gap-3">
                   <ShieldAlert className="w-6 h-6 text-burnt-orange shrink-0 mt-0.5" />
                   <p className="text-sm text-espresso/90">
-                    In no event shall Bake & Joy, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses.
+                    In no event shall Chef & Joy, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses.
                   </p>
                 </div>
                 <p>
@@ -207,10 +207,10 @@ export default function TermsAndConditions() {
                   Questions about the Terms & Conditions should be sent to us at:
                 </p>
                 <div className="mt-4 p-6 bg-cream/50 rounded-2xl border border-espresso/5 space-y-2">
-                  <p><strong>Business Name:</strong> Bake & Joy Stores</p>
+                  <p><strong>Business Name:</strong> Chef & Joy Stores</p>
                   <p><strong>WhatsApp Support:</strong> +91-9876543210</p>
                   <p><strong>Support Hours:</strong> 9:00 AM - 8:00 PM (Monday - Saturday)</p>
-                  <p><strong>Address:</strong> Bake & Joy Main Market Road, Bangalore, Karnataka, India</p>
+                  <p><strong>Address:</strong> Chef & Joy Main Market Road, Bangalore, Karnataka, India</p>
                 </div>
               </section>
 
@@ -225,11 +225,11 @@ export default function TermsAndConditions() {
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <h3 className="font-heading text-2xl font-bold mb-4">
-                Bake & Joy
+                Chef & Joy
               </h3>
               <p className="text-white/60 text-sm leading-relaxed">
-                Your one-stop shop for all baking supplies, decorations, and
-                professional bakery equipment.
+                Your premier source for premium cooking and baking ingredients,
+                raw materials, professional utensils, and chef supplies.
               </p>
             </div>
             <div>
@@ -265,7 +265,7 @@ export default function TermsAndConditions() {
           </div>
           <div className="border-t border-white/10 pt-6 text-center">
             <p className="text-white/40 text-sm">
-              &copy; {new Date().getFullYear()} Bake & Joy. All rights reserved.
+              &copy; {new Date().getFullYear()} Chef & Joy. All rights reserved.
             </p>
           </div>
         </div>
