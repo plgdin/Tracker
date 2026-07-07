@@ -7,6 +7,7 @@ export interface CartItem {
   price: string;
   quantity: number;
   image?: string | null;
+  gstPercentage?: number;
 }
 
 interface CartContextType {
@@ -17,6 +18,7 @@ interface CartContextType {
   clearCart: () => void;
   totalItems: number;
   totalAmount: string;
+  totalGst: string;
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
 }
@@ -79,9 +81,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
-  const totalAmount = items
-    .reduce((sum, i) => sum + Number(i.price) * i.quantity, 0)
-    .toFixed(2);
+  
+  // Calculate Base Total and GST Total
+  const { subTotal, gstTotal } = items.reduce((acc, i) => {
+    // Parse price safely, removing /kg or non-numeric chars
+    const numericPrice = parseFloat(i.price.replace(/[^0-9.]/g, '')) || 0;
+    const itemTotal = numericPrice * i.quantity;
+    const gstPercent = i.gstPercentage || 0;
+    const itemGst = itemTotal * (gstPercent / 100);
+    
+    return {
+      subTotal: acc.subTotal + itemTotal,
+      gstTotal: acc.gstTotal + itemGst
+    };
+  }, { subTotal: 0, gstTotal: 0 });
+
+  const totalAmount = (subTotal + gstTotal).toFixed(2);
+  const totalGst = gstTotal.toFixed(2);
 
   return (
     <CartContext.Provider
@@ -93,6 +109,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         clearCart,
         totalItems,
         totalAmount,
+        totalGst,
         isCartOpen,
         setIsCartOpen,
       }}

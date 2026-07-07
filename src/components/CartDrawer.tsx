@@ -1,6 +1,8 @@
 import { X, Plus, Minus, ShoppingBag, ArrowRight, ArrowLeft, ChevronDown } from "lucide-react";
 import { useCartContext } from "@/context/CartContext";
 import { useState, useEffect } from "react";
+import { db } from "@/lib/db";
+import { useAuthStore } from "@/store/authStore";
 
 const INDIAN_STATES = [
   "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
@@ -18,7 +20,8 @@ interface CartDrawerProps {
 }
 
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
-  const { items, removeItem, updateQuantity, totalAmount, clearCart } = useCartContext();
+  const { items, removeItem, updateQuantity, totalAmount, totalGst, clearCart } = useCartContext();
+  const { user } = useAuthStore();
   const [showCheckout, setShowCheckout] = useState(false);
   const [removingIds, setRemovingIds] = useState<string[]>([]);
 
@@ -115,49 +118,78 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     whatsappUrl: string;
   } | null>(null);
 
-  const handleCheckout = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleCheckout = async () => {
     if (!canPlaceOrder) return;
+    setIsSubmitting(true);
 
-    let text = `*New Order - Bake & Joy*\n\n`;
-    text += `*Customer:* ${customerName}\n`;
-    text += `*Phone:* ${customerPhone}\n`;
-    if (customerEmail) text += `*Email:* ${customerEmail}\n`;
-    text += `*Delivery Type:* ${deliveryType}\n`;
-    if (deliveryType === "delivery") text += `*Address:* ${formattedAddress}\n`;
-    if (notes) text += `*Notes:* ${notes}\n`;
-    if (offerCode) text += `*Offer Code:* ${offerCode}\n`;
-    text += `\n*Items:*\n`;
-    items.forEach((item) => {
-      text += `- ${item.name} x${item.quantity} (Rs.${Number(item.price) * item.quantity})\n`;
-    });
-    text += `\n*Total Amount: Rs.${totalAmount}*\n`;
-    const receiptItems = items.map(item => ({
-      id: item.productId,
-      name: item.name,
-      price: item.price,
-      quantity: item.quantity
-    }));
-    const itemsParam = encodeURIComponent(JSON.stringify(receiptItems));
-    const phoneParam = encodeURIComponent(customerPhone);
-    const emailParam = encodeURIComponent(customerEmail || '');
-    const deliveryParam = encodeURIComponent(deliveryType);
-    const addressParam = encodeURIComponent(deliveryType === "delivery" ? formattedAddress : "Store Pickup");
-    const notesParam = encodeURIComponent(notes || '');
+    try {
+      const orderId = 'ORD-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2, 4).toUpperCase();
+      const receiptItems = items.map(item => ({
+        id: item.productId,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        gstPercentage: item.gstPercentage || 0
+      }));
 
-    const orderId = 'ORD-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2, 4).toUpperCase();
-    const receiptUrl = `${window.location.origin}/receipt?order=${orderId}&amount=${totalAmount}&name=${encodeURIComponent(customerName)}&phone=${phoneParam}&email=${emailParam}&delivery=${deliveryParam}&address=${addressParam}&notes=${notesParam}&items=${itemsParam}`;
+      // Save order to database
+      await db.addOnlineOrder({
+        id: orderId,
+        user_id: user?.id,
+        customer_name: customerName,
+        customer_phone: customerPhone,
+        customer_email: customerEmail || undefined,
+        delivery_type: deliveryType,
+        address: deliveryType === "delivery" ? formattedAddress : "Store Pickup",
+        notes: notes || undefined,
+        offer_code: offerCode || undefined,
+        total_amount: totalAmount,
+        items: receiptItems,
+      });
 
-    text += `\nPlease confirm my order and share payment QR.`;
-    text += `\n\n*View Receipt & Payment QR:*\n${receiptUrl}`;
+      let text = `*New Order - Bake & Joy*\n\n`;
+      text += `*Order ID:* ${orderId}\n`;
+      text += `*Customer:* ${customerName}\n`;
+      text += `*Phone:* ${customerPhone}\n`;
+      if (customerEmail) text += `*Email:* ${customerEmail}\n`;
+      text += `*Delivery Type:* ${deliveryType}\n`;
+      if (deliveryType === "delivery") text += `*Address:* ${formattedAddress}\n`;
+      if (notes) text += `*Notes:* ${notes}\n`;
+      if (offerCode) text += `*Offer Code:* ${offerCode}\n`;
+      text += `\n*Items:*\n`;
+      items.forEach((item) => {
+        text += `- ${item.name} x${item.quantity} (Rs.${Number(item.price) * item.quantity})\n`;
+      });
+      text += `\n*Total Amount: Rs.${totalAmount}*\n`;
 
-    const encodedText = encodeURIComponent(text);
-    const phoneNumber = import.meta.env.VITE_WHATSAPP_NUMBER || "919999999999";
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedText}`;
+      const itemsParam = encodeURIComponent(JSON.stringify(receiptItems));
+      const phoneParam = encodeURIComponent(customerPhone);
+      const emailParam = encodeURIComponent(customerEmail || '');
+      const deliveryParam = encodeURIComponent(deliveryType);
+      const addressParam = encodeURIComponent(deliveryType === "delivery" ? formattedAddress : "Store Pickup");
+      const notesParam = encodeURIComponent(notes || '');
 
-    setOrderSuccess({
-      whatsappUrl,
-    });
-    clearCart();
+      const receiptUrl = `${window.location.origin}/receipt?order=${orderId}&amount=${totalAmount}&name=${encodeURIComponent(customerName)}&phone=${phoneParam}&email=${emailParam}&delivery=${deliveryParam}&address=${addressParam}&notes=${notesParam}&items=${itemsParam}`;
+
+      text += `\nPlease confirm my order and share payment QR.`;
+      text += `\n\n*View Receipt & Payment QR:*\n${receiptUrl}`;
+
+      const encodedText = encodeURIComponent(text);
+      const phoneNumber = import.meta.env.VITE_WHATSAPP_NUMBER || "919999999999";
+      const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedText}`;
+
+      setOrderSuccess({
+        whatsappUrl,
+      });
+      clearCart();
+    } catch (e) {
+      console.error("Failed to place order", e);
+      alert("Failed to place order. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (orderSuccess) {
@@ -528,7 +560,19 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         {items.length > 0 && !showCheckout && (
           <div className="border-t border-espresso/10 px-6 pt-6 pb-6 space-y-4 bg-cream text-espresso rounded-t-[32px] shadow-none">
             <div className="flex justify-between items-center px-2">
-              <span className="text-espresso font-semibold text-lg">Subtotal</span>
+              <span className="text-espresso font-semibold text-sm">Subtotal</span>
+              <span className="font-sans text-sm font-bold text-espresso">
+                ₹{(Number(totalAmount) - Number(totalGst)).toFixed(2)}
+              </span>
+            </div>
+            <div className="flex justify-between items-center px-2">
+              <span className="text-espresso font-semibold text-sm">GST Taxes</span>
+              <span className="font-sans text-sm font-bold text-espresso/70">
+                ₹{totalGst}
+              </span>
+            </div>
+            <div className="flex justify-between items-center px-2 pt-2 border-t border-espresso/10">
+              <span className="text-espresso font-semibold text-lg">Grand Total</span>
               <span className="font-sans text-2xl font-bold text-burnt-orange">
                 ₹{totalAmount}
               </span>
@@ -550,22 +594,34 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         {showCheckout && (
           <div className="border-t border-espresso/10 px-6 pt-6 pb-6 space-y-4 bg-cream text-espresso rounded-t-[32px] shadow-none">
             <div className="flex justify-between items-center px-2">
-              <span className="text-espresso font-semibold text-lg">Total</span>
+              <span className="text-espresso font-semibold text-sm">Subtotal</span>
+              <span className="font-sans text-sm font-bold text-espresso">
+                ₹{(Number(totalAmount) - Number(totalGst)).toFixed(2)}
+              </span>
+            </div>
+            <div className="flex justify-between items-center px-2">
+              <span className="text-espresso font-semibold text-sm">GST Taxes</span>
+              <span className="font-sans text-sm font-bold text-espresso/70">
+                ₹{totalGst}
+              </span>
+            </div>
+            <div className="flex justify-between items-center px-2 pt-2 border-t border-espresso/10">
+              <span className="text-espresso font-semibold text-lg">Grand Total</span>
               <span className="font-sans text-2xl font-bold text-burnt-orange">
                 ₹{totalAmount}
               </span>
             </div>
             <button
               onClick={handleCheckout}
-              disabled={!canPlaceOrder}
-              style={!canPlaceOrder ? { backgroundColor: "rgba(61,43,31,0.1)", color: "rgba(61,43,31,0.4)" } : { backgroundColor: "#D95B35", color: "#FFFFFF" }}
-              className={`w-full h-16 font-bold rounded-full transition-all duration-300 flex items-center justify-center gap-2 text-xl ${!canPlaceOrder
+              disabled={!canPlaceOrder || isSubmitting}
+              style={!canPlaceOrder || isSubmitting ? { backgroundColor: "rgba(61,43,31,0.1)", color: "rgba(61,43,31,0.4)" } : { backgroundColor: "#D95B35", color: "#FFFFFF" }}
+              className={`w-full h-16 font-bold rounded-full transition-all duration-300 flex items-center justify-center gap-2 text-xl ${!canPlaceOrder || isSubmitting
                 ? "cursor-not-allowed shadow-none"
                 : "hover:bg-[#C44D2A] hover:shadow-[0_0_22px_rgba(217,91,53,0.55),0_12px_28px_rgba(61,43,31,0.18)]"
                 }`}
             >
-              Place Order via WhatsApp
-              <ArrowRight className="w-6 h-6" />
+              {isSubmitting ? "Placing Order..." : "Place Order via WhatsApp"}
+              {!isSubmitting && <ArrowRight className="w-6 h-6" />}
             </button>
           </div>
         )}

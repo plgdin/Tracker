@@ -6,6 +6,7 @@ import ProductCard from "@/components/ProductCard";
 import { useCartContext } from "@/context/CartContext";
 import { supabase } from "@/lib/supabase";
 import { Search, Check, Trash2, ChevronDown, ArrowLeft, SlidersHorizontal, LayoutGrid, Coins, Tag, Globe } from "lucide-react";
+import { useLocation } from "react-router-dom";
 
 // Removed mock products and placeholder categories
 const CustomCheckbox = ({ checked }: { checked: boolean }) => {
@@ -49,7 +50,19 @@ const CheckboxOption = ({
 
 export default function Products() {
   const { setIsCartOpen } = useCartContext();
-  const [searchQuery, setSearchQuery] = useState("");
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const initialSearch = searchParams.get('search') || "";
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const q = params.get('search');
+    if (q !== null && q !== searchQuery) {
+      setSearchQuery(q);
+    }
+  }, [location.search]);
+
   const [inStockOnly, setInStockOnly] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [activeMobileTab, setActiveMobileTab] = useState<string>("category");
@@ -92,6 +105,7 @@ export default function Products() {
             inStock: p.quantity > 0,
             brand: p.brand || "",
             origin: p.origin || (index % 2 === 0 ? "Imported" : "Exported"),
+            gstPercentage: p.gst_percentage || 0,
         }));
         setProducts(formatted);
         if (formatted.length > 0) {
@@ -424,6 +438,7 @@ export default function Products() {
                       image={product.image}
                       categoryName={product.categoryName}
                       inStock={product.inStock}
+                      gstPercentage={product.gstPercentage}
                     />
                   </div>
                 ))}

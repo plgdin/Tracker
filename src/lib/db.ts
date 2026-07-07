@@ -14,6 +14,7 @@ export interface Item {
   notes?: string;
   image_url?: string;
   price?: string;
+  gst_percentage?: number;
   created_at: string;
 }
 
@@ -48,6 +49,33 @@ export interface AuditLog {
 export interface AppSettings {
   warning_period_days: number;
 }
+
+export interface OnlineOrderItem {
+  id: string;
+  name: string;
+  price: string;
+  quantity: number;
+  gst_percentage?: number;
+}
+
+export interface OnlineOrder {
+  id: string;
+  store_type?: string;
+  user_id?: string;
+  customer_name: string;
+  customer_phone: string;
+  customer_email?: string;
+  delivery_type: string;
+  address?: string;
+  notes?: string;
+  offer_code?: string;
+  total_amount: number;
+  items: OnlineOrderItem[];
+  transaction_id?: string;
+  status: 'pending' | 'completed' | 'cancelled';
+  created_at?: string;
+}
+
 
 const isSupabaseConfigured = 
   import.meta.env.VITE_SUPABASE_URL && 
@@ -546,5 +574,117 @@ export const db = {
       console.warn('Failed to delete worker', e);
       return false;
     }
+  },
+
+  // Online Orders
+  async getOnlineOrders(): Promise<OnlineOrder[]> {
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
+      try {
+        const { data, error } = await withTimeout(
+          dbSupabase.from('online_orders').select('*').order('created_at', { ascending: false })
+        );
+        if (error) throw error;
+        return data || [];
+      } catch (e) {
+        console.warn('Supabase fetch failed for online orders', e);
+      }
+    }
+    return getLocal<OnlineOrder[]>('tracker_online_orders', []).sort(
+      (a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime()
+    );
+  },
+
+  async getUserOrders(userId: string): Promise<OnlineOrder[]> {
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
+      try {
+        const { data, error } = await withTimeout(
+          dbSupabase.from('online_orders').select('*').eq('user_id', userId).order('created_at', { ascending: false })
+        );
+        if (error) throw error;
+        return data || [];
+      } catch (e) {
+        console.warn('Supabase fetch failed for user orders', e);
+      }
+    }
+    return getLocal<OnlineOrder[]>('tracker_online_orders', [])
+      .filter(o => o.user_id === userId)
+      .sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime());
+  },
+
+  async addOnlineOrder(orderData: Omit<OnlineOrder, 'created_at' | 'status'>): Promise<OnlineOrder> {
+    const newOrder: OnlineOrder = {
+      ...orderData,
+      status: 'pending',
+      created_at: new Date().toISOString()
+    };
+
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
+      try {
+        const { data, error } = await withTimeout(
+          dbSupabase.from('online_orders').insert([newOrder]).select().single()
+        );
+        if (error) throw error;
+        return data;
+      } catch (e) {
+        console.warn('Supabase insert failed for online order', e);
+      }
+    }
+
+    const orders = getLocal<OnlineOrder[]>('tracker_online_orders', []);
+    orders.unshift(newOrder);
+    setLocal('tracker_online_orders', orders);
+    return newOrder;
+  },
+
+  async updateOrderStatus(id: string, status: 'pending' | 'completed' | 'cancelled'): Promise<boolean> {
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
+      try {
+        const { error } = await withTimeout(
+          dbSupabase.from('online_orders').update({ status }).eq('id', id)
+        );
+        if (error) throw error;
+        return true;
+      } catch (e) {
+        console.warn('Supabase update failed for online order', e);
+      }
+    }
+
+    const orders = getLocal<OnlineOrder[]>('tracker_online_orders', []);
+    const idx = orders.findIndex(o => o.id === id);
+    if (idx !== -1) {
+      orders[idx].status = status;
+      setLocal('tracker_online_orders', orders);
+      return true;
+    }
+    return false;
+  },
+
+  async updateOrderTransactionId(id: string, transactionId: string): Promise<boolean> {
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
+      try {
+        const { error } = await withTimeout(
+          dbSupabase.from('online_orders').update({ transaction_id: transactionId, status: 'completed' }).eq('id', id)
+        );
+        if (error) throw error;
+        return true;
+      } catch (e) {
+        console.warn('Supabase update failed for order transaction', e);
+      }
+    }
+
+    const orders = getLocal<OnlineOrder[]>('tracker_online_orders', []);
+    const idx = orders.findIndex(o => o.id === id);
+    if (idx !== -1) {
+      orders[idx].transaction_id = transactionId;
+      orders[idx].status = 'completed'; // Auto-mark completed when they submit UTR (can adjust as needed)
+      setLocal('tracker_online_orders', orders);
+      return true;
+    }
+    return false;
   }
 };

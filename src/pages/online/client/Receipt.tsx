@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, ShieldCheck, Printer } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, ShieldCheck, Printer, Send } from 'lucide-react';
 import Navbar from '../../../components/Navbar';
 import { useCartContext } from '../../../context/CartContext';
+import { db } from '../../../lib/db';
 
 // Helper for centering text in monospace line
 const centerText = (str: string, width = 44) => {
@@ -89,6 +90,9 @@ export default function Receipt() {
   const [orderDate, setOrderDate] = useState<Date>(new Date());
   const [invoiceNo, setInvoiceNo] = useState('');
   const [items, setItems] = useState<ReceiptItem[]>([]);
+  const [transactionId, setTransactionId] = useState('');
+  const [isSubmittingUtr, setIsSubmittingUtr] = useState(false);
+  const [utrSubmitted, setUtrSubmitted] = useState(false);
 
   // Default fallback items from the BAKE N JOY photo
   const DEFAULT_ITEMS: ReceiptItem[] = [
@@ -123,13 +127,12 @@ export default function Receipt() {
         try {
           const parsed = JSON.parse(decodeURIComponent(itemsParam));
           const receiptItems = parsed.map((item: any, idx: number) => {
-            // Assign a pseudo-random GST rate: 5% or 18% based on name length
-            const gst = (item.name.length % 2 === 0) ? 5 : 18;
-            const priceVal = Number(item.price);
+            // Get actual GST rate from order items
+            const gst = (item as any).gstPercentage || 0;
+            const priceVal = parseFloat(String(item.price).replace(/[^0-9.]/g, '')) || 0;
             
-            // Back-calculate taxable unit rate and amount
-            const taxMultiplier = 1 + (gst / 100);
-            const unitRate = Number((priceVal / taxMultiplier).toFixed(2));
+            // The price is the base rate
+            const unitRate = Number(priceVal.toFixed(2));
             const amount = Number((unitRate * item.quantity).toFixed(2));
             const mrp = Math.ceil(priceVal * 1.3); // 30% savings markup
 
@@ -314,19 +317,13 @@ export default function Receipt() {
         setInStockOnly={() => {}}
       />
 
-      <div className="flex-1 flex flex-col lg:flex-row items-center lg:items-start justify-center gap-12 max-w-6xl w-full mx-auto pt-32 pb-12 px-6 relative z-10">
+      <div className="flex-1 flex flex-col-reverse lg:flex-row items-center lg:items-start justify-center gap-12 max-w-6xl w-full mx-auto pt-32 pb-12 px-6 relative z-10">
         
         {/* LEFT COLUMN: The Physical Monospace Thermal Receipt */}
-        <div className="w-full max-w-[400px] relative transition-all duration-300 hover:scale-[1.01]">
-          {/* Jagged tear-off top edge */}
-          <div className="absolute -top-3 left-0 w-full z-20 tear-off-svg pointer-events-none">
-            <svg className="w-full h-3 text-[#fdfdfd] fill-current drop-shadow-[0_-4px_3px_rgba(0,0,0,0.05)]" viewBox="0 0 100 10" preserveAspectRatio="none">
-              <polygon points="0,10 2.5,0 5,10 7.5,0 10,10 12.5,0 15,10 17.5,0 20,10 22.5,0 25,10 27.5,0 30,10 32.5,0 35,10 37.5,0 40,10 42.5,0 45,10 47.5,0 50,10 55,0 60,10 65,0 70,10 75,0 80,10 85,0 90,10 95,0 100,10" />
-            </svg>
-          </div>
-
+        <div className="w-fit mx-auto relative transition-all duration-300 hover:scale-[1.01]">
+          
           {/* Receipt Slip Container */}
-          <div className="printable-receipt w-full bg-[#fdfdfd] text-[#1e1e1a] font-mono text-[11px] leading-relaxed p-6 pt-8 pb-8 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] border-x border-[#f0eee4] relative overflow-hidden select-text">
+          <div className="printable-receipt w-full bg-[#fdfdfd] text-[#1e1e1a] font-mono text-[11px] leading-relaxed p-6 pt-8 pb-8 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] border-x border-[#f0eee4] relative overflow-hidden select-text rounded-lg">
             {/* Soft vertical strip lines mimicking paper fold texture */}
             <div className="absolute inset-y-0 left-[20%] w-[1px] bg-black/[0.02] pointer-events-none" />
             <div className="absolute inset-y-0 right-[20%] w-[1px] bg-black/[0.02] pointer-events-none" />
@@ -335,13 +332,6 @@ export default function Receipt() {
             <pre className="whitespace-pre font-mono text-[#1e1e1a]">
 {receiptText}
             </pre>
-          </div>
-
-          {/* Jagged tear-off bottom edge */}
-          <div className="absolute -bottom-3 left-0 w-full z-20 tear-off-svg pointer-events-none">
-            <svg className="w-full h-3 text-[#fdfdfd] fill-current drop-shadow-[0_4px_3px_rgba(0,0,0,0.08)]" viewBox="0 0 100 10" preserveAspectRatio="none">
-              <polygon points="0,0 2.5,10 5,0 7.5,10 10,0 12.5,10 15,0 17.5,10 20,0 22.5,10 25,0 27.5,10 30,0 32.5,10 35,0 37.5,10 40,0 42.5,10 45,0 47.5,10 50,0 52.5,10 55,0 57.5,10 60,0 62.5,10 65,0 67.5,10 70,0 72.5,10 75,0 77.5,10 80,0 82.5,10 85,0 87.5,10 90,0 92.5,10 95,0 97.5,10 100,0" />
-            </svg>
           </div>
         </div>
 
@@ -391,6 +381,42 @@ export default function Receipt() {
               <div className="font-bold text-xs bg-[#2c231e] px-3 py-1 rounded-full text-[#c1b5a9]">PhonePe</div>
               <div className="font-bold text-xs bg-[#2c231e] px-3 py-1 rounded-full text-[#c1b5a9]">Paytm</div>
             </div>
+          </div>
+
+          <div className="bg-[#2c231e] rounded-2xl p-5 mb-8 border border-espresso/25 flex flex-col gap-3">
+            <h3 className="text-[#f4efe9] text-sm font-semibold mb-1">Verify Your Payment</h3>
+            {utrSubmitted ? (
+              <div className="flex items-center gap-2 text-green-400 bg-green-500/10 p-3 rounded-xl border border-green-500/20">
+                <CheckCircle2 className="w-5 h-5 shrink-0" />
+                <p className="text-sm font-medium">Transaction ID submitted for verification.</p>
+              </div>
+            ) : (
+              <>
+                <p className="text-[#c1b5a9] text-xs">After paying via the QR above, enter the 12-digit UTR/Reference number to verify your order.</p>
+                <div className="flex gap-2">
+                  <input 
+                    type="text" 
+                    placeholder="e.g. 312345678901"
+                    value={transactionId}
+                    onChange={(e) => setTransactionId(e.target.value)}
+                    className="flex-1 bg-[#1e1713] text-[#f4efe9] text-sm border border-espresso/40 rounded-xl px-3 py-2 outline-none focus:border-burnt-orange"
+                  />
+                  <button 
+                    onClick={async () => {
+                      if (!transactionId.trim()) return;
+                      setIsSubmittingUtr(true);
+                      await db.updateOrderTransactionId(orderId, transactionId.trim());
+                      setUtrSubmitted(true);
+                      setIsSubmittingUtr(false);
+                    }}
+                    disabled={isSubmittingUtr || !transactionId.trim()}
+                    className="bg-burnt-orange hover:bg-[#C44D2A] text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center justify-center disabled:opacity-50 transition-colors"
+                  >
+                    {isSubmittingUtr ? '...' : <Send className="w-4 h-4" />}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
 
           <div className="space-y-3 print-btn-container">

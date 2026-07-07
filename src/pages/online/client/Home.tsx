@@ -11,6 +11,7 @@ export interface FormattedProduct {
   inStock: boolean;
   brand: string;
   origin: string;
+  gstPercentage: number;
 }
 import Navbar from "@/components/Navbar";
 import HeroCarousel from "@/components/HeroCarousel";
@@ -90,6 +91,7 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
   const [searchQuery, setSearchQuery] = useState("");
   const [inStockOnly, setInStockOnly] = useState(false);
+  const [showAllCategories, setShowAllCategories] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -126,8 +128,9 @@ export default function Home() {
             image: p.image_url || null,
             categoryName: p.category,
             inStock: p.quantity > 0,
-            brand: p.brand || "",
-            origin: p.origin || "",
+            brand: p.brand || "In-house",
+            origin: p.origin || "Local",
+            gstPercentage: p.gst_percentage || 0,
         }));
         setProducts(formatted);
       } else {
@@ -149,7 +152,7 @@ export default function Home() {
     return matchCategory && matchSearch && matchInStock;
   });
 
-  const displayedCategories = categories;
+  const displayedCategories = showAllCategories ? categories : categories.slice(0, 8);
   const featuredProducts = products.slice(0, 3);
   const featuredCatName = categories[0]?.name || "Cakes";
   const featuredCatProducts = products
@@ -232,10 +235,9 @@ export default function Home() {
                   Featured Category
                 </span>
                 <h2 className="font-heading text-4xl font-bold text-espresso mt-3">
-                  Explore Our Finest {featuredCatName}
+                  Explore Our Finest Goods
                 </h2>
                 <p className="text-taupe mt-2 max-w-xl">
-                  Freshly baked, premium quality {featuredCatName.toLowerCase()} crafted with the best ingredients to bring joy to your table.
                 </p>
               </div>
               <button
@@ -245,9 +247,9 @@ export default function Home() {
                     .getElementById("products")
                     ?.scrollIntoView({ behavior: "smooth" });
                 }}
-                className="px-6 py-3 bg-burnt-orange hover:bg-[#C44D2A] text-white font-semibold rounded-full transition-all shadow-md shadow-burnt-orange/20 flex items-center gap-2"
+                className="text-espresso font-bold text-lg hover:text-burnt-orange hover:-translate-y-1 transition-all duration-300 flex items-center gap-2"
               >
-                View All {featuredCatName} <ChevronRight className="w-4 h-4" />
+                View All Goods <ChevronRight className="w-5 h-5" />
               </button>
             </div>
 
@@ -263,6 +265,7 @@ export default function Home() {
                       image={product.image}
                       categoryName={product.categoryName}
                       inStock={product.inStock}
+                      gstPercentage={product.gstPercentage}
                     />
                   </div>
                 ))}
@@ -324,6 +327,17 @@ export default function Home() {
               </button>
             ))}
           </div>
+
+          {categories.length > 8 && (
+            <div className="mt-12 flex justify-center reveal">
+              <button
+                onClick={() => setShowAllCategories(!showAllCategories)}
+                className="text-espresso text-lg font-bold hover:text-burnt-orange hover:-translate-y-1 transition-all duration-300"
+              >
+                {showAllCategories ? "Show less" : "Show more categories"}
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
@@ -379,10 +393,10 @@ export default function Home() {
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.name)}
-                  className={`px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${
+                  className={`px-4 py-2 text-sm font-bold whitespace-nowrap transition-all duration-300 ${
                     selectedCategory === cat.name
-                      ? "bg-burnt-orange text-white shadow-md shadow-burnt-orange/15"
-                      : "bg-white text-espresso border border-espresso/15 hover:border-burnt-orange"
+                      ? "text-burnt-orange -translate-y-1"
+                      : "text-espresso hover:text-burnt-orange hover:-translate-y-1"
                   }`}
                 >
                   {cat.name}

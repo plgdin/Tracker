@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ShoppingCart, User, ChefHat, Search, MapPin, ChevronDown, Compass, Plus, MoreVertical, Home, ArrowLeft, Navigation, Building, Hash, Briefcase, Tag } from "lucide-react";
+import { ShoppingCart, User, ChefHat, Search, MapPin, ChevronDown, Compass, Plus, MoreVertical, Home, ArrowLeft, Navigation, Building, Hash, Briefcase, Tag, Package } from "lucide-react";
 import { useCartContext } from "@/context/CartContext";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
@@ -186,7 +186,17 @@ export default function Navbar({
           </button>
 
           {/* Desktop Search Bar */}
-          <div className="relative hidden min-w-0 flex-1 md:block">
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (searchQuery.trim()) {
+                navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+              } else {
+                navigate(`/products`);
+              }
+            }}
+            className="relative hidden min-w-0 flex-1 md:block"
+          >
             <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-taupe" />
             <input
               type="text"
@@ -196,7 +206,7 @@ export default function Navbar({
               onChange={(e) => setSearchQuery(e.target.value)}
               className="navbar-search-input h-10 w-full min-w-0 rounded-full border border-espresso/15 bg-white/70 pl-11 pr-4 text-sm leading-10 outline-none transition-all focus:border-burnt-orange focus:bg-white focus:ring-2 focus:ring-burnt-orange/20"
             />
-          </div>
+          </form>
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-4 lg:gap-7 shrink-0">
@@ -258,6 +268,14 @@ export default function Navbar({
             >
               <User className="w-6 h-6 text-espresso group-hover:text-burnt-orange transition-colors" />
             </Link>
+            {user && (
+              <Link
+                to="/orders"
+                className="group p-2 rounded-full hover:bg-espresso/5 transition-colors hidden sm:block"
+              >
+                <Package className="w-6 h-6 text-espresso group-hover:text-burnt-orange transition-colors" />
+              </Link>
+            )}
           </div>
         </div>
       </nav>
@@ -329,12 +347,27 @@ export default function Navbar({
             <Link to={user ? "/profile" : "/login"} className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center overflow-hidden border border-white/25">
               <User className="w-3.5 h-3.5 text-white" />
             </Link>
+            {user && (
+              <Link to="/orders" className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center overflow-hidden border border-white/25">
+                <Package className="w-3.5 h-3.5 text-white" />
+              </Link>
+            )}
           </div>
         </div>
 
         {/* Middle Row: Search */}
         <div className={`flex items-center gap-2 transition-all duration-300 ${scrolled ? "mt-0" : "mt-2"}`}>
-          <div className="relative flex-1">
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (searchQuery.trim()) {
+                navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+              } else {
+                navigate(`/products`);
+              }
+            }}
+            className="relative flex-1"
+          >
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-taupe" />
             <input
               type="text"
@@ -343,7 +376,7 @@ export default function Navbar({
               placeholder="Search for supplies..."
               className="navbar-search-input w-full bg-white text-espresso rounded-full py-2 pl-10 pr-4 text-xs font-medium border border-espresso/15 focus:border-burnt-orange outline-none h-9 shadow-sm"
             />
-          </div>
+          </form>
         </div>
       </div>
       {/* Mobile Header Spacer */}

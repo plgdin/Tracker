@@ -11,6 +11,7 @@ interface ProductCardProps {
   image: string | null;
   categoryName: string | null;
   inStock: boolean | null;
+  gstPercentage?: number;
   onAddedToCart?: (name: string, event: React.MouseEvent<HTMLButtonElement>, image: string | null) => void;
 }
 
@@ -31,6 +32,7 @@ export default function ProductCard({
   image,
   categoryName,
   inStock,
+  gstPercentage,
   onAddedToCart,
 }: ProductCardProps) {
   const { addItem } = useCartContext();
@@ -44,6 +46,7 @@ export default function ProductCard({
       name,
       price,
       image,
+      gstPercentage,
     });
 
     // Trigger toast

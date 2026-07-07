@@ -4,11 +4,12 @@ import { useToastStore } from '../../store/toastStore';
 import { db } from '../../lib/db';
 import { supabase } from '../../lib/supabase';
 import { supabaseEphemeral } from '../../lib/supabaseEphemeral';
-import type { Item, AuditLog, Category } from '../../lib/db';
+import type { Item, AuditLog, Category, OnlineOrder } from '../../lib/db';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ShieldCheck, Trash2, Lock, Activity, Key, Plus, Users, AlertTriangle, Tag, Package, ToggleLeft, ToggleRight, Eye, EyeOff } from 'lucide-react';
+import { ShieldCheck, Trash2, Lock, Activity, Key, Plus, Users, AlertTriangle, Tag, Package, ToggleLeft, ToggleRight, Eye, EyeOff, ShoppingCart } from 'lucide-react';
+import { useAppStore } from '../../store/appStore';
 
-type TabKey = 'logs' | 'workers' | 'categories' | 'items' | 'security';
+type TabKey = 'logs' | 'workers' | 'categories' | 'items' | 'security' | 'orders';
 
 interface WorkerData {
   id: string;
@@ -30,6 +31,7 @@ export default function AdminDashboard() {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [onlineOrders, setOnlineOrders] = useState<OnlineOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [newAdminUser, setNewAdminUser] = useState('');
   const [newAdminPass, setNewAdminPass] = useState('');
@@ -48,7 +50,7 @@ export default function AdminDashboard() {
     (async () => {
       setLoading(true);
       try {
-        const [l, i, c, pw, wList] = await Promise.all([db.getAuditLogs(), db.getItems(), db.getCategories(), db.getPendingWorkers(), db.getWorkers()]);
+        const [l, i, c, pw, wList, oList] = await Promise.all([db.getAuditLogs(), db.getItems(), db.getCategories(), db.getPendingWorkers(), db.getWorkers(), db.getOnlineOrders()]);
         
         // Merge Supabase workers with local storage (to preserve passwords of admin-created ones)
         const localWorkers: WorkerData[] = JSON.parse(localStorage.getItem('worker_accounts') || '[]');
@@ -57,7 +59,7 @@ export default function AdminDashboard() {
           return { ...fw, ...localMatch, id: fw.id, email: fw.email || localMatch?.email || '', name: fw.name || localMatch?.name, password: localMatch?.password || 'User Managed' };
         });
 
-        setLogs(l); setItems(i); setCategories(c); setPendingWorkers(pw);
+        setLogs(l); setItems(i); setCategories(c); setPendingWorkers(pw); setOnlineOrders(oList);
         setWorkers(mergedWorkers);
         localStorage.setItem('worker_accounts', JSON.stringify(mergedWorkers));
 
@@ -97,7 +99,7 @@ export default function AdminDashboard() {
   if (profile?.role !== 'admin') return null;
 
   const refreshData = async () => {
-    const [l, i, c, pw, wList] = await Promise.all([db.getAuditLogs(), db.getItems(), db.getCategories(), db.getPendingWorkers(), db.getWorkers()]);
+    const [l, i, c, pw, wList, oList] = await Promise.all([db.getAuditLogs(), db.getItems(), db.getCategories(), db.getPendingWorkers(), db.getWorkers(), db.getOnlineOrders()]);
     
     const localWorkers: WorkerData[] = JSON.parse(localStorage.getItem('worker_accounts') || '[]');
     const mergedWorkers = wList.map(fw => {
@@ -105,7 +107,7 @@ export default function AdminDashboard() {
       return { ...fw, ...localMatch, id: fw.id, email: fw.email || localMatch?.email || '', name: fw.name || localMatch?.name, password: localMatch?.password || 'User Managed' };
     });
 
-    setLogs(l); setItems(i); setCategories(c); setPendingWorkers(pw);
+    setLogs(l); setItems(i); setCategories(c); setPendingWorkers(pw); setOnlineOrders(oList);
     if (mergedWorkers.length > 0 || wList.length === 0) setWorkers(mergedWorkers);
 
   };
@@ -320,6 +322,7 @@ export default function AdminDashboard() {
   };
 
   const tabs: { key: TabKey; icon: React.ElementType; label: string }[] = [
+    ...(useAppStore.getState().storeType === 'online' ? [{ key: 'orders' as TabKey, icon: ShoppingCart, label: 'Orders' }] : []),
     { key: 'workers', icon: Users, label: 'Workers' },
     { key: 'items', icon: Package, label: 'Items' },
     { key: 'categories', icon: Tag, label: 'Categories' },
@@ -582,6 +585,83 @@ export default function AdminDashboard() {
                 <Lock size={16} /> {isSavingSecurity ? 'Saving...' : 'Update Credentials'}
               </button>
             </form>
+          </div>
+        )}
+
+        {/* ORDERS TAB */}
+        {activeTab === 'orders' && (
+          <div className="panel" style={{ padding: '1.5rem' }}>
+            <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <ShoppingCart size={18} color="var(--color-primary)" /> Online Orders ({onlineOrders.length})
+            </h2>
+            {onlineOrders.length === 0 ? <p style={{ color: 'var(--color-text-secondary)', textAlign: 'center', padding: '2rem' }}>No orders yet.</p> : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {onlineOrders.map(order => (
+                  <div key={order.id} style={{ padding: '1rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', border: '1px solid rgba(230,57,70,0.05)' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--color-primary)' }}>{order.id}</span>
+                        <p style={{ margin: '0.2rem 0 0', fontWeight: 600, fontSize: '0.85rem' }}>👤 {order.customer_name}</p>
+                        <p style={{ margin: '0.1rem 0 0', fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>📞 {order.customer_phone}</p>
+                        {order.customer_email && <p style={{ margin: '0.1rem 0 0', fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>📧 {order.customer_email}</p>}
+                        <p style={{ margin: '0.4rem 0 0', fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
+                          <strong>{order.delivery_type === 'delivery' ? '🚚 Delivery' : '🏪 Pickup'}</strong>
+                          {order.address && ` - ${order.address}`}
+                        </p>
+                        <p style={{ margin: '0.2rem 0 0', fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>{new Date(order.created_at || '').toLocaleString()}</p>
+                        {order.transaction_id && (
+                          <div style={{ marginTop: '0.4rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', backgroundColor: '#E8F5E9', padding: '0.2rem 0.4rem', borderRadius: '4px', border: '1px solid #A5D6A7' }}>
+                            <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#2E7D32' }}>UTR/Txn: {order.transaction_id}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+                        <span style={{ fontWeight: 800, fontSize: '1.1rem', color: '#D95B35' }}>₹{order.total_amount}</span>
+                        <select 
+                          value={order.status}
+                          onChange={async (e) => {
+                            await db.updateOrderStatus(order.id, e.target.value as any);
+                            await refreshData();
+                            showToast('Order status updated!');
+                          }}
+                          style={{
+                            padding: '0.3rem 0.6rem',
+                            borderRadius: '8px',
+                            border: '1px solid var(--color-primary)',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            backgroundColor: order.status === 'completed' ? '#E8F5E9' : order.status === 'cancelled' ? '#FFEBEE' : 'var(--color-bg-light)',
+                            color: order.status === 'completed' ? '#2E7D32' : order.status === 'cancelled' ? '#C62828' : 'var(--color-primary)',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="completed">Completed</option>
+                          <option value="cancelled">Cancelled</option>
+                        </select>
+                      </div>
+                    </div>
+                    
+                    <div style={{ borderTop: '1px solid rgba(0,0,0,0.05)', paddingTop: '0.75rem', marginTop: '0.5rem' }}>
+                      <p style={{ margin: '0 0 0.4rem 0', fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-text-secondary)' }}>Items:</p>
+                      <ul style={{ margin: 0, paddingLeft: '1.2rem', fontSize: '0.8rem', color: 'var(--color-text)' }}>
+                        {order.items.map((item, idx) => (
+                          <li key={idx}>
+                            {item.name} <span style={{ color: 'var(--color-text-secondary)' }}>x{item.quantity}</span> 
+                            <span style={{ fontSize: '0.75rem', color: 'var(--color-primary)', marginLeft: '0.5rem' }}>(₹{item.price})</span>
+                          </li>
+                        ))}
+                      </ul>
+                      {order.notes && (
+                        <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.75rem', color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>
+                          <span style={{ fontWeight: 600 }}>Notes:</span> {order.notes}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
