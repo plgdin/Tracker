@@ -1,18 +1,37 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { Loader2, Home, ShoppingBag, ShoppingCart, User } from "lucide-react";
 import { useCartContext } from "@/context/CartContext";
 import CartDrawer from "@/components/CartDrawer";
+import AdminPortal from "@/pages/AdminPortal";
 
 export default function StorefrontWrapper() {
-  const { initialize, isLoading, isInitialized, user } = useAuthStore();
+  const { initialize, isLoading, isInitialized, user, profile } = useAuthStore();
   const { isCartOpen, setIsCartOpen, totalItems } = useCartContext();
+  const [showPortalModal, setShowPortalModal] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
     initialize();
   }, [initialize]);
+
+  useEffect(() => {
+    if (isLoading || !isInitialized) return;
+
+    // Show store selector popup once per session for all users
+    const isShown = sessionStorage.getItem("store_selector_shown");
+    if (isShown !== "true") {
+      setShowPortalModal(true);
+    }
+  }, [isLoading, isInitialized]);
+
+  const isAdminOrWorker = profile && (profile.role === 'admin' || profile.role === 'worker');
+
+  const handleClosePortalModal = () => {
+    setShowPortalModal(false);
+    sessionStorage.setItem("store_selector_shown", "true");
+  };
 
   if (isLoading && !isInitialized) {
     return (
@@ -83,6 +102,11 @@ export default function StorefrontWrapper() {
 
       {/* Global Cart Drawer */}
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+
+      {/* Store Selector / Admin Portal Modal on First Load */}
+      {showPortalModal && (
+        <AdminPortal isModal={true} onClose={handleClosePortalModal} isCustomerMode={!isAdminOrWorker} />
+      )}
     </div>
   );
 }

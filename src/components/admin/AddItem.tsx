@@ -299,7 +299,7 @@ export default function AddItem() {
                 onChange={e => setFormData({ ...formData, gst_percentage: Number(e.target.value) })}
               >
                 {itemStoreType === 'online' ? (
-                  // Hotel Store GST slabs
+                  // Online Store GST slabs
                   <>
                     <option value={0}>0% — Exempt / Nil Rated (plain water, basic items)</option>
                     <option value={3}>3% — Special items (precious metal components, specific raw inputs)</option>
@@ -312,7 +312,7 @@ export default function AddItem() {
                     <option value={-1}>Custom Percentage</option>
                   </>
                 ) : (
-                  // Bakery Store GST slabs
+                  // Offline Store GST slabs
                   <>
                     <option value={0}>0% — Exempt (unbranded bread, fresh roti, plain flour)</option>
                     <option value={3}>3% — Specialty Ingredients / Local Grains</option>
@@ -341,8 +341,8 @@ export default function AddItem() {
               )}
               <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginTop: '0.35rem' }}>
                 {itemStoreType === 'online'
-                  ? 'GST will be added on top of the base price at checkout (Hotel rates).'
-                  : 'GST will be added on top of the base price at checkout (Bakery rates).'}
+                  ? 'GST will be added on top of the base price at checkout (Online rates).'
+                  : 'GST will be added on top of the base price at checkout (Offline rates).'}
               </p>
             </div>
 
@@ -403,8 +403,8 @@ export default function AddItem() {
                     value={itemStoreType}
                     onChange={e => setItemStoreType(e.target.value as 'online' | 'offline')}
                   >
-                    <option value="online">Hotel Store</option>
-                    <option value="offline">Bakery Store</option>
+                    <option value="online">Online Store</option>
+                    <option value="offline">Offline Store</option>
                   </select>
                 </div>
                 <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginTop: '0.15rem', textAlign: 'left' }}>Choose which catalog this item should be displayed in.</p>

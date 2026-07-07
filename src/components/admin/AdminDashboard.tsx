@@ -663,8 +663,8 @@ export default function AdminDashboard() {
                     value={newCatStoreType}
                     onChange={e => setNewCatStoreType(e.target.value as 'online' | 'offline')}
                   >
-                    <option value="online">Hotel Store</option>
-                    <option value="offline">Bakery Store</option>
+                    <option value="online">Online Store</option>
+                    <option value="offline">Offline Store</option>
                   </select>
                 </div>
                 <div className="input-group" style={{ marginTop: '0.75rem' }}><label className="input-label" style={{ marginBottom: '0.5rem' }}>Color</label>
