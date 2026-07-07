@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { Upload, Loader2 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { db } from '../../lib/db';
 import type { Category } from '../../lib/db';
@@ -31,6 +32,8 @@ export default function AddItem() {
   });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
@@ -114,6 +117,35 @@ export default function AddItem() {
       alert('Failed to save item. Please try again.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      showToast('Please select a valid image file');
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const result = await db.uploadProductImage(file);
+      if (result.success && result.url) {
+        setFormData({ ...formData, image_url: result.url });
+        showToast('Image uploaded successfully!');
+      } else {
+        showToast('Failed to upload image: ' + (result.error?.message || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error(error);
+      showToast('Error uploading image');
+    } finally {
+      setUploadingImage(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -275,14 +307,46 @@ export default function AddItem() {
 
             <div className="input-group" style={{ marginTop: '1.5rem' }}>
               <label className="input-label">🖼️ Image URL</label>
-              <input 
-                type="text" 
-                className="input-field" 
-                placeholder="https://example.com/image.jpg"
-                value={formData.image_url}
-                onChange={e => setFormData({ ...formData, image_url: e.target.value })}
-              />
-              <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginTop: '0.35rem' }}>Link to an image for the storefront.</p>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <input 
+                  type="text" 
+                  className="input-field" 
+                  placeholder="https://example.com/image.jpg"
+                  value={formData.image_url}
+                  onChange={e => setFormData({ ...formData, image_url: e.target.value })}
+                  style={{ flex: 1 }}
+                />
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  ref={fileInputRef}
+                  style={{ display: 'none' }}
+                  onChange={handleImageUpload}
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingImage}
+                  style={{ 
+                    padding: '0 1rem', 
+                    height: '42px',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(230,57,70,0.2)',
+                    background: 'rgba(230,57,70,0.1)',
+                    color: 'var(--color-primary)',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    cursor: uploadingImage ? 'not-allowed' : 'pointer',
+                    opacity: uploadingImage ? 0.7 : 1
+                  }}
+                >
+                  {uploadingImage ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                  {uploadingImage ? 'Uploading...' : 'Upload'}
+                </button>
+              </div>
+              <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginTop: '0.35rem' }}>Link to an image for the storefront or upload from your device.</p>
             </div>
 
             {/* List items with right alignment as seen in Screenshot 4 */}

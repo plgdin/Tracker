@@ -686,5 +686,38 @@ export const db = {
       return true;
     }
     return false;
+  },
+
+  async uploadProductImage(file: File): Promise<{ success: boolean; url?: string; error?: any }> {
+    const useSupabase = await getUseSupabase();
+    if (!useSupabase || !dbSupabase) {
+      return { success: false, error: 'Supabase is not configured. Cannot upload image.' };
+    }
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { data, error } = await dbSupabase.storage
+        .from('product-images')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      const { data: { publicUrl } } = dbSupabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
+
+      return { success: true, url: publicUrl };
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      return { success: false, error };
+    }
   }
 };
