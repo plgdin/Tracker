@@ -124,7 +124,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
   return (
     <div className="auth-shell">
       <div className="auth-card">
-        <h1 className="auth-title">Bake N Joy</h1>
+        <h1 className="auth-title">Chef N Joy</h1>
         <p className="auth-subtitle">Welcome back to your stockroom</p>
 
         {(authNotice || error) && (

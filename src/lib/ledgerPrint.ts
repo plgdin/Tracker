@@ -3,7 +3,7 @@
 // All print functions open a full HTML document in a new tab
 // ============================================================
 
-const STORE = 'Bake N Joy';
+const STORE = 'Chef & Joy';
 
 const openPrint = (body: string, title: string) => {
   const w = window.open('', '_blank', 'width=820,height=680');
@@ -45,7 +45,7 @@ const openPrint = (body: string, title: string) => {
   @media print{body{padding:.5rem}button{display:none}}
 </style>
 </head><body>${body}
-<div class="footer">Printed from Bake N Joy Ledger · ${new Date().toLocaleString('en-IN')}</div>
+<div class="footer">Printed from Chef & Joy Ledger · ${new Date().toLocaleString('en-IN')}</div>
 <script>window.onload=()=>{setTimeout(()=>{window.print()},350)}</script>
 </body></html>`);
   w.document.close();

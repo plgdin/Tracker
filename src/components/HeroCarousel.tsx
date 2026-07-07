@@ -4,23 +4,23 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 const heroSlides = [
   {
     image: "/hero-1.jpg",
-    title: "Happiness Baked Fresh",
-    subtitle: "Handcrafted pastries, artisan breads, and custom cakes delivered to your door.",
+    title: "Premium Culinary Ingredients",
+    subtitle: "High-quality flour, oils, sauces, spices, and raw materials for every kitchen.",
   },
   {
     image: "/hero-2.jpg",
-    title: "Premium Baking Supplies",
-    subtitle: "Everything you need to create bakery-quality treats at home.",
+    title: "Professional Chef Supplies",
+    subtitle: "Baking instruments, cooking utensils, and equipment designed for professionals.",
   },
   {
     image: "/hero-3.jpg",
-    title: "From Our Oven to You",
-    subtitle: "Quality ingredients and professional tools for every baker.",
+    title: "Finest Raw Materials & Spices",
+    subtitle: "Source premium spices, specialized baking supplies, and essential ingredients.",
   },
   {
     image: "/hero-4.jpg",
-    title: "Sweet Moments Start Here",
-    subtitle: "Decorate, create, and celebrate with our cake decoration collection.",
+    title: "Equip Your Culinary Journey",
+    subtitle: "From cooking utensils to premium raw materials, find everything you need to create.",
   },
 ];
 
@@ -77,7 +77,7 @@ export default function HeroCarousel() {
       {/* Content */}
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4 md:px-6">
         <p className="font-accent text-sm md:text-3xl text-white/90 mb-1 md:mb-4 animate-fade-in-up">
-          Fresh from the oven
+          Premium Ingredients & Chef Supplies
         </p>
         <h1 className="font-heading text-xl md:text-6xl lg:text-7xl font-bold text-white hero-text-shadow max-w-4xl animate-fade-in-up">
           {heroSlides[current].title}

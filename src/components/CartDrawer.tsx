@@ -145,11 +145,11 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         address: deliveryType === "delivery" ? formattedAddress : "Store Pickup",
         notes: notes || undefined,
         offer_code: offerCode || undefined,
-        total_amount: totalAmount,
+        total_amount: Number(totalAmount),
         items: receiptItems,
       });
 
-      let text = `*New Order - Bake & Joy*\n\n`;
+      let text = `*New Order - Chef & Joy*\n\n`;
       text += `*Order ID:* ${orderId}\n`;
       text += `*Customer:* ${customerName}\n`;
       text += `*Phone:* ${customerPhone}\n`;

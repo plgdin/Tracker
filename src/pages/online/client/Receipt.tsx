@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, ShieldCheck, Printer, Send } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, ShieldCheck, Send } from 'lucide-react';
 import Navbar from '../../../components/Navbar';
 import { useCartContext } from '../../../context/CartContext';
 import { db } from '../../../lib/db';
@@ -84,9 +84,9 @@ export default function Receipt() {
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
-  const [customerEmail, setCustomerEmail] = useState('');
-  const [notes, setNotes] = useState('');
-  const [deliveryType, setDeliveryType] = useState('pickup');
+  const [_customerEmail, setCustomerEmail] = useState('');
+  const [_notes, setNotes] = useState('');
+  const [_deliveryType, setDeliveryType] = useState('pickup');
   const [orderDate, setOrderDate] = useState<Date>(new Date());
   const [invoiceNo, setInvoiceNo] = useState('');
   const [items, setItems] = useState<ReceiptItem[]>([]);
@@ -94,7 +94,7 @@ export default function Receipt() {
   const [isSubmittingUtr, setIsSubmittingUtr] = useState(false);
   const [utrSubmitted, setUtrSubmitted] = useState(false);
 
-  // Default fallback items from the BAKE N JOY photo
+  // Default fallback items from the CHEF & JOY photo
   const DEFAULT_ITEMS: ReceiptItem[] = [
     { id: '18062000', name: 'morde dark bar 500', code: '2627', quantity: 1, mrp: 199, price: 176.19, gst: 5, amount: 176.19 },
     { id: '3406', name: 'number candle gold pc', code: '3406', quantity: 1, mrp: 40, price: 21.19, gst: 18, amount: 21.19 },
@@ -161,7 +161,7 @@ export default function Receipt() {
       }
     } else {
       // Fallback values from the photo
-      setOrderId('ORD-BAKENJOY2241');
+      setOrderId('ORD-CHEFJOY2241');
       setCustomerName('');
       setCustomerPhone('+91-999507648');
       setCustomerAddress('Kazhakuttom, Trivandrum');
@@ -184,7 +184,7 @@ export default function Receipt() {
   const totalAmountVal = Math.round(taxableAmt + totalCGST + totalSGST);
   const savings = totalMRP - totalAmountVal;
 
-  const isFallback = orderId === 'ORD-BAKENJOY2241';
+  const isFallback = orderId === 'ORD-CHEFJOY2241';
   const formattedTaxable = isFallback ? '585.23' : taxableAmt.toFixed(2);
   const formattedCGST = isFallback ? '17.38' : totalCGST.toFixed(2);
   const formattedSGST = isFallback ? '17.38' : totalSGST.toFixed(2);
@@ -206,7 +206,7 @@ export default function Receipt() {
 
   // UPI payment parameters
   const upiId = 'anshajshaji3-2@okicici';
-  const payeeName = 'Bake and Joy';
+  const payeeName = 'Chef and Joy';
   const upiUri = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${formattedTotal}&cu=INR&tn=Order%20${orderId}`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUri)}`;
 
@@ -227,7 +227,7 @@ export default function Receipt() {
 
   // Construct the full receipt text to avoid JSX whitespace trimming issues
   const receiptText = [
-    centerText("BAKE N JOY"),
+    centerText("CHEF & JOY"),
     centerText("KAZHAKUTTOM,TRIVANDRUM"),
     centerText("PH:+91-999507648"),
     centerText("GSTIN:32AKIPA6398K2ZW"),
@@ -256,7 +256,7 @@ export default function Receipt() {
     formatSummaryLine("Previous Balance", "    0", "", ""),
     "Amount in words payable:",
     numberToWords(totalAmountVal),
-    "                         For :  BAKE N JOY",
+    "                         For :  CHEF & JOY",
     "   Thank you . . .      Visit Again . . .",
     "",
     "",

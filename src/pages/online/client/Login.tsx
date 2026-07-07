@@ -11,29 +11,29 @@ import { ChefHat } from "lucide-react";
 
 const BakeryPattern = ({ dense = false }: { dense?: boolean }) => {
   const baseIcons = [
-    { name: "croissant", className: "left-[6%] top-10 h-16 w-16 rotate-[-12deg]" },
-    { name: "cake-slice", className: "right-[8%] top-16 h-14 w-14 rotate-[10deg]" },
-    { name: "cookie", className: "left-[16%] top-[38%] h-12 w-12 rotate-[18deg]" },
+    { name: "flask-conical", className: "left-[6%] top-10 h-16 w-16 rotate-[-12deg]" },
+    { name: "droplet", className: "right-[8%] top-16 h-14 w-14 rotate-[10deg]" },
+    { name: "flame", className: "left-[16%] top-[38%] h-12 w-12 rotate-[18deg]" },
     { name: "wheat", className: "right-[22%] top-[46%] h-16 w-16 rotate-[-18deg]" },
     { name: "candy", className: "left-[47%] top-8 h-11 w-11 rotate-[22deg]" },
     { name: "chef-hat", className: "right-[42%] top-[58%] h-14 w-14 rotate-[-8deg]" },
     { name: "cup-soda", className: "left-[31%] top-[27%] h-12 w-12 rotate-[-20deg]" },
-    { name: "ice-cream-cone", className: "right-[31%] top-[18%] h-12 w-12 rotate-[14deg]" },
-    { name: "sandwich", className: "left-[38%] top-[70%] h-12 w-12 rotate-[8deg]" },
-    { name: "pizza", className: "right-[15%] top-[67%] h-12 w-12 rotate-[-14deg]" },
-    { name: "popcorn", className: "left-[72%] top-[32%] h-12 w-12 rotate-[18deg]" },
+    { name: "citrus", className: "right-[31%] top-[18%] h-12 w-12 rotate-[14deg]" },
+    { name: "package", className: "left-[38%] top-[70%] h-12 w-12 rotate-[8deg]" },
+    { name: "leaf", className: "right-[15%] top-[67%] h-12 w-12 rotate-[-14deg]" },
+    { name: "grape", className: "left-[72%] top-[32%] h-12 w-12 rotate-[18deg]" },
     { name: "utensils-crossed", className: "left-[9%] top-[72%] h-12 w-12 rotate-[16deg]" },
-    { name: "cupcake", className: "left-[58%] top-[76%] h-12 w-12 rotate-[-10deg]" },
+    { name: "soup", className: "left-[58%] top-[76%] h-12 w-12 rotate-[-10deg]" },
     { name: "coffee", className: "right-[6%] top-[45%] h-12 w-12 rotate-[12deg]" },
     { name: "milk", className: "left-[24%] top-[62%] h-11 w-11 rotate-[-8deg]" },
     { name: "egg", className: "right-[34%] top-[73%] h-10 w-10 rotate-[20deg]" },
   ];
   const denseIcons = [
-    { name: "croissant", className: "left-[5%] top-[18%] h-12 w-12 rotate-[18deg]" },
-    { name: "cake-slice", className: "right-[5%] top-[26%] h-12 w-12 rotate-[-12deg]" },
-    { name: "cookie", className: "left-[12%] top-[55%] h-10 w-10 rotate-[-8deg]" },
+    { name: "flask-conical", className: "left-[5%] top-[18%] h-12 w-12 rotate-[18deg]" },
+    { name: "droplet", className: "right-[5%] top-[26%] h-12 w-12 rotate-[-12deg]" },
+    { name: "pipette", className: "left-[12%] top-[55%] h-10 w-10 rotate-[-8deg]" },
     { name: "candy", className: "right-[13%] top-[58%] h-10 w-10 rotate-[20deg]" },
-    { name: "ice-cream-cone", className: "left-[52%] top-[35%] h-11 w-11 rotate-[-18deg]" },
+    { name: "citrus", className: "left-[52%] top-[35%] h-11 w-11 rotate-[-18deg]" },
     { name: "chef-hat", className: "right-[47%] top-[88%] h-12 w-12 rotate-[12deg]" },
     { name: "wheat", className: "left-[70%] top-[82%] h-12 w-12 rotate-[-22deg]" },
     { name: "coffee", className: "left-[28%] top-[84%] h-11 w-11 rotate-[16deg]" },
@@ -129,8 +129,8 @@ export default function Login() {
           <div className="w-20 h-20 bg-burnt-orange rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-burnt-orange/20">
             <ChefHat className="w-10 h-10 text-white" />
           </div>
-          <h1 className="font-heading text-4xl font-bold text-espresso">Bake & Joy</h1>
-          <p className="text-taupe text-lg mt-1.5">Freshly baked happiness</p>
+          <h1 className="font-heading text-4xl font-bold text-espresso">Chef & Joy</h1>
+          <p className="text-taupe text-lg mt-1.5">Premium ingredients & professional chef supplies</p>
         </div>
 
         <Card className="border-espresso/5 shadow-xl shadow-espresso/5 rounded-[2rem] overflow-hidden bg-white p-6 md:p-10">
