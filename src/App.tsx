@@ -6,6 +6,8 @@ import { CartProvider } from './context/CartContext';
 import StorefrontWrapper from './components/StorefrontWrapper';
 import './index.css';
 
+import AdminPortal from './pages/AdminPortal';
+
 // Online Client
 import Home from './pages/online/client/Home';
 import Products from './pages/online/client/Products';
@@ -76,8 +78,17 @@ function App() {
           </AuthWrapper>
         } />
 
-        {/* Redirect legacy /admin to /adminoffline */}
-        <Route path="/admin/*" element={<Navigate to="/adminoffline" replace />} />
+        {/* Admin Hub / Portal */}
+        <Route path="/admin" element={
+          <AuthWrapper>
+            <AdminPortal />
+          </AuthWrapper>
+        } />
+        <Route path="/admin/*" element={
+          <AuthWrapper>
+            <AdminPortal />
+          </AuthWrapper>
+        } />
       </Routes>
     </BrowserRouter>
   );
