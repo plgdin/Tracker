@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { ShoppingCart, User, ChefHat, Search, MapPin, ChevronDown, Compass, Plus, MoreVertical, Home, ArrowLeft, Navigation, Building, Hash, Briefcase, Tag, Package } from "lucide-react";
+import { ShoppingCart, User, ChefHat, Search, MapPin, ChevronDown, Compass, Plus, MoreVertical, Home, ArrowLeft, Navigation, Building, Hash, Briefcase, Tag, Package, Store, Hotel } from "lucide-react";
 import { useCartContext } from "@/context/CartContext";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
+import { useAppStore } from "@/store/appStore";
 import type { Category } from "@/lib/db";
 import type { SavedAddress } from "@/store/authStore";
 
@@ -35,6 +36,7 @@ export default function Navbar({
   const [scrolled, setScrolled] = useState(false);
   const { totalItems } = useCartContext();
   const { user, profile, updateProfile } = useAuthStore();
+  const { storeType, setStoreType } = useAppStore();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -210,6 +212,32 @@ export default function Navbar({
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-4 lg:gap-7 shrink-0">
+            {/* Store Type Toggle */}
+            <div className="flex items-center bg-espresso/5 rounded-full p-0.5 gap-0.5">
+              <button
+                onClick={() => setStoreType('online')}
+                className={`flex items-center gap-1.5 !px-3.5 !py-1.5 rounded-full text-xs font-bold transition-all duration-300 ${
+                  storeType === 'online'
+                    ? '!bg-burnt-orange !text-white shadow-sm'
+                    : '!text-taupe hover:!text-espresso'
+                }`}
+              >
+                <Hotel className="w-3.5 h-3.5" />
+                Hotel
+              </button>
+              <button
+                onClick={() => setStoreType('offline')}
+                className={`flex items-center gap-1.5 !px-3.5 !py-1.5 rounded-full text-xs font-bold transition-all duration-300 ${
+                  storeType === 'offline'
+                    ? '!bg-espresso !text-white shadow-sm'
+                    : '!text-taupe hover:!text-espresso'
+                }`}
+              >
+                <Store className="w-3.5 h-3.5" />
+                Bakery
+              </button>
+            </div>
+
             <button
               onClick={() => handleNavClick("hero")}
               className="text-sm font-medium text-espresso/80 hover:text-burnt-orange transition-colors"
@@ -355,7 +383,7 @@ export default function Navbar({
           </div>
         </div>
 
-        {/* Middle Row: Search */}
+        {/* Middle Row: Search + Store Toggle */}
         <div className={`flex items-center gap-2 transition-all duration-300 ${scrolled ? "mt-0" : "mt-2"}`}>
           <form 
             onSubmit={(e) => {
@@ -377,6 +405,31 @@ export default function Navbar({
               className="navbar-search-input w-full bg-white text-espresso rounded-full py-2 pl-10 pr-4 text-xs font-medium border border-espresso/15 focus:border-burnt-orange outline-none h-9 shadow-sm"
             />
           </form>
+          {/* Mobile Store Toggle */}
+          <div className="flex items-center bg-white/15 rounded-full p-0.5 shrink-0">
+            <button
+              onClick={() => setStoreType('online')}
+              className={`p-1.5 rounded-full transition-all duration-300 ${
+                storeType === 'online'
+                  ? '!bg-burnt-orange !text-white'
+                  : 'text-white/50'
+              }`}
+              title="Hotel Store"
+            >
+              <Hotel className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setStoreType('offline')}
+              className={`p-1.5 rounded-full transition-all duration-300 ${
+                storeType === 'offline'
+                  ? '!bg-white !text-espresso'
+                  : 'text-white/50'
+              }`}
+              title="Bakery Store"
+            >
+              <Store className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
       {/* Mobile Header Spacer */}

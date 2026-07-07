@@ -17,6 +17,7 @@ export default function AddItem() {
 
   const { profile } = useAuthStore();
   const [categories, setCategories] = useState<Category[]>([]);
+  const [itemStoreType, setItemStoreType] = useState<'online' | 'offline'>('online');
   
   const [formData, setFormData] = useState({
     name: '',
@@ -37,34 +38,30 @@ export default function AddItem() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
+    setItemStoreType(storeType);
+  }, [storeType]);
+
+  useEffect(() => {
     async function loadData() {
+      if (!editId) return;
       setLoading(true);
       try {
-        const fetchedCats = await db.getCategories();
-        setCategories(fetchedCats);
-
-        // Pre-select first category if available
-        if (fetchedCats.length > 0 && !editId) {
-          setFormData(prev => ({ ...prev, category: fetchedCats[0].name }));
-        }
-
-        if (editId) {
-          const items = await db.getItems();
-          const itemToEdit = items.find(item => item.id === editId);
-          if (itemToEdit) {
-            setFormData({
-              name: itemToEdit.name,
-              expiration_date: itemToEdit.expiration_date,
-              warning_date: itemToEdit.warning_date || '',
-              quantity: itemToEdit.quantity,
-              category: itemToEdit.category,
-              notes: itemToEdit.notes || '',
-              price: itemToEdit.price || '',
-              image_url: itemToEdit.image_url || '',
-              gst_percentage: itemToEdit.gst_percentage || 0,
-              custom_gst: itemToEdit.gst_percentage && ![0, 5, 12, 18].includes(itemToEdit.gst_percentage) ? itemToEdit.gst_percentage.toString() : '',
-            });
-          }
+        const items = await db.getItems();
+        const itemToEdit = items.find(item => item.id === editId);
+        if (itemToEdit) {
+          setItemStoreType((itemToEdit as any).store_type || 'offline');
+          setFormData({
+            name: itemToEdit.name,
+            expiration_date: itemToEdit.expiration_date,
+            warning_date: itemToEdit.warning_date || '',
+            quantity: itemToEdit.quantity,
+            category: itemToEdit.category,
+            notes: itemToEdit.notes || '',
+            price: itemToEdit.price || '',
+            image_url: itemToEdit.image_url || '',
+            gst_percentage: itemToEdit.gst_percentage || 0,
+            custom_gst: itemToEdit.gst_percentage && ![0, 5, 12, 18].includes(itemToEdit.gst_percentage) ? itemToEdit.gst_percentage.toString() : '',
+          });
         }
       } catch (err) {
         console.error('Error loading item data:', err);
@@ -74,6 +71,25 @@ export default function AddItem() {
     }
     loadData();
   }, [editId]);
+
+  useEffect(() => {
+    async function loadCategories() {
+      try {
+        const fetchedCats: Category[] = await (db as any).getCategoriesByStore(itemStoreType);
+        setCategories(fetchedCats);
+        if (fetchedCats.length > 0) {
+          // If editing is finished or we are adding new item, check if category exists in current list
+          setFormData(prev => {
+            const exists = fetchedCats.some(cat => cat.name === prev.category);
+            return { ...prev, category: exists ? prev.category : fetchedCats[0].name };
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching categories for store:', err);
+      }
+    }
+    loadCategories();
+  }, [itemStoreType]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,7 +113,8 @@ export default function AddItem() {
         notes: formData.notes || undefined,
         price: formData.price || undefined,
         image_url: formData.image_url || undefined,
-        gst_percentage: storeType === 'online' ? (formData.gst_percentage === -1 ? parseFloat(formData.custom_gst || '0') : formData.gst_percentage) : undefined,
+        gst_percentage: itemStoreType === 'online' ? (formData.gst_percentage === -1 ? parseFloat(formData.custom_gst || '0') : formData.gst_percentage) : undefined,
+        store_type: itemStoreType,
         added_by: profile?.id || undefined
       };
 
@@ -274,7 +291,7 @@ export default function AddItem() {
               <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginTop: '0.35rem' }}>Type the amount and unit (e.g., 450/kg). The ₹ symbol is added automatically.</p>
             </div>
 
-            {storeType === 'online' && (
+            {itemStoreType === 'online' && (
               <div className="input-group" style={{ marginTop: '1.5rem' }}>
                 <label className="input-label">🧾 GST Percentage</label>
                 <select 
@@ -352,6 +369,23 @@ export default function AddItem() {
             {/* List items with right alignment as seen in Screenshot 4 */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.5rem', borderTop: '1px solid rgba(230, 57, 70, 0.08)', paddingTop: '1.5rem' }}>
               
+              {/* Store / Department row */}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontWeight: 700, color: 'var(--color-text-primary)', fontSize: '0.95rem' }}>🏪 Department / Store</span>
+                  <select 
+                    className="input-field"
+                    style={{ width: 'auto', border: 'none', background: 'transparent', textAlign: 'right', fontWeight: 700, color: 'var(--color-primary)', padding: '0.25rem 0.5rem', cursor: 'pointer' }}
+                    value={itemStoreType}
+                    onChange={e => setItemStoreType(e.target.value as 'online' | 'offline')}
+                  >
+                    <option value="online">Hotel Store</option>
+                    <option value="offline">Bakery Store</option>
+                  </select>
+                </div>
+                <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginTop: '0.15rem', textAlign: 'left' }}>Choose which catalog this item should be displayed in.</p>
+              </div>
+
               {/* Category row */}
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

@@ -7,6 +7,7 @@ import { useCartContext } from "@/context/CartContext";
 import { supabase } from "@/lib/supabase";
 import { Search, Check, Trash2, ChevronDown, ArrowLeft, SlidersHorizontal, LayoutGrid, Coins, Tag, Globe } from "lucide-react";
 import { useLocation } from "react-router-dom";
+import { useAppStore } from "@/store/appStore";
 
 // Removed mock products and placeholder categories
 const CustomCheckbox = ({ checked }: { checked: boolean }) => {
@@ -54,6 +55,7 @@ export default function Products() {
   const searchParams = new URLSearchParams(location.search);
   const initialSearch = searchParams.get('search') || "";
   const [searchQuery, setSearchQuery] = useState(initialSearch);
+  const { storeType } = useAppStore();
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -90,10 +92,10 @@ export default function Products() {
   useEffect(() => {
     async function fetchData() {
       setIsLoading(true);
-      const { data: catData } = await supabase.from('categories').select('*').eq('store_type', 'online');
+      const { data: catData } = await supabase.from('categories').select('*').eq('store_type', storeType);
       if (catData) setCategories(catData as Category[]);
 
-      const { data: prodData } = await supabase.from('items').select('*').eq('store_type', 'online');
+      const { data: prodData } = await supabase.from('items').select('*').eq('store_type', storeType);
       if (prodData) {
         const formatted = (prodData as (Item & { brand?: string; origin?: string })[]).map((p, index: number) => ({
             id: p.id,
@@ -119,7 +121,7 @@ export default function Products() {
       setIsLoading(false);
     }
     fetchData();
-  }, []);
+  }, [storeType]);
 
   const filteredProducts = products.filter((p) => {
     const matchCategory = !selectedCategory || p.categoryName === selectedCategory;

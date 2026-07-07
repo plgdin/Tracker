@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import { Eye, EyeOff } from 'lucide-react';
 
 export default function AuthWrapper({ children }: { children: React.ReactNode }) {
-  const { user, isLoading, initialize, authNotice, setAuthNotice } = useAuthStore();
+  const { user, isLoading, initialize, authNotice, setAuthNotice, profile, signOut } = useAuthStore();
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -29,7 +29,39 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
     return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Loading...</div>;
   }
 
+  if (user && !profile) {
+    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Loading profile...</div>;
+  }
+
   if (user) {
+    const hasAccess = profile && (profile.role === 'admin' || profile.role === 'worker');
+    if (!hasAccess) {
+      return (
+        <div className="auth-shell">
+          <div className="auth-card" style={{ textAlign: 'center' }}>
+            <h1 className="auth-title" style={{ color: 'var(--color-primary)' }}>Access Denied</h1>
+            <p className="auth-subtitle" style={{ marginBottom: '1.5rem' }}>
+              You do not have permission to access the administrative area.
+            </p>
+            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+              <a href="/" className="btn btn-outline" style={{ display: 'inline-block', textDecoration: 'none', padding: '0.55rem 1.25rem', fontSize: '0.85rem' }}>
+                Go to Storefront
+              </a>
+              <button 
+                onClick={async () => {
+                  await signOut();
+                  window.location.href = '/login';
+                }} 
+                className="btn btn-primary"
+                style={{ padding: '0.55rem 1.25rem', fontSize: '0.85rem' }}
+              >
+                Log Out
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
     return <>{children}</>;
   }
 

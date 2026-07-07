@@ -202,9 +202,10 @@ export const db = {
     if (useSupabase && dbSupabase) {
       try {
         const { data: userData } = await withTimeout(dbSupabase.auth.getUser());
+        const targetStoreType = (item as any).store_type || useAppStore.getState().storeType;
         const { data, error } = await withTimeout(
           dbSupabase
-            .from('items').insert([{ ...item, user_id: userData?.user?.id , store_type: useAppStore.getState().storeType}])
+            .from('items').insert([{ ...item, user_id: userData?.user?.id , store_type: targetStoreType}])
             .select()
             .single()
         );
@@ -216,9 +217,10 @@ export const db = {
     }
 
     if (result === newItem) {
-      const items = getLocal<Item[]>(`tracker_items_${useAppStore.getState().storeType}`, []);
+      const targetStoreType = (item as any).store_type || useAppStore.getState().storeType;
+      const items = getLocal<Item[]>(`tracker_items_${targetStoreType}`, []);
       items.push(newItem);
-      setLocal(`tracker_items_${useAppStore.getState().storeType}`, items);
+      setLocal(`tracker_items_${targetStoreType}`, items);
     }
 
     // Auto-log addition to audit logs
@@ -302,6 +304,24 @@ export const db = {
     return getLocalCategories();
   },
 
+  async getCategoriesByStore(storeType: 'online' | 'offline'): Promise<Category[]> {
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
+      try {
+        const { data, error } = await withTimeout(
+          dbSupabase.from('categories').select('*').eq('store_type', storeType).order('name', { ascending: true })
+        );
+        if (error) throw error;
+        const result = data && data.length > 0 ? data : (localStorage.getItem(`tracker_categories_${storeType}`) !== null ? getLocal<Category[]>(`tracker_categories_${storeType}`, DEFAULT_CATEGORIES) : DEFAULT_CATEGORIES);
+        setLocal(`tracker_categories_${storeType}`, result);
+        return result;
+      } catch (e) {
+        console.warn('Supabase categories fetch failed', e);
+      }
+    }
+    return getLocal<Category[]>(`tracker_categories_${storeType}`, DEFAULT_CATEGORIES);
+  },
+
   async addCategory(category: Omit<Category, 'id' | 'created_at'>): Promise<Category> {
     const newCategory: Category = {
       ...category,
@@ -313,9 +333,10 @@ export const db = {
     if (useSupabase && dbSupabase) {
       try {
         const { data: userData } = await withTimeout(dbSupabase.auth.getUser());
+        const targetStoreType = (category as any).store_type || useAppStore.getState().storeType;
         const { data, error } = await withTimeout(
           dbSupabase
-            .from('categories').insert([{ ...category, user_id: userData?.user?.id , store_type: useAppStore.getState().storeType}])
+            .from('categories').insert([{ ...category, user_id: userData?.user?.id , store_type: targetStoreType}])
             .select()
             .single()
         );
@@ -326,9 +347,10 @@ export const db = {
       }
     }
 
-    const categories = getLocalCategories();
+    const targetStoreType = (category as any).store_type || useAppStore.getState().storeType;
+    const categories = getLocal<Category[]>(`tracker_categories_${targetStoreType}`, DEFAULT_CATEGORIES);
     categories.push(newCategory);
-    setLocal(`tracker_categories_${useAppStore.getState().storeType}`, categories);
+    setLocal(`tracker_categories_${targetStoreType}`, categories);
     return newCategory;
   },
 

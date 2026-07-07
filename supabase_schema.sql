@@ -5,7 +5,7 @@ CREATE TABLE profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     name TEXT,
     email TEXT,
-    role TEXT CHECK (role IN ('admin', 'worker', 'pending', 'disabled')) DEFAULT 'pending',
+    role TEXT CHECK (role IN ('admin', 'worker', 'pending', 'disabled', 'customer')) DEFAULT 'pending',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

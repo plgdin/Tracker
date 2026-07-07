@@ -8,6 +8,6 @@ interface AppState {
 }
 
 export const useAppStore = create<AppState>((set) => ({
-  storeType: 'offline', // Default for legacy/public paths until explicitly set
+  storeType: 'online', // Default for customer storefront
   setStoreType: (type) => set({ storeType: type }),
 }));

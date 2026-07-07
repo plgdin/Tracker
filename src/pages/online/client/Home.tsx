@@ -19,6 +19,7 @@ import ProductCard from "@/components/ProductCard";
 import { useCartContext } from "@/context/CartContext";
 import { supabase } from "@/lib/supabase";
 import { useLocation } from "react-router-dom";
+import { useAppStore } from "@/store/appStore";
 import {
   Search,
   Sparkles,
@@ -100,6 +101,7 @@ const getCategoryImage = (name: string) =>
 
 export default function Home() {
   const { setIsCartOpen } = useCartContext();
+  const { storeType } = useAppStore();
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
   const [searchQuery, setSearchQuery] = useState("");
   const [inStockOnly, setInStockOnly] = useState(false);
@@ -126,11 +128,11 @@ export default function Home() {
     async function fetchData() {
       setIsLoading(true);
       // Fetch Categories
-      const { data: catData } = await supabase.from('categories').select('*').eq('store_type', 'online');
+      const { data: catData } = await supabase.from('categories').select('*').eq('store_type', storeType);
       if (catData) setCategories(catData as Category[]);
 
       // Fetch Products
-      const { data: prodData } = await supabase.from('items').select('*').eq('store_type', 'online');
+      const { data: prodData } = await supabase.from('items').select('*').eq('store_type', storeType);
       if (prodData) {
         const formatted = (prodData as (Item & { brand?: string; origin?: string })[]).map((p) => ({
             id: p.id,
@@ -151,7 +153,7 @@ export default function Home() {
       setIsLoading(false);
     }
     fetchData();
-  }, []);
+  }, [storeType]);
 
   // Filter products in memory
   const filteredProducts = products.filter((p) => {

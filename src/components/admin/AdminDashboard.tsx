@@ -46,6 +46,7 @@ export default function AdminDashboard() {
   const [newCatImageUrl, setNewCatImageUrl] = useState('');
   const [isUploadingCatImage, setIsUploadingCatImage] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+  const [newCatStoreType, setNewCatStoreType] = useState<'online' | 'offline'>(() => useAppStore.getState().storeType);
   
   // Hero Slide Form State
   const [newSlideTitle, setNewSlideTitle] = useState('');
@@ -416,17 +417,18 @@ export default function AdminDashboard() {
     if (!newCatName.trim()) return;
     
     if (editingCategoryId) {
-      await db.updateCategory(editingCategoryId, { name: newCatName.trim(), color: newCatColor, image_url: newCatImageUrl || undefined });
+      await db.updateCategory(editingCategoryId, { name: newCatName.trim(), color: newCatColor, image_url: newCatImageUrl || undefined, store_type: newCatStoreType } as any);
       await db.addAuditLog('Updated Category', newCatName.trim());
       showToast('Category updated! 🎨');
     } else {
-      await db.addCategory({ name: newCatName.trim(), color: newCatColor, icon: 'Tag', image_url: newCatImageUrl || undefined });
+      await db.addCategory({ name: newCatName.trim(), color: newCatColor, icon: 'Tag', image_url: newCatImageUrl || undefined, store_type: newCatStoreType } as any);
       await db.addAuditLog('Added Category', newCatName.trim());
       showToast('Category added! 🎨');
     }
     
     setNewCatName('');
     setNewCatImageUrl('');
+    setNewCatStoreType(useAppStore.getState().storeType);
     setEditingCategoryId(null);
     await refreshData();
   };
@@ -436,6 +438,7 @@ export default function AdminDashboard() {
     setNewCatName(cat.name);
     setNewCatColor(cat.color);
     setNewCatImageUrl(cat.image_url || '');
+    setNewCatStoreType((cat as any).store_type || 'offline');
   };
 
   const handleDeleteCategory = async (id: string, name: string) => {
@@ -654,6 +657,16 @@ export default function AdminDashboard() {
                 <div className="input-group"><label className="input-label">Name</label>
                   <input type="text" className="input-field" placeholder="e.g., Snacks" value={newCatName} onChange={e => setNewCatName(e.target.value)} required />
                 </div>
+                <div className="input-group" style={{ marginTop: '0.75rem' }}><label className="input-label">Department / Store</label>
+                  <select
+                    className="input-field"
+                    value={newCatStoreType}
+                    onChange={e => setNewCatStoreType(e.target.value as 'online' | 'offline')}
+                  >
+                    <option value="online">Hotel Store</option>
+                    <option value="offline">Bakery Store</option>
+                  </select>
+                </div>
                 <div className="input-group" style={{ marginTop: '0.75rem' }}><label className="input-label" style={{ marginBottom: '0.5rem' }}>Color</label>
                   <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
                     {colors.map(c => (
@@ -694,6 +707,7 @@ export default function AdminDashboard() {
                       setNewCatName('');
                       setNewCatColor('#E63946');
                       setNewCatImageUrl('');
+                      setNewCatStoreType(useAppStore.getState().storeType);
                     }} style={{ flex: 1 }}>
                       Cancel
                     </button>

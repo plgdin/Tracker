@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { ChefHat } from "lucide-react";
+import { ChefHat, Eye, EyeOff } from "lucide-react";
 
 const BakeryPattern = ({ dense = false }: { dense?: boolean }) => {
   const baseIcons = [
@@ -59,12 +59,17 @@ export default function Login() {
   const [activeTab, setActiveTab] = useState("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
   const { user, isLoading } = useAuthStore();
+
+  useEffect(() => {
+    setShowPassword(false);
+  }, [activeTab]);
 
   useEffect(() => {
     if (!isLoading && user) {
@@ -103,7 +108,7 @@ export default function Login() {
       options: {
         data: {
           full_name: fullName,
-          role: "admin"
+          role: "customer"
         },
       },
     });
@@ -169,15 +174,24 @@ export default function Login() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signin-password" className="text-base font-bold text-espresso mb-1 block">Password</Label>
-                    <Input
-                      id="signin-password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      className="rounded-xl border-espresso/15 focus-visible:ring-burnt-orange text-lg"
-                    />
+                    <div className="relative">
+                      <Input
+                        id="signin-password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        className="rounded-xl border-espresso/15 focus-visible:ring-burnt-orange text-lg pr-12"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-taupe hover:text-espresso transition-colors focus:outline-none"
+                      >
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
                   </div>
                   <Button
                     type="submit"
@@ -217,15 +231,24 @@ export default function Login() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-password" className="text-base font-bold text-espresso mb-1 block">Password</Label>
-                    <Input
-                      id="signup-password"
-                      type="password"
-                      placeholder="Min. 6 characters"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      className="rounded-xl border-espresso/15 focus-visible:ring-burnt-orange text-lg"
-                    />
+                    <div className="relative">
+                      <Input
+                        id="signup-password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Min. 6 characters"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        className="rounded-xl border-espresso/15 focus-visible:ring-burnt-orange text-lg pr-12"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-taupe hover:text-espresso transition-colors focus:outline-none"
+                      >
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
                   </div>
                   <Button
                     type="submit"
