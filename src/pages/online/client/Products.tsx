@@ -55,7 +55,7 @@ export default function Products() {
   const searchParams = new URLSearchParams(location.search);
   const initialSearch = searchParams.get('search') || "";
   const [searchQuery, setSearchQuery] = useState(initialSearch);
-  const { storeType } = useAppStore();
+  const { storeType, clientSegment } = useAppStore();
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -108,6 +108,7 @@ export default function Products() {
             brand: p.brand || "",
             origin: p.origin || (index % 2 === 0 ? "Imported" : "Exported"),
             gstPercentage: p.gst_percentage || 0,
+            storeSegment: (p as any).store_segment || 'both',
         }));
         setProducts(formatted);
         if (formatted.length > 0) {
@@ -144,8 +145,11 @@ export default function Products() {
 
     // In stock check
     const matchInStock = !inStockOnly || p.inStock;
+    
+    // Segment check
+    const matchSegment = clientSegment === 'all' || p.storeSegment === 'both' || p.storeSegment === clientSegment;
 
-    return matchCategory && matchSearch && matchPrice && matchBrand && matchOrigin && matchInStock;
+    return matchCategory && matchSearch && matchPrice && matchBrand && matchOrigin && matchInStock && matchSegment;
   });
 
   const displayedCategories = categories;

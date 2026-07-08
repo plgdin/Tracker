@@ -36,7 +36,7 @@ export default function Navbar({
   const [scrolled, setScrolled] = useState(false);
   const { totalItems } = useCartContext();
   const { user, profile, updateProfile } = useAuthStore();
-  const { storeType, setStoreType } = useAppStore();
+  const { clientSegment, setClientSegment } = useAppStore();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -212,12 +212,22 @@ export default function Navbar({
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-4 lg:gap-7 shrink-0">
-            {/* Store Type Toggle */}
+            {/* Store Segment Toggle */}
             <div className="flex items-center bg-espresso/5 rounded-full p-0.5 gap-0.5">
               <button
-                onClick={() => setStoreType('online')}
+                onClick={() => setClientSegment('all')}
                 className={`flex items-center gap-1.5 !px-3.5 !py-1.5 rounded-full text-xs font-bold transition-all duration-300 ${
-                  storeType === 'online'
+                  clientSegment === 'all'
+                    ? '!bg-burnt-orange !text-white shadow-sm'
+                    : '!text-taupe hover:!text-espresso'
+                }`}
+              >
+                All Items
+              </button>
+              <button
+                onClick={() => setClientSegment('hotel')}
+                className={`flex items-center gap-1.5 !px-3.5 !py-1.5 rounded-full text-xs font-bold transition-all duration-300 ${
+                  clientSegment === 'hotel'
                     ? '!bg-burnt-orange !text-white shadow-sm'
                     : '!text-taupe hover:!text-espresso'
                 }`}
@@ -226,9 +236,9 @@ export default function Navbar({
                 Hotel
               </button>
               <button
-                onClick={() => setStoreType('offline')}
+                onClick={() => setClientSegment('bakery')}
                 className={`flex items-center gap-1.5 !px-3.5 !py-1.5 rounded-full text-xs font-bold transition-all duration-300 ${
-                  storeType === 'offline'
+                  clientSegment === 'bakery'
                     ? '!bg-espresso !text-white shadow-sm'
                     : '!text-taupe hover:!text-espresso'
                 }`}
@@ -408,9 +418,20 @@ export default function Navbar({
           {/* Mobile Store Toggle */}
           <div className="flex items-center bg-white/15 rounded-full p-0.5 shrink-0">
             <button
-              onClick={() => setStoreType('online')}
+              onClick={() => setClientSegment('all')}
+              className={`px-2 py-1.5 text-[10px] font-bold rounded-full transition-all duration-300 ${
+                clientSegment === 'all'
+                  ? '!bg-white !text-espresso'
+                  : 'text-white/50'
+              }`}
+              title="All Items"
+            >
+              All
+            </button>
+            <button
+              onClick={() => setClientSegment('hotel')}
               className={`p-1.5 rounded-full transition-all duration-300 ${
-                storeType === 'online'
+                clientSegment === 'hotel'
                   ? '!bg-burnt-orange !text-white'
                   : 'text-white/50'
               }`}
@@ -419,9 +440,9 @@ export default function Navbar({
               <Hotel className="w-4 h-4" />
             </button>
             <button
-              onClick={() => setStoreType('offline')}
+              onClick={() => setClientSegment('bakery')}
               className={`p-1.5 rounded-full transition-all duration-300 ${
-                storeType === 'offline'
+                clientSegment === 'bakery'
                   ? '!bg-white !text-espresso'
                   : 'text-white/50'
               }`}

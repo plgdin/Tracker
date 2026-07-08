@@ -1,20 +1,15 @@
-import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { Home, List, Settings, Shield, LogOut, BookOpen, Globe, Store } from 'lucide-react';
+import { Outlet, NavLink } from 'react-router-dom';
+import { Home, List, Settings, Shield, LogOut, BookOpen } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
-import { useAppStore } from '../store/appStore';
 import '../admin.css';
 
 export default function Layout() {
   const { profile, signOut } = useAuthStore();
-  const location = useLocation();
-  const { storeType, setStoreType } = useAppStore();
 
   const handleLogout = async () => {
     await signOut();
     window.location.href = '/';
   };
-
-  const isOnlineAdmin = location.pathname.startsWith('/adminonline');
 
   return (
     <div className="app-layout">
@@ -26,58 +21,6 @@ export default function Layout() {
         padding: '0.5rem 1rem',
         gap: '0.75rem'
       }}>
-        {isOnlineAdmin && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            background: 'rgba(230, 57, 70, 0.05)',
-            borderRadius: '20px',
-            padding: '2px',
-            marginRight: 'auto',
-            border: '1px solid rgba(230, 57, 70, 0.1)'
-          }}>
-            <button
-              onClick={() => setStoreType('online')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                border: 'none',
-                background: storeType === 'online' ? 'var(--color-primary)' : 'transparent',
-                color: storeType === 'online' ? 'white' : 'var(--color-text-secondary)',
-                padding: '0.35rem 0.85rem',
-                borderRadius: '18px',
-                cursor: 'pointer',
-                fontSize: '0.75rem',
-                fontWeight: 700,
-                transition: 'all 0.15s ease',
-              }}
-            >
-              <Globe size={13} />
-              Online
-            </button>
-            <button
-              onClick={() => setStoreType('offline')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                border: 'none',
-                background: storeType === 'offline' ? 'var(--color-primary)' : 'transparent',
-                color: storeType === 'offline' ? 'white' : 'var(--color-text-secondary)',
-                padding: '0.35rem 0.85rem',
-                borderRadius: '18px',
-                cursor: 'pointer',
-                fontSize: '0.75rem',
-                fontWeight: 700,
-                transition: 'all 0.15s ease',
-              }}
-            >
-              <Store size={13} />
-              Offline
-            </button>
-          </div>
-        )}
         {profile && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span style={{ 

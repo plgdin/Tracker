@@ -15,6 +15,7 @@ export interface Item {
   image_url?: string;
   price?: string;
   gst_percentage?: number;
+  store_segment?: 'hotel' | 'bakery' | 'both';
   created_at: string;
 }
 

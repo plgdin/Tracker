@@ -608,7 +608,7 @@ export default function AdminDashboard() {
                   <div key={item.id} style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', border: '1px solid rgba(230,57,70,0.05)' }}>
                     <div style={{ minWidth: 0, flex: 1, wordBreak: 'break-word' }}>
                       <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>📦 {item.name}</span>
-                      <span style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', display: 'block' }}>{item.category} · Qty: {item.quantity}</span>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', display: 'block' }}>{item.category} · Qty: {item.quantity} {useAppStore.getState().storeType === 'online' && `· Segment: ${(item as any).store_segment === 'hotel' ? 'Hotel Only' : (item as any).store_segment === 'bakery' ? 'Bakery Only' : 'Both'}`}</span>
                     </div>
                     <button onClick={() => handleDeleteItem(item.id, item.name)} style={{ border: 'none', background: 'rgba(230,57,70,0.08)', color: 'var(--color-primary)', cursor: 'pointer', padding: '0.4rem 0.75rem', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.75rem', fontWeight: 600 }}>
                       <Trash2 size={14} /> Delete

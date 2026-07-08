@@ -30,6 +30,7 @@ export default function AddItem() {
     image_url: '',
     gst_percentage: 0,
     custom_gst: '',
+    store_segment: 'both' as 'hotel' | 'bakery' | 'both',
   });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -61,6 +62,7 @@ export default function AddItem() {
             image_url: itemToEdit.image_url || '',
             gst_percentage: itemToEdit.gst_percentage || 0,
             custom_gst: itemToEdit.gst_percentage && ![0, 3, 5, 8, 12, 18, 28, 40].includes(itemToEdit.gst_percentage) ? itemToEdit.gst_percentage.toString() : '',
+            store_segment: itemToEdit.store_segment || 'both',
           });
         }
       } catch (err) {
@@ -115,6 +117,7 @@ export default function AddItem() {
         image_url: formData.image_url || undefined,
         gst_percentage: formData.gst_percentage === -1 ? parseFloat(formData.custom_gst || '0') : formData.gst_percentage,
         store_type: itemStoreType,
+        store_segment: formData.store_segment,
         added_by: profile?.id || undefined
       };
 
@@ -263,7 +266,23 @@ export default function AddItem() {
               <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginTop: '0.35rem' }}>Give the item a clear name so carton can recognize it!</p>
             </div>
 
-            <div className="input-group">
+            {itemStoreType === 'online' && (
+              <div className="input-group" style={{ marginTop: '1.5rem' }}>
+                <label className="input-label">🏪 Target Store (Online Only)</label>
+                <select 
+                  className="input-field" 
+                  value={formData.store_segment}
+                  onChange={e => setFormData({ ...formData, store_segment: e.target.value as any })}
+                >
+                  <option value="both">Both (Show in Hotel & Bakery)</option>
+                  <option value="hotel">Hotel Store Only</option>
+                  <option value="bakery">Bakery Store Only</option>
+                </select>
+                <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginTop: '0.35rem' }}>Select which storefront this item should appear in.</p>
+              </div>
+            )}
+
+            <div className="input-group" style={{ marginTop: '1.5rem' }}>
               <label className="input-label">📝 Special Notes</label>
               <input 
                 type="text" 

@@ -12,6 +12,7 @@ export interface FormattedProduct {
   brand: string;
   origin: string;
   gstPercentage: number;
+  storeSegment: 'hotel' | 'bakery' | 'both';
 }
 import Navbar from "@/components/Navbar";
 import HeroCarousel from "@/components/HeroCarousel";
@@ -101,7 +102,7 @@ const getCategoryImage = (name: string) =>
 
 export default function Home() {
   const { setIsCartOpen } = useCartContext();
-  const { storeType } = useAppStore();
+  const { storeType, clientSegment } = useAppStore();
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
   const [searchQuery, setSearchQuery] = useState("");
   const [inStockOnly, setInStockOnly] = useState(false);
@@ -145,6 +146,7 @@ export default function Home() {
             brand: p.brand || "In-house",
             origin: p.origin || "Local",
             gstPercentage: p.gst_percentage || 0,
+            storeSegment: (p as any).store_segment || 'both',
         }));
         setProducts(formatted);
       } else {
@@ -163,13 +165,14 @@ export default function Home() {
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.categoryName?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchInStock = !inStockOnly || p.inStock;
-    return matchCategory && matchSearch && matchInStock;
+    const matchSegment = clientSegment === 'all' || p.storeSegment === 'both' || p.storeSegment === clientSegment;
+    return matchCategory && matchSearch && matchInStock && matchSegment;
   });
 
   const displayedCategories = showAllCategories ? categories : categories.slice(0, 8);
-  const featuredProducts = products.slice(0, 3);
+  const featuredProducts = filteredProducts.slice(0, 3);
   const featuredCatName = categories[0]?.name || "Essences";
-  const featuredCatProducts = products
+  const featuredCatProducts = filteredProducts
     .filter((p) => p.categoryName === featuredCatName)
     .slice(0, 4);
 
