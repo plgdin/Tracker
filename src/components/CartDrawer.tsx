@@ -125,7 +125,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     setIsSubmitting(true);
 
     try {
-      const orderId = 'ORD-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2, 4).toUpperCase();
+      const orderId = await db.generateOrderId();
       const receiptItems = items.map(item => ({
         id: item.productId,
         name: item.name,

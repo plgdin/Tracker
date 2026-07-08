@@ -95,6 +95,14 @@ export default function Receipt() {
   const [utrSubmitted, setUtrSubmitted] = useState(false);
   const [storeUpiId, setStoreUpiId] = useState('anshajshaji3-2@okicici');
   const [storeBankDetails, setStoreBankDetails] = useState('');
+  
+  // Receipt dynamic text
+  const [receiptH1, setReceiptH1] = useState('CHEF & JOY');
+  const [receiptH2, setReceiptH2] = useState('KAZHAKUTTOM,TRIVANDRUM');
+  const [receiptH3, setReceiptH3] = useState('PH:+91-999507648');
+  const [receiptH4, setReceiptH4] = useState('GSTIN:32AKIPA6398K2ZW');
+  const [receiptF1, setReceiptF1] = useState('                         For :  CHEF & JOY');
+  const [receiptF2, setReceiptF2] = useState('   Thank you . . .      Visit Again . . .');
 
   // Default fallback items from the CHEF & JOY photo
   const DEFAULT_ITEMS: ReceiptItem[] = [
@@ -178,6 +186,12 @@ export default function Receipt() {
       if (settings) {
         if (settings.upi_id) setStoreUpiId(settings.upi_id);
         if (settings.bank_details) setStoreBankDetails(settings.bank_details);
+        if (settings.receipt_header_1) setReceiptH1(settings.receipt_header_1);
+        if (settings.receipt_header_2) setReceiptH2(settings.receipt_header_2);
+        if (settings.receipt_header_3) setReceiptH3(settings.receipt_header_3);
+        if (settings.receipt_header_4) setReceiptH4(settings.receipt_header_4);
+        if (settings.receipt_footer_1) setReceiptF1(settings.receipt_footer_1);
+        if (settings.receipt_footer_2) setReceiptF2(settings.receipt_footer_2);
       }
     }).catch(console.error);
     
@@ -237,10 +251,10 @@ export default function Receipt() {
 
   // Construct the full receipt text to avoid JSX whitespace trimming issues
   const receiptText = [
-    centerText("CHEF & JOY"),
-    centerText("KAZHAKUTTOM,TRIVANDRUM"),
-    centerText("PH:+91-999507648"),
-    centerText("GSTIN:32AKIPA6398K2ZW"),
+    centerText(receiptH1),
+    centerText(receiptH2),
+    centerText(receiptH3),
+    centerText(receiptH4),
     `Invoice No: ${invoiceNo.padEnd(10, ' ')} Date :${dateDMY}`,
     `Customer Name : ${customerName ? customerName.toUpperCase().substring(0, 25) : ''}`,
     `Address : ${customerAddress ? customerAddress.toUpperCase().substring(0, 30) : ''}`,
@@ -266,8 +280,8 @@ export default function Receipt() {
     formatSummaryLine("Previous Balance", "    0", "", ""),
     "Amount in words payable:",
     numberToWords(totalAmountVal),
-    "                         For :  CHEF & JOY",
-    "   Thank you . . .      Visit Again . . .",
+    receiptF1,
+    receiptF2,
     "",
     "",
     "",

@@ -11,23 +11,25 @@ interface AdminPortalProps {
 
 export default function AdminPortal({ isModal = false, onClose, isCustomerMode = false }: AdminPortalProps) {
   const navigate = useNavigate();
-  const { setStoreType } = useAppStore();
+  const { setStoreType, setClientSegment } = useAppStore();
 
   const handleOnlineSelect = () => {
-    setStoreType('online');
     if (isCustomerMode) {
+      setClientSegment('hotel');
       if (onClose) onClose();
     } else {
+      setStoreType('online');
       if (isModal && onClose) onClose();
       navigate('/adminonline');
     }
   };
 
   const handleOfflineSelect = () => {
-    setStoreType('offline');
     if (isCustomerMode) {
+      setClientSegment('bakery');
       if (onClose) onClose();
     } else {
+      setStoreType('offline');
       if (isModal && onClose) onClose();
       navigate('/adminoffline');
     }

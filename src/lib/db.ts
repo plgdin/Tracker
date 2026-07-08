@@ -57,6 +57,19 @@ export interface StoreSettings {
   upi_id: string;
   phone_number: string;
   bank_details?: string;
+  footer_description?: string;
+  footer_phone?: string;
+  footer_hours?: string;
+  footer_days?: string;
+  footer_copyright?: string;
+  receipt_header_1?: string;
+  receipt_header_2?: string;
+  receipt_header_3?: string;
+  receipt_header_4?: string;
+  receipt_footer_1?: string;
+  receipt_footer_2?: string;
+  order_id_prefix?: string;
+  order_id_sequence?: number;
 }
 
 export interface HeroSlide {
@@ -674,6 +687,22 @@ export const db = {
     return getLocal<OnlineOrder[]>('tracker_online_orders', [])
       .filter(o => o.user_id === userId)
       .sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime());
+  },
+
+  async generateOrderId(): Promise<string> {
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
+      try {
+        const { data, error } = await dbSupabase.rpc('get_next_order_id');
+        if (!error && data) {
+          return data;
+        }
+      } catch (e) {
+        console.warn('Supabase RPC get_next_order_id failed', e);
+      }
+    }
+    // Fallback if offline or RPC fails
+    return 'ORD-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2, 4).toUpperCase();
   },
 
   async addOnlineOrder(orderData: Omit<OnlineOrder, 'created_at' | 'status'>): Promise<OnlineOrder> {

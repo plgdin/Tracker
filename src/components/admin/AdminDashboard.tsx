@@ -9,7 +9,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { ShieldCheck, Trash2, Lock, Activity, Key, Plus, Users, AlertTriangle, Tag, Package, ToggleLeft, ToggleRight, Eye, EyeOff, ShoppingCart, Image as ImageIcon, Edit2 } from 'lucide-react';
 import { useAppStore } from '../../store/appStore';
 
-type TabKey = 'logs' | 'workers' | 'categories' | 'items' | 'settings' | 'orders' | 'hero';
+type TabKey = 'logs' | 'workers' | 'categories' | 'items' | 'settings' | 'orders' | 'hero' | 'receipt';
 
 interface WorkerData {
   id: string;
@@ -41,6 +41,23 @@ export default function AdminDashboard() {
   const [storePhoneNumber, setStorePhoneNumber] = useState('919778052356');
   const [storeBankDetails, setStoreBankDetails] = useState('');
   const [isSavingStoreSettings, setIsSavingStoreSettings] = useState(false);
+  const [footerDescription, setFooterDescription] = useState('Your premier source for premium cooking and baking ingredients, raw materials, professional utensils, and chef supplies.');
+  const [footerPhone, setFooterPhone] = useState('+91-9876543210');
+  const [footerHours, setFooterHours] = useState('9 AM - 8 PM');
+  const [footerDays, setFooterDays] = useState('Monday - Saturday');
+  const [footerCopyright, setFooterCopyright] = useState('© ' + new Date().getFullYear() + ' Chef & Joy. All rights reserved.');
+  
+  // Receipt State
+  const [receiptH1, setReceiptH1] = useState('CHEF & JOY');
+  const [receiptH2, setReceiptH2] = useState('KAZHAKUTTOM,TRIVANDRUM');
+  const [receiptH3, setReceiptH3] = useState('PH:+91-999507648');
+  const [receiptH4, setReceiptH4] = useState('GSTIN:32AKIPA6398K2ZW');
+  const [receiptF1, setReceiptF1] = useState('For :  CHEF & JOY');
+  const [receiptF2, setReceiptF2] = useState('Thank you . . .      Visit Again . . .');
+
+  const [orderIdPrefix, setOrderIdPrefix] = useState('ORD-');
+  const [orderIdSequence, setOrderIdSequence] = useState(1000);
+
   const [newCatName, setNewCatName] = useState('');
   const [newCatColor, setNewCatColor] = useState('#E63946');
   const [newCatImageUrl, setNewCatImageUrl] = useState('');
@@ -81,6 +98,19 @@ export default function AdminDashboard() {
           setStoreUpiId(settings.upi_id);
           setStorePhoneNumber(settings.phone_number);
           setStoreBankDetails(settings.bank_details || '');
+          if (settings.footer_description) setFooterDescription(settings.footer_description);
+          if (settings.footer_phone) setFooterPhone(settings.footer_phone);
+          if (settings.footer_hours) setFooterHours(settings.footer_hours);
+          if (settings.footer_days) setFooterDays(settings.footer_days);
+          if (settings.footer_copyright) setFooterCopyright(settings.footer_copyright);
+          if (settings.receipt_header_1) setReceiptH1(settings.receipt_header_1);
+          if (settings.receipt_header_2) setReceiptH2(settings.receipt_header_2);
+          if (settings.receipt_header_3) setReceiptH3(settings.receipt_header_3);
+          if (settings.receipt_header_4) setReceiptH4(settings.receipt_header_4);
+          if (settings.receipt_footer_1) setReceiptF1(settings.receipt_footer_1);
+          if (settings.receipt_footer_2) setReceiptF2(settings.receipt_footer_2);
+          if (settings.order_id_prefix) setOrderIdPrefix(settings.order_id_prefix);
+          if (settings.order_id_sequence) setOrderIdSequence(settings.order_id_sequence);
         }
         setWorkers(mergedWorkers);
         localStorage.setItem('worker_accounts', JSON.stringify(mergedWorkers));
@@ -246,7 +276,20 @@ export default function AdminDashboard() {
       await db.updateStoreSettings({
         upi_id: storeUpiId,
         phone_number: storePhoneNumber,
-        bank_details: storeBankDetails
+        bank_details: storeBankDetails,
+        footer_description: footerDescription,
+        footer_phone: footerPhone,
+        footer_hours: footerHours,
+        footer_days: footerDays,
+        footer_copyright: footerCopyright,
+        receipt_header_1: receiptH1,
+        receipt_header_2: receiptH2,
+        receipt_header_3: receiptH3,
+        receipt_header_4: receiptH4,
+        receipt_footer_1: receiptF1,
+        receipt_footer_2: receiptF2,
+        order_id_prefix: orderIdPrefix,
+        order_id_sequence: orderIdSequence
       });
       showToast('Store settings updated! ⚙️');
       await db.addAuditLog('Updated Store Settings', `UPI: ${storeUpiId}`);
@@ -462,6 +505,7 @@ export default function AdminDashboard() {
     { key: 'hero', icon: ImageIcon, label: 'Hero Slides' },
     { key: 'logs', icon: Activity, label: 'Logs' },
     { key: 'settings', icon: Key, label: 'Settings' },
+    { key: 'receipt', icon: Package, label: 'Receipt' },
   ];
 
   const colors = ['#E63946','#E07A5F','#F2CC8F','#81B29A','#3D5A80','#98C1D9','#EE6C4D','#6366F1'];
@@ -772,7 +816,42 @@ export default function AdminDashboard() {
                     <label className="input-label">Bank Details (Optional)</label>
                     <textarea className="input-field" placeholder="Account Number, IFSC Code, Bank Name, etc." value={storeBankDetails} onChange={e => setStoreBankDetails(e.target.value)} rows={3} />
                   </div>
-                  <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={isSavingStoreSettings}>
+                  
+                  <h3 style={{ fontSize: '0.95rem', margin: '1rem 0 0.5rem 0', color: 'var(--color-primary)' }}>Footer Configuration</h3>
+                  
+                  <div className="input-group">
+                    <label className="input-label">Footer Brand Description</label>
+                    <textarea className="input-field" placeholder="Your premier source for premium cooking and baking ingredients..." value={footerDescription} onChange={e => setFooterDescription(e.target.value)} rows={2} required />
+                  </div>
+                  <div className="input-group">
+                    <label className="input-label">Footer Phone/WhatsApp</label>
+                    <input type="text" className="input-field" placeholder="+91-9876543210" value={footerPhone} onChange={e => setFooterPhone(e.target.value)} required />
+                  </div>
+                  <div className="input-group">
+                    <label className="input-label">Store Hours</label>
+                    <input type="text" className="input-field" placeholder="9 AM - 8 PM" value={footerHours} onChange={e => setFooterHours(e.target.value)} required />
+                  </div>
+                  <div className="input-group">
+                    <label className="input-label">Operating Days</label>
+                    <input type="text" className="input-field" placeholder="Monday - Saturday" value={footerDays} onChange={e => setFooterDays(e.target.value)} required />
+                  </div>
+                  <div className="input-group">
+                    <label className="input-label">Copyright Text</label>
+                    <input type="text" className="input-field" placeholder="© 2026 Chef & Joy. All rights reserved." value={footerCopyright} onChange={e => setFooterCopyright(e.target.value)} required />
+                  </div>
+
+                  <h3 style={{ fontSize: '0.95rem', margin: '1rem 0 0.5rem 0', color: 'var(--color-primary)' }}>Order ID Configuration</h3>
+                  <div className="input-group">
+                    <label className="input-label">Order ID Prefix</label>
+                    <input type="text" className="input-field" placeholder="ORD-" value={orderIdPrefix} onChange={e => setOrderIdPrefix(e.target.value)} required />
+                  </div>
+                  <div className="input-group">
+                    <label className="input-label">Next Order Sequence Number</label>
+                    <input type="number" className="input-field" placeholder="1000" value={orderIdSequence} onChange={e => setOrderIdSequence(parseInt(e.target.value) || 1000)} required />
+                    <p style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', marginTop: '0.2rem' }}>This number will increase by 1 for every new online order.</p>
+                  </div>
+                  
+                  <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }} disabled={isSavingStoreSettings}>
                     {isSavingStoreSettings ? 'Saving...' : 'Save Configuration'}
                   </button>
                 </form>
@@ -808,6 +887,67 @@ export default function AdminDashboard() {
           </div>
           </div>
         )}
+
+        {/* RECEIPT TAB */}
+        {activeTab === 'receipt' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div className="panel" style={{ padding: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Package size={18} color="var(--color-primary)" /> Receipt Configuration
+              </h2>
+              <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+                
+                {/* Editor Side */}
+                <div style={{ flex: '1 1 300px' }}>
+                  <form onSubmit={handleSaveStoreSettings} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <h3 style={{ fontSize: '0.9rem', margin: 0 }}>Header Lines</h3>
+                    <input type="text" className="input-field" placeholder="CHEF & JOY" value={receiptH1} onChange={e => setReceiptH1(e.target.value)} required />
+                    <input type="text" className="input-field" placeholder="KAZHAKUTTOM,TRIVANDRUM" value={receiptH2} onChange={e => setReceiptH2(e.target.value)} required />
+                    <input type="text" className="input-field" placeholder="PH:+91-999507648" value={receiptH3} onChange={e => setReceiptH3(e.target.value)} required />
+                    <input type="text" className="input-field" placeholder="GSTIN:32AKIPA6398K2ZW" value={receiptH4} onChange={e => setReceiptH4(e.target.value)} required />
+                    
+                    <h3 style={{ fontSize: '0.9rem', margin: '1rem 0 0 0' }}>Footer Lines</h3>
+                    <input type="text" className="input-field" placeholder="For :  CHEF & JOY" value={receiptF1} onChange={e => setReceiptF1(e.target.value)} required />
+                    <input type="text" className="input-field" placeholder="Thank you . . . Visit Again . . ." value={receiptF2} onChange={e => setReceiptF2(e.target.value)} required />
+                    
+                    <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }} disabled={isSavingStoreSettings}>
+                      {isSavingStoreSettings ? 'Saving...' : 'Save Configuration'}
+                    </button>
+                  </form>
+                </div>
+
+                {/* Live Preview Side */}
+                <div style={{ flex: '1 1 300px', backgroundColor: '#fff', border: '1px solid #ccc', padding: '1.5rem', fontFamily: 'monospace', fontSize: '13px', whiteSpace: 'pre', color: '#000', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', borderRadius: '8px', minWidth: '350px' }}>
+                  <div style={{ textAlign: 'center' }}>
+                    {receiptH1}<br />
+                    {receiptH2}<br />
+                    {receiptH3}<br />
+                    {receiptH4}
+                  </div>
+                  <br />
+                  Invoice No: 1234       Date :08-07-2026<br />
+                  Customer Name : JOHN DOE<br />
+                  --------------------------------------------<br />
+                  SI  Item       Qty  MRP    Rate GST%  Amount<br />
+                  --------------------------------------------<br />
+                  1 //001//Bread       1    50    47.62    5    47.62<br />
+                  <br />
+                  Total :                                50.00<br />
+                  ============================================<br />
+                  Amount in words payable:<br />
+                  Fifty Rupees Only<br />
+                  <br />
+                  <div style={{ textAlign: 'center' }}>
+                    {receiptF1}<br />
+                    {receiptF2}
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        )}
+
 
         {/* HERO TAB */}
         {activeTab === 'hero' && (

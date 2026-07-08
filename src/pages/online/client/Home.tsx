@@ -17,6 +17,7 @@ export interface FormattedProduct {
 import Navbar from "@/components/Navbar";
 import HeroCarousel from "@/components/HeroCarousel";
 import ProductCard from "@/components/ProductCard";
+import Footer from "@/components/Footer";
 import { useCartContext } from "@/context/CartContext";
 import { supabase } from "@/lib/supabase";
 import { useLocation } from "react-router-dom";
@@ -466,70 +467,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-dark-chocolate text-white py-12 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-8 mb-8">
-            <div>
-              <h3 className="font-heading text-2xl font-bold mb-4">
-                Chef & Joy
-              </h3>
-              <p className="text-white/60 text-sm leading-relaxed">
-                Your premier source for premium cooking and baking ingredients,
-                raw materials, professional utensils, and chef supplies.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Quick Links</h4>
-              <div className="space-y-2">
-                <button
-                  onClick={() =>
-                    document
-                      .getElementById("hero")
-                      ?.scrollIntoView({ behavior: "smooth" })
-                  }
-                  className="block text-white/60 hover:text-burnt-orange transition-colors text-sm text-left"
-                >
-                  Home
-                </button>
-                <button
-                  onClick={() =>
-                    document
-                      .getElementById("products")
-                      ?.scrollIntoView({ behavior: "smooth" })
-                  }
-                  className="block text-white/60 hover:text-burnt-orange transition-colors text-sm text-left"
-                >
-                  Products
-                </button>
-                <button
-                  onClick={() =>
-                    document
-                      .getElementById("offers")
-                      ?.scrollIntoView({ behavior: "smooth" })
-                  }
-                  className="block text-white/60 hover:text-burnt-orange transition-colors text-sm text-left"
-                >
-                  Offers
-                </button>
-              </div>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Contact</h4>
-              <div className="space-y-2 text-sm text-white/60">
-                <p>WhatsApp: +91-9876543210</p>
-                <p>Store Hours: 9 AM - 8 PM</p>
-                <p>Monday - Saturday</p>
-              </div>
-            </div>
-          </div>
-          <div className="border-t border-white/10 pt-6 text-center">
-            <p className="text-white/40 text-sm">
-              &copy; {new Date().getFullYear()} Chef & Joy. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

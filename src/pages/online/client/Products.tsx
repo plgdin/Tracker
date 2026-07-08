@@ -3,6 +3,7 @@ import type { Category, Item } from "@/lib/db";
 import type { FormattedProduct } from "./Home";
 import Navbar from "@/components/Navbar";
 import ProductCard from "@/components/ProductCard";
+import Footer from "@/components/Footer";
 import { useCartContext } from "@/context/CartContext";
 import { supabase } from "@/lib/supabase";
 import { Search, Check, Trash2, ChevronDown, ArrowLeft, SlidersHorizontal, LayoutGrid, Coins, Tag, Globe } from "lucide-react";
@@ -657,52 +658,7 @@ export default function Products() {
         </div>
       )}
 
-      {/* Footer */}
-      <footer className="bg-dark-chocolate text-white py-12 px-6 mt-16">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-8 mb-8">
-            <div>
-              <h3 className="font-heading text-2xl font-bold mb-4">
-                Chef & Joy
-              </h3>
-              <p className="text-white/60 text-sm leading-relaxed">
-                Your premier source for premium cooking and baking ingredients,
-                raw materials, professional utensils, and chef supplies.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Quick Links</h4>
-              <div className="space-y-2">
-                <a
-                  href="/"
-                  className="block text-white/60 hover:text-burnt-orange transition-colors text-sm"
-                >
-                  Home
-                </a>
-                <a
-                  href="/products"
-                  className="block text-white/60 hover:text-burnt-orange transition-colors text-sm"
-                >
-                  Products
-                </a>
-              </div>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Contact</h4>
-              <div className="space-y-2 text-sm text-white/60">
-                <p>WhatsApp: +91-9876543210</p>
-                <p>Store Hours: 9 AM - 8 PM</p>
-                <p>Monday - Saturday</p>
-              </div>
-            </div>
-          </div>
-          <div className="border-t border-white/10 pt-6 text-center">
-            <p className="text-white/40 text-sm">
-              &copy; {new Date().getFullYear()} Chef & Joy. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

@@ -7,7 +7,7 @@ import CartDrawer from "@/components/CartDrawer";
 import AdminPortal from "@/pages/AdminPortal";
 
 export default function StorefrontWrapper() {
-  const { initialize, isLoading, isInitialized, user, profile } = useAuthStore();
+  const { initialize, isLoading, isInitialized, user } = useAuthStore();
   const { isCartOpen, setIsCartOpen, totalItems } = useCartContext();
   const [showPortalModal, setShowPortalModal] = useState(false);
   const location = useLocation();
@@ -25,8 +25,6 @@ export default function StorefrontWrapper() {
       setShowPortalModal(true);
     }
   }, [isLoading, isInitialized]);
-
-  const isAdminOrWorker = profile && (profile.role === 'admin' || profile.role === 'worker');
 
   const handleClosePortalModal = () => {
     setShowPortalModal(false);
@@ -105,7 +103,7 @@ export default function StorefrontWrapper() {
 
       {/* Store Selector / Admin Portal Modal on First Load */}
       {showPortalModal && (
-        <AdminPortal isModal={true} onClose={handleClosePortalModal} isCustomerMode={!isAdminOrWorker} />
+        <AdminPortal isModal={true} onClose={handleClosePortalModal} isCustomerMode={true} />
       )}
     </div>
   );
