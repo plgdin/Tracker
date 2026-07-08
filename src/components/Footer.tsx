@@ -8,7 +8,7 @@ export default function Footer() {
   const [phone, setPhone] = useState('+91-9876543210');
   const [hours, setHours] = useState('9 AM - 8 PM');
   const [days, setDays] = useState('Monday - Saturday');
-  const [copyright, setCopyright] = useState('© ' + new Date().getFullYear() + ' Chef & Joy. All rights reserved.');
+  const [copyright, setCopyright] = useState('© ' + new Date().getFullYear() + ' Template Store. All rights reserved.');
 
   useEffect(() => {
     db.getStoreSettings().then(settings => {
@@ -40,7 +40,7 @@ export default function Footer() {
         <div className="grid md:grid-cols-3 gap-8 mb-8">
           <div>
             <h3 className="font-heading text-2xl font-bold mb-4">
-              Chef & Joy
+              Template Store
             </h3>
             <p className="text-white/60 text-sm leading-relaxed">
               {description}

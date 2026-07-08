@@ -206,7 +206,7 @@ export default function Navbar({
           >
             <ChefHat className="w-7 h-7 text-burnt-orange" />
             <span className="font-accent text-2xl font-semibold text-espresso hidden xl:inline">
-              Chef & Joy
+              Template Store
             </span>
           </button>
 

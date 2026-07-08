@@ -97,14 +97,14 @@ export default function Receipt() {
   const [storeBankDetails, setStoreBankDetails] = useState('');
   
   // Receipt dynamic text
-  const [receiptH1, setReceiptH1] = useState('CHEF & JOY');
+  const [receiptH1, setReceiptH1] = useState('TEMPLATE STORE');
   const [receiptH2, setReceiptH2] = useState('KAZHAKUTTOM,TRIVANDRUM');
   const [receiptH3, setReceiptH3] = useState('PH:+91-999507648');
   const [receiptH4, setReceiptH4] = useState('GSTIN:32AKIPA6398K2ZW');
-  const [receiptF1, setReceiptF1] = useState('                         For :  CHEF & JOY');
+  const [receiptF1, setReceiptF1] = useState('                         For :  TEMPLATE STORE');
   const [receiptF2, setReceiptF2] = useState('   Thank you . . .      Visit Again . . .');
 
-  // Default fallback items from the CHEF & JOY photo
+  // Default fallback items from the TEMPLATE STORE photo
   const DEFAULT_ITEMS: ReceiptItem[] = [
     { id: '18062000', name: 'morde dark bar 500', code: '2627', quantity: 1, mrp: 199, price: 176.19, gst: 5, amount: 176.19 },
     { id: '3406', name: 'number candle gold pc', code: '3406', quantity: 1, mrp: 40, price: 21.19, gst: 18, amount: 21.19 },
@@ -171,7 +171,7 @@ export default function Receipt() {
       }
     } else {
       // Fallback values from the photo
-      setOrderId('ORD-CHEFJOY2241');
+      setOrderId('ORD-TEMPLATESTORE2241');
       setCustomerName('');
       setCustomerPhone('+91-999507648');
       setCustomerAddress('Kazhakuttom, Trivandrum');
@@ -208,7 +208,7 @@ export default function Receipt() {
   const totalAmountVal = Math.round(taxableAmt + totalCGST + totalSGST);
   const savings = totalMRP - totalAmountVal;
 
-  const isFallback = orderId === 'ORD-CHEFJOY2241';
+  const isFallback = orderId === 'ORD-TEMPLATESTORE2241';
   const formattedTaxable = isFallback ? '585.23' : taxableAmt.toFixed(2);
   const formattedCGST = isFallback ? '17.38' : totalCGST.toFixed(2);
   const formattedSGST = isFallback ? '17.38' : totalSGST.toFixed(2);
@@ -230,7 +230,7 @@ export default function Receipt() {
 
   // UPI payment parameters
   const upiId = storeUpiId;
-  const payeeName = 'Chef and Joy';
+  const payeeName = 'Template Store';
   const upiUri = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${formattedTotal}&cu=INR&tn=Order%20${orderId}`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUri)}`;
 

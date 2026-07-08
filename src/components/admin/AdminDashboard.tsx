@@ -45,14 +45,14 @@ export default function AdminDashboard() {
   const [footerPhone, setFooterPhone] = useState('+91-9876543210');
   const [footerHours, setFooterHours] = useState('9 AM - 8 PM');
   const [footerDays, setFooterDays] = useState('Monday - Saturday');
-  const [footerCopyright, setFooterCopyright] = useState('© ' + new Date().getFullYear() + ' Chef & Joy. All rights reserved.');
+  const [footerCopyright, setFooterCopyright] = useState('© ' + new Date().getFullYear() + ' Template Store. All rights reserved.');
   
   // Receipt State
-  const [receiptH1, setReceiptH1] = useState('CHEF & JOY');
+  const [receiptH1, setReceiptH1] = useState('TEMPLATE STORE');
   const [receiptH2, setReceiptH2] = useState('KAZHAKUTTOM,TRIVANDRUM');
   const [receiptH3, setReceiptH3] = useState('PH:+91-999507648');
   const [receiptH4, setReceiptH4] = useState('GSTIN:32AKIPA6398K2ZW');
-  const [receiptF1, setReceiptF1] = useState('For :  CHEF & JOY');
+  const [receiptF1, setReceiptF1] = useState('For :  TEMPLATE STORE');
   const [receiptF2, setReceiptF2] = useState('Thank you . . .      Visit Again . . .');
 
   const [orderIdPrefix, setOrderIdPrefix] = useState('ORD-');
@@ -837,7 +837,7 @@ export default function AdminDashboard() {
                   </div>
                   <div className="input-group">
                     <label className="input-label">Copyright Text</label>
-                    <input type="text" className="input-field" placeholder="© 2026 Chef & Joy. All rights reserved." value={footerCopyright} onChange={e => setFooterCopyright(e.target.value)} required />
+                    <input type="text" className="input-field" placeholder="© 2026 Template Store. All rights reserved." value={footerCopyright} onChange={e => setFooterCopyright(e.target.value)} required />
                   </div>
 
                   <h3 style={{ fontSize: '0.95rem', margin: '1rem 0 0.5rem 0', color: 'var(--color-primary)' }}>Order ID Configuration</h3>
@@ -901,13 +901,13 @@ export default function AdminDashboard() {
                 <div style={{ flex: '1 1 300px' }}>
                   <form onSubmit={handleSaveStoreSettings} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                     <h3 style={{ fontSize: '0.9rem', margin: 0 }}>Header Lines</h3>
-                    <input type="text" className="input-field" placeholder="CHEF & JOY" value={receiptH1} onChange={e => setReceiptH1(e.target.value)} required />
+                    <input type="text" className="input-field" placeholder="TEMPLATE STORE" value={receiptH1} onChange={e => setReceiptH1(e.target.value)} required />
                     <input type="text" className="input-field" placeholder="KAZHAKUTTOM,TRIVANDRUM" value={receiptH2} onChange={e => setReceiptH2(e.target.value)} required />
                     <input type="text" className="input-field" placeholder="PH:+91-999507648" value={receiptH3} onChange={e => setReceiptH3(e.target.value)} required />
                     <input type="text" className="input-field" placeholder="GSTIN:32AKIPA6398K2ZW" value={receiptH4} onChange={e => setReceiptH4(e.target.value)} required />
                     
                     <h3 style={{ fontSize: '0.9rem', margin: '1rem 0 0 0' }}>Footer Lines</h3>
-                    <input type="text" className="input-field" placeholder="For :  CHEF & JOY" value={receiptF1} onChange={e => setReceiptF1(e.target.value)} required />
+                    <input type="text" className="input-field" placeholder="For :  TEMPLATE STORE" value={receiptF1} onChange={e => setReceiptF1(e.target.value)} required />
                     <input type="text" className="input-field" placeholder="Thank you . . . Visit Again . . ." value={receiptF2} onChange={e => setReceiptF2(e.target.value)} required />
                     
                     <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }} disabled={isSavingStoreSettings}>

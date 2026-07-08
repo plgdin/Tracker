@@ -58,7 +58,7 @@ export default function TermsAndConditions() {
               Terms & Conditions
             </h1>
             <p className="text-taupe mt-4 text-lg leading-relaxed">
-              Welcome to Chef & Joy. Please read these terms and conditions carefully before using our website or placing an order. By accessing or using any part of the site, you agree to be bound by these Terms of Service.
+              Welcome to Template Store. Please read these terms and conditions carefully before using our website or placing an order. By accessing or using any part of the site, you agree to be bound by these Terms of Service.
             </p>
             <p className="text-taupe/80 text-sm mt-4">
               Last updated: {new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
@@ -95,10 +95,10 @@ export default function TermsAndConditions() {
                   1. Introduction & Acceptance
                 </h2>
                 <p>
-                  These Terms & Conditions ("Terms") govern your use of the website operated by <strong>Chef & Joy</strong>, located at this domain, and any related services, tools, and products offered through this platform.
+                  These Terms & Conditions ("Terms") govern your use of the website operated by <strong>Template Store</strong>, located at this domain, and any related services, tools, and products offered through this platform.
                 </p>
                 <p className="mt-3">
-                  Throughout the site, the terms "we", "us", and "our" refer to Chef & Joy. We offer this website, including all information, tools, and services available from this site to you, the user, conditioned upon your acceptance of all terms, conditions, policies, and notices stated here.
+                  Throughout the site, the terms "we", "us", and "our" refer to Template Store. We offer this website, including all information, tools, and services available from this site to you, the user, conditioned upon your acceptance of all terms, conditions, policies, and notices stated here.
                 </p>
                 <p className="mt-3">
                   By visiting our site and/or purchasing something from us, you engage in our "Service" and agree to be bound by the following terms and conditions, including those additional terms and conditions and policies referenced herein and/or available by hyperlink.
@@ -140,7 +140,7 @@ export default function TermsAndConditions() {
                   4. Shipping, Deliveries & Pickup
                 </h2>
                 <p>
-                  Chef & Joy offers shipping, local delivery, and in-store pickup options depending on your location and preferences.
+                  Template Store offers shipping, local delivery, and in-store pickup options depending on your location and preferences.
                 </p>
                 <p className="mt-3">
                   Delivery dates and times are estimates only and cannot be guaranteed. We are not responsible for delays caused by shipping carriers, weather, incorrect delivery address information, or other circumstances beyond our reasonable control.
@@ -169,7 +169,7 @@ export default function TermsAndConditions() {
                   6. Intellectual Property
                 </h2>
                 <p>
-                  The Service and its original content, features, and functionality (including but not limited to all information, software, text, displays, images, video, and audio, and the design, selection, and arrangement thereof) are owned by Chef & Joy, its licensors, or other providers of such material and are protected by copyright, trademark, patent, trade secret, and other intellectual property or proprietary rights laws.
+                  The Service and its original content, features, and functionality (including but not limited to all information, software, text, displays, images, video, and audio, and the design, selection, and arrangement thereof) are owned by Template Store, its licensors, or other providers of such material and are protected by copyright, trademark, patent, trade secret, and other intellectual property or proprietary rights laws.
                 </p>
               </section>
 
@@ -180,7 +180,7 @@ export default function TermsAndConditions() {
                 <div className="bg-espresso/5 border-l-4 border-burnt-orange p-4 rounded-r-xl mb-4 flex gap-3">
                   <ShieldAlert className="w-6 h-6 text-burnt-orange shrink-0 mt-0.5" />
                   <p className="text-sm text-espresso/90">
-                    In no event shall Chef & Joy, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses.
+                    In no event shall Template Store, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses.
                   </p>
                 </div>
                 <p>
@@ -208,10 +208,10 @@ export default function TermsAndConditions() {
                   Questions about the Terms & Conditions should be sent to us at:
                 </p>
                 <div className="mt-4 p-6 bg-cream/50 rounded-2xl border border-espresso/5 space-y-2">
-                  <p><strong>Business Name:</strong> Chef & Joy Stores</p>
+                  <p><strong>Business Name:</strong> Template Store Stores</p>
                   <p><strong>WhatsApp Support:</strong> +91-9876543210</p>
                   <p><strong>Support Hours:</strong> 9:00 AM - 8:00 PM (Monday - Saturday)</p>
-                  <p><strong>Address:</strong> Chef & Joy Main Market Road, Bangalore, Karnataka, India</p>
+                  <p><strong>Address:</strong> Template Store Main Market Road, Bangalore, Karnataka, India</p>
                 </div>
               </section>
 

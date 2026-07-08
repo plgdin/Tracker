@@ -149,7 +149,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         items: receiptItems,
       });
 
-      let text = `*New Order - Chef & Joy*\n\n`;
+      let text = `*New Order - Template Store*\n\n`;
       text += `*Order ID:* ${orderId}\n`;
       text += `*Customer:* ${customerName}\n`;
       text += `*Phone:* ${customerPhone}\n`;
