@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ShoppingCart, User, ChefHat, Search, MapPin, ChevronDown, Compass, Plus, MoreVertical, Home, ArrowLeft, Navigation, Building, Hash, Briefcase, Tag, Package, Store, Hotel } from "lucide-react";
 import { useCartContext } from "@/context/CartContext";
 import { useNavigate, useLocation, Link } from "react-router-dom";
@@ -34,6 +34,8 @@ export default function Navbar({
   setSearchQuery,
 }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
+  const [showHeader, setShowHeader] = useState(true);
+  const lastScrollYRef = useRef(0);
   const { totalItems } = useCartContext();
   const { user, profile, updateProfile } = useAuthStore();
   const { clientSegment, setClientSegment } = useAppStore();
@@ -88,8 +90,24 @@ export default function Navbar({
   };
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", handleScroll);
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      setScrolled(currentScrollY > 50);
+
+      // Hide/Show navbar based on scroll direction
+      if (currentScrollY <= 50) {
+        setShowHeader(true);
+      } else if (currentScrollY > lastScrollYRef.current) {
+        // Scrolling down
+        setShowHeader(false);
+      } else {
+        // Scrolling up
+        setShowHeader(true);
+      }
+      lastScrollYRef.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -163,11 +181,16 @@ export default function Navbar({
     <>
       {/* Desktop Floating Navbar */}
       <nav
-        className={`hidden md:block fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 ${
+        className={`hidden md:block fixed left-1/2 z-50 transition-all duration-500 ${
           scrolled
             ? "w-[95%] max-w-6xl bg-white/90 backdrop-blur-xl shadow-card"
             : "w-[95%] max-w-6xl bg-white/70 backdrop-blur-md"
         } rounded-full px-4 md:px-6 py-3`}
+        style={{
+          top: "1rem",
+          transform: `translateX(-50%) translateY(${showHeader ? "0" : "-150%"})`,
+          transition: "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), width 0.5s, background-color 0.5s, box-shadow 0.5s"
+        }}
       >
         <div className="flex items-center gap-4">
           {/* Logo */}
@@ -319,12 +342,18 @@ export default function Navbar({
       </nav>
 
       {/* Mobile Swiggy-like Header */}
-      <div className={`md:hidden fixed top-0 left-0 right-0 z-50 w-full bg-espresso text-white px-4 shadow-md flex flex-col transition-all duration-300 ${
-        scrolled ? "pb-2 pt-2 gap-0" : "pb-3 pt-2.5 gap-2"
-      }`}>
+      <div 
+        className={`md:hidden fixed top-0 left-0 right-0 z-50 w-full bg-espresso text-white px-4 shadow-md flex flex-col transition-all duration-300 ${
+          scrolled ? "pb-2.5 pt-2.5 gap-0" : "pb-3.5 pt-3 gap-2"
+        }`}
+        style={{
+          transform: `translateY(${showHeader ? "0" : "-100%"})`,
+          transition: "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s, gap 0.3s"
+        }}
+      >
         {/* Top Row: Location & Profile */}
         <div className={`flex items-center justify-between transition-all duration-300 ${
-          scrolled ? "opacity-0 max-h-0 overflow-hidden pointer-events-none" : "opacity-100 max-h-10"
+          scrolled ? "opacity-0 max-h-0 overflow-hidden pointer-events-none mb-0" : "opacity-100 max-h-10 mb-1"
         }`}>
           <div 
             onClick={() => {
@@ -393,8 +422,8 @@ export default function Navbar({
           </div>
         </div>
 
-        {/* Middle Row: Search + Store Toggle */}
-        <div className={`flex items-center gap-2 transition-all duration-300 ${scrolled ? "mt-0" : "mt-2"}`}>
+        {/* Search Row */}
+        <div className="w-full">
           <form 
             onSubmit={(e) => {
               e.preventDefault();
@@ -404,7 +433,7 @@ export default function Navbar({
                 navigate(`/products`);
               }
             }}
-            className="relative flex-1"
+            className="relative w-full"
           >
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-taupe" />
             <input
@@ -415,46 +444,46 @@ export default function Navbar({
               className="navbar-search-input w-full bg-white text-espresso rounded-full py-2 pl-10 pr-4 text-xs font-medium border border-espresso/15 focus:border-burnt-orange outline-none h-9 shadow-sm"
             />
           </form>
-          {/* Mobile Store Toggle */}
-          <div className="flex items-center bg-white/15 rounded-full p-0.5 shrink-0">
-            <button
-              onClick={() => setClientSegment('all')}
-              className={`px-2 py-1.5 text-[10px] font-bold rounded-full transition-all duration-300 ${
-                clientSegment === 'all'
-                  ? '!bg-white !text-espresso'
-                  : 'text-white/50'
-              }`}
-              title="All Items"
-            >
-              All
-            </button>
-            <button
-              onClick={() => setClientSegment('hotel')}
-              className={`p-1.5 rounded-full transition-all duration-300 ${
-                clientSegment === 'hotel'
-                  ? '!bg-burnt-orange !text-white'
-                  : 'text-white/50'
-              }`}
-              title="Hotel Store"
-            >
-              <Hotel className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setClientSegment('bakery')}
-              className={`p-1.5 rounded-full transition-all duration-300 ${
-                clientSegment === 'bakery'
-                  ? '!bg-white !text-espresso'
-                  : 'text-white/50'
-              }`}
-              title="Bakery Store"
-            >
-              <Store className="w-4 h-4" />
-            </button>
-          </div>
+        </div>
+
+        {/* Store Segment Toggle (3 Different Tabs right below search bar) */}
+        <div className="flex w-full items-center bg-white/10 rounded-xl p-1 mt-2 gap-1 border border-white/5 shadow-inner">
+          <button
+            onClick={() => setClientSegment('all')}
+            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-1.5 outline-none ${
+              clientSegment === 'all'
+                ? '!bg-white !text-espresso shadow-md scale-[1.02]'
+                : 'text-white/60 hover:text-white'
+            }`}
+          >
+            <span>All Items</span>
+          </button>
+          <button
+            onClick={() => setClientSegment('hotel')}
+            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-1.5 outline-none ${
+              clientSegment === 'hotel'
+                ? '!bg-burnt-orange !text-white shadow-md scale-[1.02]'
+                : 'text-white/60 hover:text-white'
+            }`}
+          >
+            <Hotel className="w-3.5 h-3.5" />
+            <span>Hotel</span>
+          </button>
+          <button
+            onClick={() => setClientSegment('bakery')}
+            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-1.5 outline-none ${
+              clientSegment === 'bakery'
+                ? '!bg-[#E8D5C4] !text-espresso shadow-md scale-[1.02]'
+                : 'text-white/60 hover:text-white'
+            }`}
+          >
+            <Store className="w-3.5 h-3.5" />
+            <span>Bakery</span>
+          </button>
         </div>
       </div>
       {/* Mobile Header Spacer */}
-      <div className="md:hidden h-[86px]" />
+      <div className="md:hidden h-[148px]" />
 
       {/* Address Edit Bottom Sheet */}
       {isAddressModalOpen && (
