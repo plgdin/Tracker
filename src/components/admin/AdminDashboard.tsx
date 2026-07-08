@@ -439,6 +439,7 @@ export default function AdminDashboard() {
     setNewCatColor(cat.color);
     setNewCatImageUrl(cat.image_url || '');
     setNewCatStoreType((cat as any).store_type || 'offline');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDeleteCategory = async (id: string, name: string) => {
@@ -624,33 +625,11 @@ export default function AdminDashboard() {
         {activeTab === 'categories' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div className="panel" style={{ padding: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <h2 style={{ fontSize: '1.05rem', margin: '0 0 1rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Tag size={18} color="var(--color-primary)" /> Categories ({categories.length})
               </h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.25rem' }}>
-                {categories.map(cat => (
-                  <div key={cat.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.6rem 1rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', border: `1.5px solid ${cat.color}20` }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      {cat.image_url ? (
-                        <img src={cat.image_url} alt={cat.name} style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }} />
-                      ) : (
-                        <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: cat.color, flexShrink: 0 }}></span>
-                      )}
-                      <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>{cat.name}</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                      <button onClick={() => handleEditCategoryClick(cat)} style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer', padding: '0.3rem' }}>
-                        <Edit2 size={15} />
-                      </button>
-                      <button onClick={() => handleDeleteCategory(cat.id, cat.name)} style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer', padding: '0.3rem' }}>
-                        <Trash2 size={15} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
 
-              <form onSubmit={handleAddCategory} style={{ borderTop: '1px solid rgba(230,57,70,0.08)', paddingTop: '1.25rem' }}>
+              <form onSubmit={handleAddCategory} style={{ borderBottom: '1px solid rgba(230,57,70,0.08)', paddingBottom: '1.5rem', marginBottom: '1.5rem' }}>
                 <h3 style={{ fontSize: '0.9rem', margin: '0 0 0.75rem 0', fontWeight: 700 }}>
                   {editingCategoryId ? '✏️ Edit Category' : '➕ Add New Category'}
                 </h3>
@@ -714,6 +693,30 @@ export default function AdminDashboard() {
                   )}
                 </div>
               </form>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.25rem' }}>
+                {categories.map(cat => (
+                  <div key={cat.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.6rem 1rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', border: `1.5px solid ${cat.color}20` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      {cat.image_url ? (
+                        <img src={cat.image_url} alt={cat.name} style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }} />
+                      ) : (
+                        <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: cat.color, flexShrink: 0 }}></span>
+                      )}
+                      <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>{cat.name}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                      <button onClick={() => handleEditCategoryClick(cat)} style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer', padding: '0.3rem' }}>
+                        <Edit2 size={15} />
+                      </button>
+                      <button onClick={() => handleDeleteCategory(cat.id, cat.name)} style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer', padding: '0.3rem' }}>
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+
             </div>
           </div>
         )}
