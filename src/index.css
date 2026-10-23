@@ -198,25 +198,45 @@ img, video {
     @apply border-border;
   }
   body {
-    @apply bg-[#F8F7F0] text-[#351E28];
-    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    @apply bg-[#F9F4EE] text-[#4A2818];
+    font-family: 'Plus Jakarta Sans', 'Outfit', sans-serif;
   }
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Outfit', 'Playfair Display', sans-serif;
-    color: #351E28;
+    font-family: 'DM Serif Display', 'Playfair Display', serif;
+    color: #4A2818;
+    letter-spacing: -0.01em;
   }
 }
 
 @layer utilities {
   .font-heading {
-    font-family: 'Outfit', 'Playfair Display', sans-serif;
+    font-family: 'DM Serif Display', 'Playfair Display', serif;
   }
   .font-body {
-    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    font-family: 'Plus Jakarta Sans', 'Outfit', sans-serif;
   }
   .font-serif {
-    font-family: 'Playfair Display', serif;
+    font-family: 'DM Serif Display', 'Playfair Display', serif;
   }
+  .font-script {
+    font-family: 'Alex Brush', cursive, serif;
+  }
+
+  /* Warm Artisan Bakery Palette Utilities */
+  .bg-cream { background-color: #F9F4EE; }
+  .bg-cream-light { background-color: #FCFAF7; }
+  .bg-cream-sand { background-color: #F2E7DC; }
+  .bg-cocoa { background-color: #4A2818; }
+  .bg-cocoa-dark { background-color: #361B0E; }
+  .bg-blush { background-color: #EAD9CF; }
+
+  .text-cocoa { color: #4A2818; }
+  .text-cocoa-dark { color: #361B0E; }
+  .text-cocoa-muted { color: #7A6153; }
+  .text-cream { color: #F9F4EE; }
+
+  .border-cocoa { border-color: #4A2818; }
+  .border-cream-sand { border-color: #F2E7DC; }
   
   /* Brand Palette Utilities */
   .bg-wasabi { background-color: #EAF05C; }

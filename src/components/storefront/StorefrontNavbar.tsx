@@ -8,8 +8,8 @@ import {
   MapPin, 
   ShieldCheck, 
   ArrowRight,
-  Cake,
-  PhoneCall
+  PhoneCall,
+  Home
 } from 'lucide-react';
 import { useCartContext } from '../../context/CartContext';
 import type { Category, Product, StoreSettings } from '../../types/ecommerce';
@@ -43,7 +43,7 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
 
   useEffect(() => {
     setLocalQuery(searchQuery);
-  }, [searchQuery]);
+  }, searchQuery);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -53,7 +53,6 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Handle outside click for search suggestions
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
@@ -64,7 +63,6 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Live search debounced suggestion
   useEffect(() => {
     if (!localQuery.trim() || localQuery.length < 2) {
       setSuggestions([]);
@@ -98,249 +96,194 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
   };
 
   return (
-    <header className={`sticky top-0 z-40 bg-white/95 backdrop-blur-md transition-all duration-200 border-b ${
-      isScrolled ? 'border-[#351E28]/10 shadow-sm' : 'border-black/5'
+    <header className={`sticky top-0 z-40 bg-[#F9F4EE]/95 backdrop-blur-md transition-all duration-200 border-b ${
+      isScrolled ? 'border-[#E8D8CC] shadow-sm' : 'border-[#E8D8CC]/50'
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20 gap-4">
+        <div className="flex items-center justify-between h-20 gap-4 sm:gap-8">
           
-          {/* Brand Logo */}
-          <Link to="/" className="flex items-center gap-3 group shrink-0">
-            <div className="w-11 h-11 rounded-2xl bg-[#351E28] flex items-center justify-center text-[#EAF05C] group-hover:scale-105 transition-transform shadow-sm">
-              <Cake className="w-6 h-6 stroke-[2.2]" />
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-heading text-2xl font-black text-[#351E28] tracking-tight">
-                  {settings.storeName || 'Bake & Joy'}
-                </span>
-                <span className="inline-block w-2 h-2 rounded-full bg-[#FF5C34]" />
-              </div>
-              <p className="text-[11px] font-semibold tracking-wider text-[#351E28]/60 uppercase">
-                Baking Pantry & Decor
-              </p>
-            </div>
+          {/* Brand Logo in Artisan Script / Serif style (like 'Frem' in reference image) */}
+          <Link to="/" className="flex items-center gap-2 group shrink-0">
+            <span className="font-serif text-3xl sm:text-4xl font-medium tracking-tight text-[#4A2818] italic group-hover:opacity-80 transition-opacity">
+              {settings.storeName || 'Bake & Joy'}
+            </span>
           </Link>
 
-          {/* Search Bar (Desktop) */}
-          <div ref={searchContainerRef} className="hidden md:flex flex-1 max-w-lg relative">
-            <form onSubmit={handleSearchSubmit} className="w-full relative">
-              <input
-                type="text"
-                value={localQuery}
-                onChange={(e) => {
-                  setLocalQuery(e.target.value);
-                  setShowSuggestions(true);
-                  if (onSearchChange) onSearchChange(e.target.value);
-                }}
-                onFocus={() => setShowSuggestions(true)}
-                placeholder="Search nozzles, moulds, cocoa, whipping cream..."
-                className="w-full bg-[#F8F7F0] border-2 border-[#351E28]/10 focus:border-[#FF5C34] focus:bg-white text-[#351E28] placeholder-[#351E28]/40 rounded-full py-2.5 pl-11 pr-24 text-sm font-medium outline-none transition-all"
-              />
-              <Search className="w-4 h-4 text-[#351E28]/50 absolute left-4 top-1/2 -translate-y-1/2" />
-              <button
-                type="submit"
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-[#FF5C34] hover:bg-[#e44c26] text-white text-xs font-bold px-3.5 py-1.5 rounded-full transition-colors flex items-center gap-1 shadow-sm"
-              >
-                <span>Search</span>
-              </button>
-            </form>
-
-            {/* Suggestions Dropdown */}
-            {showSuggestions && suggestions.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-[#351E28]/10 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                <div className="p-2 border-b border-[#351E28]/5 text-[11px] font-bold text-[#351E28]/50 uppercase tracking-wider px-3">
-                  Matching Baking Supplies
-                </div>
-                <div className="divide-y divide-[#351E28]/5">
-                  {suggestions.map((p) => (
-                    <button
-                      key={p.id}
-                      onClick={() => handleSelectSuggestion(p)}
-                      className="w-full flex items-center gap-3 p-3 text-left hover:bg-[#F8F7F0] transition-colors"
-                    >
-                      <img
-                        src={p.images[0]}
-                        alt={p.name}
-                        className="w-10 h-10 object-cover rounded-lg border border-[#351E28]/10"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="text-xs font-bold text-[#351E28] truncate">{p.name}</div>
-                        <div className="text-[11px] text-[#351E28]/60">{p.categoryName}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-xs font-black text-[#FF5C34]">₹{p.discountPrice || p.price}</div>
-                        {p.discountPrice && (
-                          <div className="text-[10px] text-[#351E28]/40 line-through">₹{p.price}</div>
-                        )}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-                <div className="p-2 bg-[#F8F7F0] text-center border-t border-[#351E28]/5">
-                  <button
-                    onClick={handleSearchSubmit}
-                    className="text-xs font-bold text-[#FF5C34] hover:text-[#e44c26] transition-colors flex items-center justify-center gap-1 mx-auto"
-                  >
-                    <span>View all matching results</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Navigation Links & Action Buttons */}
-          <div className="flex items-center gap-2 sm:gap-4">
-            
-            <nav className="hidden lg:flex items-center gap-1">
-              <Link
-                to="/"
-                className="px-3.5 py-2 text-sm font-bold text-[#351E28] hover:text-[#FF5C34] rounded-full hover:bg-[#F8F7F0] transition-colors"
-              >
-                Home
-              </Link>
-              <Link
-                to="/products"
-                className="px-3.5 py-2 text-sm font-bold text-[#351E28] hover:text-[#FF5C34] rounded-full hover:bg-[#F8F7F0] transition-colors"
-              >
-                All Products
-              </Link>
-              <Link
-                to="/products?category=cat-cake-decoration"
-                className="px-3.5 py-2 text-sm font-bold text-[#351E28] hover:text-[#FF5C34] rounded-full hover:bg-[#F8F7F0] transition-colors"
-              >
-                Decorations
-              </Link>
-              <Link
-                to="/products?category=cat-baking-ingredients"
-                className="px-3.5 py-2 text-sm font-bold text-[#351E28] hover:text-[#FF5C34] rounded-full hover:bg-[#F8F7F0] transition-colors"
-              >
-                Ingredients
-              </Link>
-            </nav>
-
-            {/* Admin Shortcut Pill */}
-            <Link
-              to="/admin"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#351E28]/15 bg-[#F8F7F0] hover:bg-[#351E28] hover:text-[#EAF05C] text-xs font-bold text-[#351E28] transition-all"
-              title="Open Admin Dashboard"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-[#FF5C34]" />
-              <span>Admin</span>
-            </Link>
-
-            {/* Cart Button with Orange Topaze Pill */}
-            <button
-              onClick={() => setIsCartOpen(true)}
-              className="relative flex items-center gap-2 bg-[#FF5C34] hover:bg-[#e44c26] text-white px-4 py-2.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg transition-all active:scale-95"
-            >
-              <ShoppingBag className="w-4 h-4 stroke-[2.3]" />
-              <span className="hidden sm:inline">Cart</span>
-              {totalItems > 0 && (
-                <span className="inline-flex items-center justify-center bg-[#EAF05C] text-[#351E28] text-xs font-black w-5 h-5 rounded-full shadow-inner">
-                  {totalItems}
-                </span>
-              )}
-            </button>
-
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 rounded-xl text-[#351E28] hover:bg-[#F8F7F0] transition-colors"
-              aria-label="Toggle Navigation Menu"
-            >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-
-        </div>
-
-        {/* Mobile Search Bar */}
-        <div className="md:hidden pb-3">
-          <form onSubmit={handleSearchSubmit} className="relative">
-            <input
-              type="text"
-              value={localQuery}
-              onChange={(e) => {
-                setLocalQuery(e.target.value);
-                if (onSearchChange) onSearchChange(e.target.value);
-              }}
-              placeholder="Search supplies, moulds, flavours..."
-              className="w-full bg-[#F8F7F0] border border-[#351E28]/15 text-[#351E28] placeholder-[#351E28]/50 rounded-full py-2 pl-10 pr-20 text-xs font-medium outline-none focus:border-[#FF5C34]"
-            />
-            <Search className="w-3.5 h-3.5 text-[#351E28]/50 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <button
-              type="submit"
-              className="absolute right-1 top-1/2 -translate-y-1/2 bg-[#351E28] text-[#EAF05C] text-[10px] font-bold px-3 py-1 rounded-full"
-            >
-              Search
-            </button>
-          </form>
-        </div>
-      </div>
-
-      {/* Mobile Drawer Menu */}
-      {isMobileMenuOpen && (
-        <div className="lg:hidden border-t border-[#351E28]/10 bg-white px-4 pt-3 pb-6 animate-in slide-in-from-top-3 duration-200">
-          <div className="space-y-1 mb-4">
+          {/* Desktop Center Navigation Links */}
+          <nav className="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-medium text-[#4A2818]">
             <Link
               to="/"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="block px-3 py-2 text-sm font-bold text-[#351E28] hover:bg-[#F8F7F0] rounded-xl"
+              className="hover:text-[#673D26] transition-colors py-1"
             >
               Home
             </Link>
             <Link
               to="/products"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="block px-3 py-2 text-sm font-bold text-[#351E28] hover:bg-[#F8F7F0] rounded-xl"
+              className="hover:text-[#673D26] transition-colors py-1"
             >
-              Browse All Products
+              Products
             </Link>
             <Link
-              to="/admin"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="flex items-center gap-2 px-3 py-2 text-sm font-bold text-[#FF5C34] hover:bg-[#F8F7F0] rounded-xl"
+              to="/products?category=cat-cake-decoration"
+              className="hover:text-[#673D26] transition-colors py-1"
             >
-              <ShieldCheck className="w-4 h-4" />
-              <span>Admin Dashboard (Demo Login)</span>
+              Decorations
             </Link>
-          </div>
-
-          <div className="pt-3 border-t border-[#351E28]/10">
-            <div className="text-xs font-black text-[#351E28]/50 uppercase tracking-wider mb-2 px-3">
-              Popular Categories
-            </div>
-            <div className="grid grid-cols-2 gap-1.5">
-              {categories.slice(0, 6).map((c) => (
-                <Link
-                  key={c.id}
-                  to={`/products?category=${c.id}`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="px-3 py-1.5 text-xs font-semibold text-[#351E28] bg-[#F8F7F0] hover:bg-[#D7EFFF] rounded-lg truncate"
-                >
-                  {c.name}
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-4 pt-3 border-t border-[#351E28]/10 flex items-center justify-between text-xs text-[#351E28]/70 px-2">
-            <span className="flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5 text-[#FF5C34]" />
-              Bangalore Store
-            </span>
-            <a
-              href="tel:+919845012345"
-              className="flex items-center gap-1 font-bold text-[#351E28] hover:text-[#FF5C34] transition-colors"
+            <Link
+              to="/products?category=cat-baking-ingredients"
+              className="hover:text-[#673D26] transition-colors py-1"
             >
-              <PhoneCall className="w-3.5 h-3.5 text-[#FF5C34]" />
-              +91 98450 12345
-            </a>
+              Ingredients
+            </Link>
+            <Link
+              to="/products?category=cat-packaging-boxes"
+              className="hover:text-[#673D26] transition-colors py-1"
+            >
+              Packaging
+            </Link>
+          </nav>
+
+          {/* Right Action Icons & Pill Buttons */}
+          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+            
+            {/* Live Search Input */}
+            <div ref={searchContainerRef} className="relative hidden sm:block w-44 lg:w-56">
+              <form onSubmit={handleSearchSubmit}>
+                <input
+                  type="text"
+                  value={localQuery}
+                  onChange={(e) => {
+                    setLocalQuery(e.target.value);
+                    setShowSuggestions(true);
+                  }}
+                  onFocus={() => setShowSuggestions(true)}
+                  placeholder="Search supplies..."
+                  className="w-full bg-[#FCFAF7] border border-[#E8D8CC] rounded-full pl-9 pr-3.5 py-1.5 text-xs text-[#4A2818] placeholder:text-[#7A6153]/60 outline-none focus:border-[#4A2818] transition-colors"
+                />
+                <Search className="w-3.5 h-3.5 text-[#7A6153] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </form>
+
+              {/* Autocomplete Dropdown */}
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-[#E8D8CC] overflow-hidden z-50">
+                  <div className="p-2 border-b border-[#E8D8CC]/40 text-[10px] font-bold text-[#7A6153] uppercase tracking-wider px-3">
+                    Baking Supplies
+                  </div>
+                  <div className="divide-y divide-[#E8D8CC]/40">
+                    {suggestions.map((p) => (
+                      <button
+                        key={p.id}
+                        onClick={() => handleSelectSuggestion(p)}
+                        className="w-full flex items-center gap-3 p-2.5 text-left hover:bg-[#F9F4EE] transition-colors"
+                      >
+                        <img
+                          src={p.images[0]}
+                          alt={p.name}
+                          className="w-8 h-8 object-cover rounded-lg border border-[#E8D8CC]"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-serif font-bold text-[#4A2818] truncate">{p.name}</div>
+                          <div className="text-[10px] text-[#7A6153]">{p.categoryName}</div>
+                        </div>
+                        <div className="text-xs font-serif font-bold text-[#4A2818]">₹{p.discountPrice || p.price}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Cart Button Pill in warm Cocoa */}
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="relative flex items-center gap-2 bg-[#4A2818] hover:bg-[#361B0E] text-[#F9F4EE] px-4 py-2.5 rounded-full text-xs font-medium shadow-sm hover:shadow-md transition-all active:scale-95"
+            >
+              <ShoppingBag className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Cart</span>
+              {totalItems > 0 && (
+                <span className="inline-flex items-center justify-center bg-[#EAD9CF] text-[#4A2818] text-[10px] font-bold w-4 h-4 rounded-full">
+                  {totalItems}
+                </span>
+              )}
+            </button>
+
+            {/* Admin Desk Pill */}
+            <Link
+              to="/admin"
+              className="hidden lg:inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full border border-[#DCC7B8] bg-[#F2E7DC] hover:bg-[#4A2818] text-[#4A2818] hover:text-[#F9F4EE] text-xs font-medium transition-colors"
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>Admin</span>
+            </Link>
+
+            {/* Mobile Menu Toggle Button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden p-2 rounded-full text-[#4A2818] hover:bg-[#F2E7DC] transition-colors"
+            >
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+
           </div>
+
         </div>
-      )}
+
+        {/* Mobile Dropdown Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden py-4 border-t border-[#E8D8CC] space-y-3">
+            <form onSubmit={handleSearchSubmit} className="relative mb-3">
+              <input
+                type="text"
+                value={localQuery}
+                onChange={(e) => setLocalQuery(e.target.value)}
+                placeholder="Search baking supplies..."
+                className="w-full bg-[#FCFAF7] border border-[#E8D8CC] rounded-full pl-9 pr-4 py-2 text-xs text-[#4A2818]"
+              />
+              <Search className="w-4 h-4 text-[#7A6153] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </form>
+
+            <nav className="flex flex-col gap-1 text-sm font-medium text-[#4A2818]">
+              <Link
+                to="/"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="px-3 py-2 rounded-lg hover:bg-[#F2E7DC]"
+              >
+                Home
+              </Link>
+              <Link
+                to="/products"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="px-3 py-2 rounded-lg hover:bg-[#F2E7DC]"
+              >
+                All Products
+              </Link>
+              <Link
+                to="/products?category=cat-cake-decoration"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="px-3 py-2 rounded-lg hover:bg-[#F2E7DC]"
+              >
+                Decorations
+              </Link>
+              <Link
+                to="/products?category=cat-baking-ingredients"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="px-3 py-2 rounded-lg hover:bg-[#F2E7DC]"
+              >
+                Ingredients
+              </Link>
+              <Link
+                to="/admin"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="px-3 py-2 rounded-lg text-[#4A2818] bg-[#F2E7DC] font-bold flex items-center gap-2 mt-2"
+              >
+                <ShieldCheck className="w-4 h-4" />
+                <span>Admin Portal</span>
+              </Link>
+            </nav>
+          </div>
+        )}
+
+      </div>
     </header>
   );
 };

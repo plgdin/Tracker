@@ -90,13 +90,13 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
       
       {/* Modal Dialog */}
       <div 
-        className="relative w-full max-w-3xl bg-white rounded-3xl border-2 border-[#351E28] shadow-2xl overflow-hidden my-auto"
+        className="relative w-full max-w-3xl bg-white rounded-[2.5rem] border border-[#E8D8CC] shadow-2xl overflow-hidden my-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-[#F8F7F0] hover:bg-[#351E28] hover:text-[#EAF05C] text-[#351E28] flex items-center justify-center border border-[#351E28]/15 transition-all shadow-sm"
+          className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-[#F2E7DC] hover:bg-[#4A2818] hover:text-[#F9F4EE] text-[#4A2818] flex items-center justify-center border border-[#E8D8CC] transition-all shadow-xs"
         >
           <X className="w-5 h-5" />
         </button>
@@ -104,15 +104,15 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2">
           
           {/* Left Column: Image Gallery */}
-          <div className="p-6 bg-[#F8F7F0] flex flex-col justify-between border-b md:border-b-0 md:border-r border-[#351E28]/10">
-            <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-white border-2 border-[#351E28]/10 shadow-sm">
+          <div className="p-6 bg-[#F9F4EE] flex flex-col justify-between border-b md:border-b-0 md:border-r border-[#E8D8CC]">
+            <div className="relative w-full aspect-square rounded-[1.75rem] overflow-hidden bg-white border border-[#E8D8CC] shadow-xs">
               <img
                 src={selectedImage}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
               {discountPercent > 0 && (
-                <div className="absolute top-3 left-3 bg-[#FF5C34] text-white text-xs font-black px-3 py-1 rounded-full shadow-sm">
+                <div className="absolute top-3 left-3 bg-[#4A2818] text-[#F9F4EE] text-xs font-bold px-3 py-1 rounded-full shadow-xs">
                   {discountPercent}% OFF
                 </div>
               )}
@@ -125,10 +125,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   <button
                     key={i}
                     onClick={() => setSelectedImage(img)}
-                    className={`w-14 h-14 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${
+                    className={`w-14 h-14 rounded-2xl overflow-hidden border-2 transition-all shrink-0 ${
                       selectedImage === img
-                        ? 'border-[#FF5C34] scale-105 shadow-md'
-                        : 'border-[#351E28]/15 opacity-70 hover:opacity-100'
+                        ? 'border-[#4A2818] scale-105 shadow-md'
+                        : 'border-[#E8D8CC] opacity-70 hover:opacity-100'
                     }`}
                   >
                     <img src={img} alt="" className="w-full h-full object-cover" />
@@ -138,10 +138,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             )}
 
             {/* In-Store Counter Ready Notice */}
-            <div className="mt-4 p-3 bg-white rounded-2xl border border-[#351E28]/10 flex items-center gap-3">
-              <PackageCheck className="w-5 h-5 text-[#AEBBA0] shrink-0" />
-              <div className="text-[11px] text-[#351E28]/80 leading-tight">
-                <span className="font-bold text-[#351E28]">In-Store Counter Pickup:</span> Ready within 30 minutes during shop hours.
+            <div className="mt-4 p-3 bg-white rounded-2xl border border-[#E8D8CC] flex items-center gap-3">
+              <PackageCheck className="w-5 h-5 text-[#4A2818] shrink-0" />
+              <div className="text-[11px] text-[#7A6153] leading-tight">
+                <span className="font-serif font-bold text-[#4A2818]">Bangalore Counter Pickup:</span> Ready within 30 minutes during shop hours.
               </div>
             </div>
           </div>
@@ -150,44 +150,44 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           <div className="p-6 sm:p-7 flex flex-col justify-between">
             <div>
               {/* Category, Brand & Rating */}
-              <div className="flex items-center justify-between text-xs text-[#351E28]/60 mb-2">
-                <span className="font-bold text-[#FF5C34] uppercase tracking-wider">
+              <div className="flex items-center justify-between text-xs text-[#7A6153] mb-2">
+                <span className="font-semibold text-[#4A2818] uppercase tracking-wider">
                   {product.categoryName}
                 </span>
                 {product.brand && (
-                  <span className="bg-[#D7EFFF] text-[#351E28] px-2 py-0.5 rounded-md font-semibold text-[10px]">
+                  <span className="bg-[#F2E7DC] text-[#4A2818] px-2.5 py-0.5 rounded-full font-medium text-[10px]">
                     Brand: {product.brand}
                   </span>
                 )}
               </div>
 
               {/* Title */}
-              <h2 className="font-heading text-2xl sm:text-3xl font-black text-[#351E28] leading-tight mb-2">
+              <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#4A2818] leading-tight mb-2">
                 {product.name}
               </h2>
 
               {/* Rating */}
               <div className="flex items-center gap-2 mb-4">
-                <div className="flex items-center gap-1 bg-[#F8F7F0] px-2.5 py-1 rounded-full border border-[#351E28]/10 text-xs font-bold text-[#351E28]">
-                  <Star className="w-3.5 h-3.5 fill-[#FF5C34] text-[#FF5C34]" />
+                <div className="flex items-center gap-1 bg-[#F9F4EE] px-2.5 py-1 rounded-full border border-[#E8D8CC] text-xs font-bold text-[#4A2818]">
+                  <Star className="w-3.5 h-3.5 fill-[#C87D55] text-[#C87D55]" />
                   <span>{product.rating.toFixed(1)}</span>
                 </div>
-                <span className="text-xs text-[#351E28]/50 font-medium">
+                <span className="text-xs text-[#7A6153]/70 font-medium">
                   ({product.reviewsCount} verified reviews)
                 </span>
               </div>
 
               {/* Price Row */}
-              <div className="flex items-baseline gap-3 mb-4 p-3.5 bg-[#F8F7F0] rounded-2xl border border-[#351E28]/10">
-                <span className="font-heading font-black text-2xl sm:text-3xl text-[#351E28]">
+              <div className="flex items-baseline gap-3 mb-4 p-3.5 bg-[#F9F4EE] rounded-2xl border border-[#E8D8CC]">
+                <span className="font-serif font-bold text-2xl sm:text-3xl text-[#4A2818]">
                   ₹{activePrice}
                 </span>
                 {activeOriginalPrice && (
-                  <span className="text-sm text-[#351E28]/40 line-through font-bold">
+                  <span className="text-sm text-[#7A6153]/60 line-through font-semibold">
                     ₹{activeOriginalPrice}
                   </span>
                 )}
-                <span className="text-xs font-bold text-[#AEBBA0] ml-auto">
+                <span className="text-xs font-medium text-[#7A6153] ml-auto">
                   Inclusive of taxes
                 </span>
               </div>
@@ -211,10 +211,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                           key={v.id}
                           type="button"
                           onClick={() => setSelectedVariant(v)}
-                          className={`px-3.5 py-2 rounded-xl text-xs font-bold border-2 transition-all ${
+                          className={`px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all ${
                             isSelected
-                              ? 'bg-[#EAF05C] border-[#351E28] text-[#351E28] shadow-sm scale-102'
-                              : 'bg-white border-[#351E28]/15 text-[#351E28]/80 hover:border-[#351E28]/40'
+                              ? 'bg-[#4A2818] border-[#4A2818] text-[#F9F4EE] shadow-xs'
+                              : 'bg-white border-[#E8D8CC] text-[#7A6153] hover:border-[#4A2818]'
                           }`}
                         >
                           <span>{v.name}</span>
@@ -228,21 +228,21 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
               {/* Quantity Picker & Stock Status */}
               <div className="flex items-center justify-between gap-4 mb-6">
-                <div className="flex items-center border-2 border-[#351E28]/20 rounded-full p-1 bg-white">
+                <div className="flex items-center border border-[#E8D8CC] rounded-full p-1 bg-white">
                   <button
                     onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                     disabled={quantity <= 1}
-                    className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#F8F7F0] text-[#351E28] disabled:opacity-30 transition-colors"
+                    className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#F9F4EE] text-[#4A2818] disabled:opacity-30 transition-colors"
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
-                  <span className="w-10 text-center font-heading font-black text-sm text-[#351E28]">
+                  <span className="w-10 text-center font-serif font-bold text-sm text-[#4A2818]">
                     {quantity}
                   </span>
                   <button
                     onClick={() => setQuantity((q) => Math.min(currentStock, q + 1))}
                     disabled={quantity >= currentStock}
-                    className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#F8F7F0] text-[#351E28] disabled:opacity-30 transition-colors"
+                    className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#F9F4EE] text-[#4A2818] disabled:opacity-30 transition-colors"
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
@@ -250,8 +250,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
                 <div className="text-right">
                   {currentStock > 0 ? (
-                    <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#AEBBA0]">
-                      <span className="w-2 h-2 rounded-full bg-[#AEBBA0]" />
+                    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[#4A2818]">
+                      <span className="w-2 h-2 rounded-full bg-[#4A2818]" />
                       In Stock ({currentStock} available)
                     </span>
                   ) : (
@@ -269,12 +269,12 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 type="button"
                 onClick={handleAddToCart}
                 disabled={currentStock <= 0}
-                className={`w-full py-4 rounded-full font-heading font-black text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 ${
+                className={`w-full py-3.5 rounded-full font-serif font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-sm active:scale-95 ${
                   addedSuccess
-                    ? 'bg-[#AEBBA0] text-[#351E28]'
+                    ? 'bg-[#EAD9CF] text-[#4A2818]'
                     : currentStock <= 0
-                    ? 'bg-[#351E28]/10 text-[#351E28]/40 cursor-not-allowed'
-                    : 'bg-[#FF5C34] hover:bg-[#e44c26] text-white shadow-[#FF5C34]/25'
+                    ? 'bg-[#E8D8CC]/40 text-[#7A6153]/40 cursor-not-allowed'
+                    : 'bg-[#4A2818] hover:bg-[#361B0E] text-[#F9F4EE]'
                 }`}
               >
                 {addedSuccess ? (
@@ -284,7 +284,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   </>
                 ) : (
                   <>
-                    <ShoppingBag className="w-4 h-4 stroke-[2.3]" />
+                    <ShoppingBag className="w-4 h-4 stroke-[2]" />
                     <span>Add to Cart · ₹{activePrice * quantity}</span>
                   </>
                 )}
@@ -293,10 +293,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               <button
                 type="button"
                 onClick={handleWhatsAppInquiry}
-                className="w-full py-3 rounded-full font-bold text-xs bg-[#D7EFFF] hover:bg-[#c2e4fc] text-[#351E28] border border-[#351E28]/15 flex items-center justify-center gap-2 transition-all"
+                className="w-full py-3 rounded-full font-medium text-xs bg-[#F2E7DC] hover:bg-[#E8D8CC] text-[#4A2818] border border-[#E8D8CC] flex items-center justify-center gap-2 transition-all"
               >
-                <MessageCircle className="w-4 h-4 text-[#351E28]" />
-                <span>Ask Store About This Item on WhatsApp</span>
+                <MessageCircle className="w-4 h-4 text-[#4A2818]" />
+                <span>Ask Bangalore Store on WhatsApp</span>
               </button>
             </div>
           </div>

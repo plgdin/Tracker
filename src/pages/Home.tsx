@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  Sparkles, 
   ArrowRight, 
-  ShoppingBag, 
-  Flame, 
-  Star
+  Sparkles,
+  ShoppingBag
 } from 'lucide-react';
 import { AnnouncementBar } from '../components/storefront/AnnouncementBar';
 import { StorefrontNavbar } from '../components/storefront/StorefrontNavbar';
@@ -59,48 +57,48 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F7F0] text-[#351E28] flex flex-col font-body selection:bg-[#EAF05C] selection:text-[#351E28]">
+    <div className="min-h-screen bg-[#F9F4EE] text-[#4A2818] flex flex-col font-sans selection:bg-[#EAD9CF] selection:text-[#4A2818]">
       
-      {/* 1. Announcement Bar */}
+      {/* 1. Warm Announcement Bar */}
       <AnnouncementBar settings={settings} />
 
-      {/* 2. Main Navigation Bar */}
+      {/* 2. Main Artisan Storefront Navigation */}
       <StorefrontNavbar
         settings={settings}
         categories={categories}
         onSelectProduct={(p) => setSelectedProduct(p)}
       />
 
-      {/* 3. Hero Section */}
+      {/* 3. Hero Section matching user reference image */}
       <HeroSection settings={settings} />
 
-      {/* 4. Category Showcase Cards */}
+      {/* 4. Category Showcase Cards with circular arrow buttons */}
       <CategoryCards categories={categories} />
 
       {/* 5. Featured Products Section */}
-      <section className="py-12 sm:py-16 bg-white border-y border-[#351E28]/10">
+      <section className="py-16 sm:py-20 bg-[#FCFAF7] border-b border-[#E8D8CC]/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
             <div>
-              <div className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-[#FF5C34] mb-1">
-                <Flame className="w-4 h-4 fill-[#FF5C34] text-[#FF5C34]" />
+              <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#7A6153] mb-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#4A2818]" />
                 Baker's Choice
               </div>
-              <h2 className="font-heading text-3xl sm:text-4xl font-black text-[#351E28] tracking-tight">
+              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-medium text-[#4A2818] tracking-tight">
                 Featured Baking Essentials
               </h2>
             </div>
             <Link
               to="/products"
-              className="inline-flex items-center gap-1.5 text-sm font-bold text-[#351E28] hover:text-[#FF5C34] group transition-colors"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#4A2818] hover:text-[#7A6153] group transition-colors"
             >
-              <span>See All ({featuredProducts.length}+)</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <span>See All Products ({featuredProducts.length}+)</span>
+              <span className="text-xs group-hover:translate-x-1 transition-transform">&gt;</span>
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
             {featuredProducts.slice(0, 8).map((product) => (
               <ProductCard
                 key={product.id}
@@ -113,93 +111,78 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 6. Promotional Banner: Couverture & Decor Special */}
-      <section className="py-12 sm:py-16 bg-[#351E28] text-white overflow-hidden relative">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#FF5C34]/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#EAF05C]/15 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="bg-gradient-to-r from-white/10 to-white/5 border border-white/15 rounded-3xl p-6 sm:p-10 backdrop-blur-sm">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              
-              <div className="lg:col-span-8 space-y-4">
-                <span className="inline-flex items-center gap-1.5 bg-[#EAF05C] text-[#351E28] text-xs font-black px-3.5 py-1 rounded-full uppercase tracking-wider">
-                  <Sparkles className="w-3.5 h-3.5 fill-[#351E28]" />
-                  Artisan Quality Guaranteed
-                </span>
-
-                <h3 className="font-heading text-3xl sm:text-4xl font-black text-white leading-tight">
-                  High-Grade Belgian Couverture & Concentrated Oil Colours
-                </h3>
-
-                <p className="text-sm text-[#F8F7F0]/80 max-w-2xl leading-relaxed">
-                  Looking to craft glossy mirror glazes, chocolate bonbons, or stable fondant figurines? 
-                  We supply calibrated Callebaut chocolate callets, Tropelite whipping creams, and 
-                  oil-based candy colours formulated for flawless patisserie finishes.
-                </p>
-
-                <div className="pt-2 flex flex-wrap gap-3">
-                  <Link
-                    to="/products?category=cat-baking-ingredients"
-                    className="inline-flex items-center gap-2 bg-[#FF5C34] hover:bg-[#e44c26] text-white font-bold text-xs sm:text-sm px-6 py-3.5 rounded-full shadow-lg transition-all active:scale-95"
-                  >
-                    <ShoppingBag className="w-4 h-4 stroke-[2.2]" />
-                    <span>Shop Couverture Chocolate</span>
-                  </Link>
-
-                  <Link
-                    to="/products?category=cat-colours-flavours"
-                    className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm px-5 py-3.5 rounded-full border border-white/20 transition-all"
-                  >
-                    <span>View Colour Palette</span>
-                  </Link>
+      {/* 6. Signature Studio & Dessert Showcase (Direct match to bottom section of reference image!) */}
+      <section className="py-16 sm:py-24 bg-gradient-to-r from-[#F2E7DC] via-[#EBDCD2] to-[#F5EBE1] border-b border-[#E8D8CC] overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+            
+            {/* Left: Fresh Artisan Strawberry Cupcake on Plate */}
+            <div className="lg:col-span-5 flex justify-center">
+              <div className="relative max-w-xs sm:max-w-sm w-full">
+                <div className="relative rounded-[2.5rem] overflow-hidden aspect-square bg-[#FCFAF7] border-2 border-white/80 shadow-2xl p-3">
+                  <img
+                    src="https://images.unsplash.com/photo-1587668178277-295251f900ce?auto=format&fit=crop&w=800&q=85"
+                    alt="Artisan dessert and strawberry cupcake"
+                    className="w-full h-full object-cover rounded-[2rem] transform hover:scale-105 transition-transform duration-700"
+                  />
                 </div>
               </div>
-
-              <div className="lg:col-span-4 flex justify-center">
-                <div className="relative">
-                  <div className="w-48 h-48 sm:w-56 sm:h-56 rounded-full bg-[#EAF05C] p-2 rotate-6 shadow-2xl">
-                    <img
-                      src="https://images.unsplash.com/photo-1587248720327-8eb72564be1e?auto=format&fit=crop&w=500&q=80"
-                      alt="Chocolate drops"
-                      className="w-full h-full object-cover rounded-full"
-                    />
-                  </div>
-                  <div className="absolute -bottom-2 -left-2 bg-[#FF5C34] text-white text-xs font-black px-3 py-1.5 rounded-2xl shadow-md -rotate-6">
-                    ₹590 / 500g
-                  </div>
-                </div>
-              </div>
-
             </div>
+
+            {/* Right: Editorial Narrative & Circular Arrow Button */}
+            <div className="lg:col-span-7 space-y-5 text-left">
+              <div className="text-xs font-semibold uppercase tracking-wider text-[#7A6153]">
+                Artisan Standard
+              </div>
+
+              <h3 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-medium text-[#4A2818] tracking-tight leading-[1.12]">
+                Service &amp; Studio Supplies
+              </h3>
+
+              <p className="text-sm sm:text-base text-[#7A6153] leading-relaxed max-w-xl font-normal">
+                Calibrated Belgian chocolate callets, Tropelite whipping creams, fine piping nozzles, and concentrated oil colours formulated for flawless patisserie finishes. Handcrafted for professional dessert studios and passionate home bakers across Bangalore.
+              </p>
+
+              {/* Circular Dark Cocoa Button (from reference mockup) */}
+              <div className="pt-2">
+                <Link
+                  to="/products"
+                  className="w-12 h-12 rounded-full bg-[#4A2818] hover:bg-[#361B0E] text-[#F9F4EE] flex items-center justify-center shadow-lg hover:scale-105 transition-all"
+                  title="Explore all bakery studio supplies"
+                >
+                  <ArrowRight className="w-5 h-5 stroke-[2.2]" />
+                </Link>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
 
-      {/* 7. Popular Everyday Essentials */}
-      <section className="py-12 sm:py-16 bg-[#F8F7F0]">
+      {/* 7. Trending Everyday Essentials */}
+      <section className="py-16 sm:py-20 bg-[#F9F4EE]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
             <div>
-              <div className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-[#FF5C34] mb-1">
-                <Star className="w-4 h-4 fill-[#FF5C34] text-[#FF5C34]" />
-                Best Rated In Bangalore
+              <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#7A6153] mb-1">
+                <Sparkles className="w-3.5 h-3.5 text-[#4A2818]" />
+                Customer Favorites
               </div>
-              <h2 className="font-heading text-3xl sm:text-4xl font-black text-[#351E28] tracking-tight">
+              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-medium text-[#4A2818] tracking-tight">
                 Trending In Store
               </h2>
             </div>
             <Link
               to="/products"
-              className="inline-flex items-center gap-1.5 text-sm font-bold text-[#351E28] hover:text-[#FF5C34] group transition-colors"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#4A2818] hover:text-[#7A6153] group transition-colors"
             >
               <span>Explore Full Store</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <span className="text-xs group-hover:translate-x-1 transition-transform">&gt;</span>
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
             {popularProducts.map((product) => (
               <ProductCard
                 key={product.id}
@@ -215,7 +198,7 @@ export default function Home() {
       {/* 8. Physical Store & Counter Pickup Info */}
       <StoreInfoSection settings={settings} />
 
-      {/* 9. Footer */}
+      {/* 9. Footer in Warm Cocoa Tone */}
       <StorefrontFooter settings={settings} categories={categories} />
 
       {/* Modals & Slide-over Drawer */}

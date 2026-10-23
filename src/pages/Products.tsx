@@ -171,7 +171,7 @@ export default function Products() {
   const activeCategoryObject = categories.find((c) => c.id === selectedCategory);
 
   return (
-    <div className="min-h-screen bg-[#F8F7F0] text-[#351E28] flex flex-col font-body selection:bg-[#EAF05C] selection:text-[#351E28]">
+    <div className="min-h-screen bg-[#F9F4EE] text-[#4A2818] flex flex-col font-sans selection:bg-[#EAD9CF] selection:text-[#4A2818]">
       
       {/* Announcement Bar */}
       <AnnouncementBar settings={settings} />
@@ -186,29 +186,29 @@ export default function Products() {
       />
 
       {/* Page Header Banner */}
-      <div className="bg-white border-b border-[#351E28]/10 py-6 sm:py-8">
+      <div className="bg-[#FCFAF7] border-b border-[#E8D8CC] py-6 sm:py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Breadcrumb */}
-          <nav className="flex items-center gap-1.5 text-xs text-[#351E28]/60 font-medium mb-2">
-            <Link to="/" className="hover:text-[#FF5C34]">Home</Link>
+          <nav className="flex items-center gap-1.5 text-xs text-[#7A6153] font-medium mb-2.5">
+            <Link to="/" className="hover:text-[#4A2818]">Home</Link>
             <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-[#351E28] font-bold">
+            <span className="text-[#4A2818] font-bold">
               {activeCategoryObject ? activeCategoryObject.name : 'All Products'}
             </span>
           </nav>
 
-          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-3">
             <div>
-              <h1 className="font-heading text-3xl sm:text-4xl font-black text-[#351E28] tracking-tight">
+              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-medium text-[#4A2818] tracking-tight">
                 {activeCategoryObject ? activeCategoryObject.name : 'Baking Supplies & Essentials'}
               </h1>
-              <p className="text-xs sm:text-sm text-[#351E28]/70 mt-1">
-                {activeCategoryObject ? activeCategoryObject.description : 'Explore professional cake decorating tools, couverture chocolates, flavours, and packaging.'}
+              <p className="text-xs sm:text-sm text-[#7A6153] mt-1.5 max-w-2xl font-normal">
+                {activeCategoryObject ? activeCategoryObject.description : 'Explore professional cake decorating tools, calibrated Belgian couverture chocolates, silicone moulds, and packaging.'}
               </p>
             </div>
 
-            <div className="text-xs font-bold text-[#AEBBA0] shrink-0">
+            <div className="text-xs font-semibold text-[#7A6153] shrink-0 bg-[#F2E7DC] px-3 py-1 rounded-full">
               Showing {filteredProducts.length} {filteredProducts.length === 1 ? 'item' : 'items'}
             </div>
           </div>
@@ -217,14 +217,14 @@ export default function Products() {
       </div>
 
       {/* Category Pills Slider (Fast horizontal navigation) */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-[#351E28]/10 sticky top-20 z-30 overflow-x-auto no-scrollbar py-2.5 px-4 sm:px-6 lg:px-8">
+      <div className="bg-[#FCFAF7]/90 backdrop-blur-md border-b border-[#E8D8CC] sticky top-20 z-30 overflow-x-auto no-scrollbar py-2.5 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex items-center gap-2">
           <button
             onClick={() => handleCategorySelect('all')}
-            className={`px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 ${
+            className={`px-4 py-2 rounded-full text-xs font-medium transition-all shrink-0 ${
               selectedCategory === 'all'
-                ? 'bg-[#351E28] text-[#EAF05C] shadow-sm'
-                : 'bg-[#F8F7F0] text-[#351E28] hover:bg-[#D7EFFF]'
+                ? 'bg-[#4A2818] text-[#F9F4EE] shadow-sm'
+                : 'bg-[#F2E7DC] text-[#4A2818] hover:bg-[#E8D8CC]'
             }`}
           >
             All Categories ({allProducts.length})
@@ -236,14 +236,14 @@ export default function Products() {
               <button
                 key={c.id}
                 onClick={() => handleCategorySelect(c.id)}
-                className={`px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 border ${
+                className={`px-4 py-2 rounded-full text-xs font-medium transition-all shrink-0 border ${
                   isSelected
-                    ? 'bg-[#EAF05C] text-[#351E28] border-[#351E28] shadow-sm'
-                    : 'bg-[#F8F7F0] text-[#351E28]/80 border-transparent hover:bg-[#D7EFFF]'
+                    ? 'bg-[#4A2818] text-[#F9F4EE] border-[#4A2818] shadow-sm'
+                    : 'bg-[#F2E7DC] text-[#4A2818] border-transparent hover:bg-[#E8D8CC]'
                 }`}
               >
                 <span>{c.name}</span>
-                <span className="ml-1 text-[10px] opacity-70">({count})</span>
+                <span className="ml-1 text-[10px] opacity-75">({count})</span>
               </button>
             );
           })}
@@ -256,15 +256,15 @@ export default function Products() {
           
           {/* Desktop Filter Sidebar */}
           <div className="hidden lg:block lg:col-span-3 space-y-6">
-            <div className="bg-white rounded-3xl p-5 border-2 border-[#351E28]/10 space-y-6 sticky top-36">
+            <div className="bg-white rounded-[2rem] p-5 border border-[#E8D8CC] shadow-xs space-y-6 sticky top-36">
               
               {/* Header with Clear button */}
-              <div className="flex items-center justify-between pb-3 border-b border-[#351E28]/10">
+              <div className="flex items-center justify-between pb-3 border-b border-[#E8D8CC]/60">
                 <div className="flex items-center gap-2">
-                  <SlidersHorizontal className="w-4 h-4 text-[#FF5C34]" />
-                  <span className="font-heading font-black text-sm text-[#351E28]">Filters</span>
+                  <SlidersHorizontal className="w-4 h-4 text-[#4A2818]" />
+                  <span className="font-serif font-bold text-base text-[#4A2818]">Filters</span>
                   {activeFiltersCount > 0 && (
-                    <span className="w-5 h-5 rounded-full bg-[#EAF05C] text-[#351E28] text-[11px] font-black flex items-center justify-center">
+                    <span className="w-5 h-5 rounded-full bg-[#4A2818] text-[#F9F4EE] text-[10px] font-bold flex items-center justify-center">
                       {activeFiltersCount}
                     </span>
                   )}
@@ -273,7 +273,7 @@ export default function Products() {
                 {activeFiltersCount > 0 && (
                   <button
                     onClick={resetFilters}
-                    className="text-xs font-bold text-[#FF5C34] hover:text-[#e44c26] transition-colors flex items-center gap-1"
+                    className="text-xs font-semibold text-[#4A2818] hover:text-[#673D26] transition-colors flex items-center gap-1"
                   >
                     <RotateCcw className="w-3 h-3" />
                     <span>Reset</span>
@@ -284,19 +284,19 @@ export default function Products() {
               {/* In-Stock Toggle */}
               <div>
                 <label className="flex items-center justify-between cursor-pointer group">
-                  <span className="text-xs font-bold text-[#351E28]">In-Stock Only</span>
+                  <span className="text-xs font-bold text-[#4A2818]">In-Stock Only</span>
                   <input
                     type="checkbox"
                     checked={inStockOnly}
                     onChange={(e) => setInStockOnly(e.target.checked)}
-                    className="w-4 h-4 rounded text-[#FF5C34] accent-[#FF5C34] cursor-pointer"
+                    className="w-4 h-4 rounded text-[#4A2818] accent-[#4A2818] cursor-pointer"
                   />
                 </label>
               </div>
 
               {/* Price Range Presets */}
               <div className="space-y-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#351E28]/70">
+                <label className="block text-xs font-serif font-bold uppercase tracking-wider text-[#7A6153]">
                   Price Range
                 </label>
                 <div className="space-y-1 text-xs">
@@ -312,13 +312,13 @@ export default function Products() {
                       onClick={() => setSelectedPricePreset(preset.val)}
                       className={`w-full text-left px-3 py-2 rounded-xl font-medium transition-colors flex items-center justify-between ${
                         selectedPricePreset === preset.val
-                          ? 'bg-[#D7EFFF] text-[#351E28] font-bold'
-                          : 'hover:bg-[#F8F7F0] text-[#351E28]/80'
+                          ? 'bg-[#F2E7DC] text-[#4A2818] font-bold'
+                          : 'hover:bg-[#F9F4EE] text-[#7A6153]'
                       }`}
                     >
                       <span>{preset.label}</span>
                       {selectedPricePreset === preset.val && (
-                        <span className="w-2 h-2 rounded-full bg-[#FF5C34]" />
+                        <span className="w-2 h-2 rounded-full bg-[#4A2818]" />
                       )}
                     </button>
                   ))}
@@ -326,8 +326,8 @@ export default function Products() {
               </div>
 
               {/* Store Counter Pickup Notice */}
-              <div className="p-3.5 bg-[#F8F7F0] rounded-2xl border border-[#351E28]/10 text-xs text-[#351E28]/80">
-                <div className="font-bold text-[#351E28] mb-1">Bangalore Counter Pickup</div>
+              <div className="p-3.5 bg-[#F9F4EE] rounded-2xl border border-[#E8D8CC] text-xs text-[#7A6153]">
+                <div className="font-serif font-bold text-[#4A2818] mb-1">Bangalore Counter Pickup</div>
                 Orders placed online can be picked up same day with instant WhatsApp booking.
               </div>
 
@@ -338,42 +338,42 @@ export default function Products() {
           <div className="lg:col-span-9 space-y-5">
             
             {/* Top Toolbar: Search summary & Sort Selector */}
-            <div className="bg-white rounded-2xl p-3.5 border border-[#351E28]/10 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="bg-white rounded-2xl p-3.5 border border-[#E8D8CC] shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
               
               {/* Active Filter Chips */}
               <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
                 {selectedCategory !== 'all' && (
-                  <span className="inline-flex items-center gap-1 bg-[#EAF05C] text-[#351E28] text-xs font-bold px-3 py-1 rounded-full border border-[#351E28]/15">
+                  <span className="inline-flex items-center gap-1.5 bg-[#F2E7DC] text-[#4A2818] text-xs font-semibold px-3 py-1 rounded-full border border-[#E8D8CC]">
                     Category: {activeCategoryObject?.name}
                     <button onClick={() => handleCategorySelect('all')}>
-                      <X className="w-3.5 h-3.5 hover:text-[#FF5C34]" />
+                      <X className="w-3.5 h-3.5 hover:text-[#361B0E]" />
                     </button>
                   </span>
                 )}
 
                 {searchQuery.trim() && (
-                  <span className="inline-flex items-center gap-1 bg-[#D7EFFF] text-[#351E28] text-xs font-bold px-3 py-1 rounded-full border border-[#351E28]/15">
+                  <span className="inline-flex items-center gap-1.5 bg-[#F2E7DC] text-[#4A2818] text-xs font-semibold px-3 py-1 rounded-full border border-[#E8D8CC]">
                     Search: "{searchQuery}"
                     <button onClick={() => handleSearchChange('')}>
-                      <X className="w-3.5 h-3.5 hover:text-[#FF5C34]" />
+                      <X className="w-3.5 h-3.5 hover:text-[#361B0E]" />
                     </button>
                   </span>
                 )}
 
                 {inStockOnly && (
-                  <span className="inline-flex items-center gap-1 bg-[#AEBBA0]/30 text-[#351E28] text-xs font-bold px-3 py-1 rounded-full border border-[#351E28]/15">
+                  <span className="inline-flex items-center gap-1.5 bg-[#F2E7DC] text-[#4A2818] text-xs font-semibold px-3 py-1 rounded-full border border-[#E8D8CC]">
                     In Stock Only
                     <button onClick={() => setInStockOnly(false)}>
-                      <X className="w-3.5 h-3.5 hover:text-[#FF5C34]" />
+                      <X className="w-3.5 h-3.5 hover:text-[#361B0E]" />
                     </button>
                   </span>
                 )}
 
                 {selectedPricePreset !== 'all' && (
-                  <span className="inline-flex items-center gap-1 bg-[#F8F7F0] text-[#351E28] text-xs font-bold px-3 py-1 rounded-full border border-[#351E28]/15">
+                  <span className="inline-flex items-center gap-1.5 bg-[#F2E7DC] text-[#4A2818] text-xs font-semibold px-3 py-1 rounded-full border border-[#E8D8CC]">
                     Price Filter Active
                     <button onClick={() => setSelectedPricePreset('all')}>
-                      <X className="w-3.5 h-3.5 hover:text-[#FF5C34]" />
+                      <X className="w-3.5 h-3.5 hover:text-[#361B0E]" />
                     </button>
                   </span>
                 )}
@@ -381,11 +381,11 @@ export default function Products() {
 
               {/* Sort Selector Dropdown */}
               <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                <span className="text-xs text-[#351E28]/60 font-semibold shrink-0">Sort By:</span>
+                <span className="text-xs text-[#7A6153] font-medium shrink-0">Sort By:</span>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as any)}
-                  className="bg-[#F8F7F0] border border-[#351E28]/15 rounded-xl px-3 py-1.5 text-xs font-bold text-[#351E28] outline-none focus:border-[#FF5C34]"
+                  className="bg-[#FCFAF7] border border-[#E8D8CC] rounded-full px-3.5 py-1.5 text-xs font-semibold text-[#4A2818] outline-none focus:border-[#4A2818]"
                 >
                   <option value="featured">Featured First</option>
                   <option value="price_asc">Price: Low to High</option>
@@ -399,21 +399,21 @@ export default function Products() {
 
             {/* Product Grid or Empty State */}
             {filteredProducts.length === 0 ? (
-              <div className="bg-white rounded-3xl p-10 sm:p-14 border-2 border-[#351E28]/10 text-center space-y-4">
-                <div className="w-20 h-20 rounded-3xl bg-[#D7EFFF] border-2 border-[#351E28] mx-auto flex items-center justify-center text-[#351E28] shadow-pop-sm">
-                  <PackageOpen className="w-10 h-10 stroke-[1.8]" />
+              <div className="bg-white rounded-[2rem] p-10 sm:p-14 border border-[#E8D8CC] text-center space-y-4">
+                <div className="w-16 h-16 rounded-2xl bg-[#F2E7DC] mx-auto flex items-center justify-center text-[#4A2818]">
+                  <PackageOpen className="w-8 h-8 stroke-[1.8]" />
                 </div>
                 <div>
-                  <h3 className="font-heading text-2xl font-black text-[#351E28] mb-1">
+                  <h3 className="font-serif text-2xl font-bold text-[#4A2818] mb-1">
                     No matching baking products found
                   </h3>
-                  <p className="text-xs sm:text-sm text-[#351E28]/60 max-w-md mx-auto leading-relaxed">
+                  <p className="text-xs sm:text-sm text-[#7A6153] max-w-md mx-auto leading-relaxed">
                     We couldn't find any products matching your active filters. Try searching with a broader keyword or reset your filters.
                   </p>
                 </div>
                 <button
                   onClick={resetFilters}
-                  className="inline-flex items-center gap-2 bg-[#FF5C34] hover:bg-[#e44c26] text-white font-bold text-xs px-6 py-3 rounded-full transition-all shadow-md"
+                  className="inline-flex items-center gap-2 bg-[#4A2818] hover:bg-[#361B0E] text-[#F9F4EE] font-medium text-xs px-6 py-3 rounded-full transition-all shadow-sm"
                 >
                   <RotateCcw className="w-4 h-4" />
                   <span>Reset All Filters</span>

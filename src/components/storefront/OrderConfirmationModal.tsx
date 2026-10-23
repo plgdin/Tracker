@@ -19,76 +19,76 @@ export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
   if (!order) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-[#351E28]/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-[#361B0E]/50 backdrop-blur-sm animate-in fade-in duration-200">
       
       <div 
-        className="relative w-full max-w-lg bg-white rounded-3xl border-2 border-[#351E28] shadow-2xl p-6 sm:p-8 text-center my-auto animate-in zoom-in-95 duration-200"
+        className="relative w-full max-w-lg bg-white rounded-[2.5rem] border border-[#E8D8CC] shadow-2xl p-6 sm:p-8 text-center my-auto animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#F8F7F0] hover:bg-[#351E28] hover:text-[#EAF05C] text-[#351E28] flex items-center justify-center border border-[#351E28]/15 transition-all"
+          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#F2E7DC] hover:bg-[#4A2818] hover:text-[#F9F4EE] text-[#4A2818] flex items-center justify-center border border-[#E8D8CC] transition-colors"
         >
           <X className="w-4 h-4" />
         </button>
 
-        {/* Success Icon with Wasabi highlight */}
-        <div className="w-20 h-20 rounded-full bg-[#EAF05C] border-2 border-[#351E28] mx-auto flex items-center justify-center text-[#351E28] mb-5 shadow-pop-sm">
-          <CheckCircle2 className="w-10 h-10 stroke-[2.5]" />
+        {/* Success Icon */}
+        <div className="w-16 h-16 rounded-2xl bg-[#F2E7DC] mx-auto flex items-center justify-center text-[#4A2818] mb-4">
+          <CheckCircle2 className="w-8 h-8 stroke-[2.2]" />
         </div>
 
         {/* Title */}
-        <span className="inline-block bg-[#D7EFFF] text-[#351E28] text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider mb-2">
+        <span className="inline-block bg-[#F2E7DC] text-[#4A2818] text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider mb-2">
           Order Created Successfully
         </span>
-        <h2 className="font-heading text-3xl font-black text-[#351E28] mb-1">
+        <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#4A2818] mb-1">
           Thank You, {order.customerName}!
         </h2>
-        <p className="text-xs sm:text-sm text-[#351E28]/70 mb-5">
+        <p className="text-xs sm:text-sm text-[#7A6153] mb-5 font-normal">
           Your order has been recorded in our store system.
         </p>
 
         {/* Order Details Card */}
-        <div className="p-4 bg-[#F8F7F0] rounded-2xl border-2 border-[#351E28]/10 text-left space-y-2.5 mb-6">
-          <div className="flex justify-between items-center pb-2 border-b border-[#351E28]/10">
-            <span className="text-xs font-semibold text-[#351E28]/60">Order Reference</span>
-            <span className="font-heading font-black text-sm text-[#FF5C34]">{order.orderNumber}</span>
+        <div className="p-4 bg-[#F9F4EE] rounded-2xl border border-[#E8D8CC] text-left space-y-2.5 mb-6">
+          <div className="flex justify-between items-center pb-2 border-b border-[#E8D8CC]">
+            <span className="text-xs font-medium text-[#7A6153]">Order Reference</span>
+            <span className="font-serif font-bold text-sm text-[#4A2818]">{order.orderNumber}</span>
           </div>
 
           <div className="flex justify-between items-center text-xs">
-            <span className="text-[#351E28]/70">Pickup Slot:</span>
-            <span className="font-bold text-[#351E28]">{order.pickupPreference}</span>
+            <span className="text-[#7A6153]">Pickup Slot:</span>
+            <span className="font-medium text-[#4A2818]">{order.pickupPreference}</span>
           </div>
 
           <div className="flex justify-between items-center text-xs">
-            <span className="text-[#351E28]/70">Total Amount:</span>
-            <span className="font-heading font-black text-base text-[#351E28]">₹{order.total}</span>
+            <span className="text-[#7A6153]">Total Amount:</span>
+            <span className="font-serif font-bold text-base text-[#4A2818]">₹{order.total}</span>
           </div>
 
           <div className="flex justify-between items-center text-xs">
-            <span className="text-[#351E28]/70">Items Count:</span>
-            <span className="font-bold text-[#351E28]">{order.items.length} items</span>
+            <span className="text-[#7A6153]">Items Count:</span>
+            <span className="font-medium text-[#4A2818]">{order.items.length} items</span>
           </div>
 
-          <div className="pt-2 border-t border-[#351E28]/10 flex items-start gap-2 text-[11px] text-[#351E28]/80">
-            <MapPin className="w-4 h-4 text-[#FF5C34] shrink-0 mt-0.5" />
+          <div className="pt-2 border-t border-[#E8D8CC] flex items-start gap-2 text-[11px] text-[#7A6153]">
+            <MapPin className="w-4 h-4 text-[#4A2818] shrink-0 mt-0.5" />
             <span>{settings.address || 'Bake & Joy Main Market Road, Bangalore, Karnataka, India'}</span>
           </div>
         </div>
 
         {/* WhatsApp Notice & Button */}
-        <div className="p-3 bg-[#EAF05C]/30 rounded-2xl border border-[#351E28]/10 text-xs text-[#351E28] mb-6">
-          <p className="font-semibold mb-2">
+        <div className="p-3 bg-[#F2E7DC] rounded-2xl border border-[#E8D8CC] text-xs text-[#4A2818] mb-6">
+          <p className="font-medium mb-2 leading-relaxed">
             📲 A WhatsApp window has been opened with your order summary. Send it to the store owner to fast-track your packing!
           </p>
           <a
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 w-full py-3 rounded-full bg-[#351E28] hover:bg-[#4a2b38] text-[#EAF05C] font-bold text-xs shadow-md transition-all"
+            className="inline-flex items-center justify-center gap-2 w-full py-2.5 rounded-full bg-[#4A2818] hover:bg-[#361B0E] text-[#F9F4EE] font-serif font-bold text-xs shadow-sm transition-all"
           >
-            <MessageCircle className="w-4 h-4 fill-[#EAF05C] text-[#351E28]" />
+            <MessageCircle className="w-4 h-4 fill-white text-[#4A2818]" />
             <span>Re-open WhatsApp Chat Message</span>
           </a>
         </div>
@@ -97,14 +97,14 @@ export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
         <div className="flex flex-col sm:flex-row gap-2">
           <button
             onClick={onClose}
-            className="flex-1 py-3.5 rounded-full bg-[#FF5C34] hover:bg-[#e44c26] text-white font-heading font-black text-sm transition-all shadow-md"
+            className="flex-1 py-3.5 rounded-full bg-[#4A2818] hover:bg-[#361B0E] text-[#F9F4EE] font-serif font-bold text-sm transition-all shadow-sm"
           >
             Continue Shopping
           </button>
           <Link
             to="/admin/orders"
             onClick={onClose}
-            className="py-3.5 px-4 rounded-full border border-[#351E28]/20 text-[#351E28] font-bold text-xs hover:bg-[#F8F7F0] flex items-center justify-center gap-1"
+            className="py-3 px-4 rounded-full border border-[#E8D8CC] text-[#4A2818] font-medium text-xs hover:bg-[#F9F4EE] flex items-center justify-center gap-1"
           >
             <span>View in Admin</span>
             <ArrowRight className="w-3.5 h-3.5" />

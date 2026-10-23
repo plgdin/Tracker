@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, ArrowRight, ShoppingBag, CheckCircle2 } from 'lucide-react';
+import { ShoppingBag, Mail, Sparkles, Heart, Gift, ArrowRight } from 'lucide-react';
 import type { StoreSettings } from '../../types/ecommerce';
 
 interface HeroSectionProps {
@@ -9,111 +9,107 @@ interface HeroSectionProps {
 
 export const HeroSection: React.FC<HeroSectionProps> = ({ settings }) => {
   return (
-    <section className="relative overflow-hidden bg-[#F8F7F0] py-8 sm:py-14 border-b border-[#351E28]/10">
-      {/* Subtle graphic accent shapes in brand colors */}
-      <div className="absolute top-0 right-1/4 w-72 h-72 rounded-full bg-[#EAF05C]/30 blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-10 left-10 w-80 h-80 rounded-full bg-[#D7EFFF]/40 blur-3xl pointer-events-none" />
-
+    <section className="relative overflow-hidden bg-[#F9F4EE] pt-10 pb-16 sm:pt-14 sm:pb-20 border-b border-[#E8D8CC]/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
           
-          {/* Left Column: Expressive Copy & CTAs */}
+          {/* Left Column: Editorial Headline & Actions */}
           <div className="lg:col-span-7 space-y-6 text-left">
             
-            {/* Pill Badge */}
-            <div className="inline-flex items-center gap-2 bg-[#EAF05C] border border-[#351E28]/10 px-3.5 py-1.5 rounded-full shadow-sm">
-              <Sparkles className="w-4 h-4 text-[#351E28] fill-[#351E28]" />
-              <span className="text-xs font-black tracking-wide uppercase text-[#351E28]">
-                {settings?.storeName || 'Bake & Joy'} · Bangalore's Premier Baking Pantry
-              </span>
+            {/* Store Tag */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F2E7DC] text-[#4A2818] text-xs font-medium tracking-wide">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#4A2818]" />
+              <span>{settings?.storeName || 'Bake & Joy'} · Bangalore</span>
             </div>
 
-            {/* Main Headline */}
-            <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-black text-[#351E28] tracking-tight leading-[1.08]">
-              Craft Bakery-Grade <br />
-              <span className="text-[#FF5C34]">Magic At Home</span>
+            {/* Main Editorial Serif Headline */}
+            <h1 className="font-serif text-5xl sm:text-6xl lg:text-[4.25rem] font-medium text-[#4A2818] tracking-tight leading-[1.06]">
+              Sweet Moments <br />
+              <span className="italic font-normal">Start Here</span>
             </h1>
 
             {/* Editorial Subtext */}
-            <p className="text-base sm:text-lg text-[#351E28]/80 leading-relaxed max-w-xl font-normal">
-              From Belgian couverture chocolate and professional Russian piping nozzles to silicone moulds, 
-              cake toppers, and premium packaging. Everything you need for celebration bakes in one curated store.
+            <p className="text-base sm:text-lg text-[#7A6153] leading-relaxed max-w-lg font-normal">
+              Bangalore's dedicated destination for fine baking supplies, calibrated Belgian couverture chocolates, silicone moulds, cake decoration toppers, and artisanal dessert ingredients.
             </p>
 
-            {/* Action Buttons */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
+            {/* Action Buttons Row */}
+            <div className="pt-2 flex flex-wrap items-center gap-6">
               <Link
                 to="/products"
-                className="inline-flex items-center justify-center gap-2.5 bg-[#FF5C34] hover:bg-[#e44c26] text-white font-bold text-base px-7 py-4 rounded-full shadow-lg shadow-[#FF5C34]/25 hover:shadow-xl transition-all duration-200 active:scale-95 group"
+                className="inline-flex items-center justify-center bg-[#4A2818] hover:bg-[#361B0E] text-[#F9F4EE] font-medium text-sm px-8 py-3.5 rounded-full shadow-md hover:shadow-xl transition-all duration-200 active:scale-95"
               >
-                <ShoppingBag className="w-5 h-5 stroke-[2.2]" />
-                <span>Shop Supplies Now</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <span>Shop Now</span>
               </Link>
 
               <Link
-                to="/products?category=cat-cake-decoration"
-                className="inline-flex items-center justify-center gap-2 bg-white hover:bg-[#D7EFFF] text-[#351E28] font-bold text-base px-6 py-4 rounded-full border-2 border-[#351E28]/15 hover:border-[#351E28]/30 transition-all active:scale-95 shadow-sm"
+                to="/products"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#4A2818] hover:text-[#7A6153] transition-colors group"
               >
-                <span>Browse Cake Decor</span>
+                <span className="text-xs">&gt;</span>
+                <span className="underline-offset-4 group-hover:translate-x-0.5 transition-transform">Explore Catalog</span>
               </Link>
             </div>
 
-            {/* Highlights Bar */}
-            <div className="pt-6 border-t border-[#351E28]/10 grid grid-cols-3 gap-3 max-w-lg">
-              <div className="flex flex-col">
-                <span className="font-heading text-xl sm:text-2xl font-black text-[#351E28]">1000+</span>
-                <span className="text-xs text-[#351E28]/70 font-semibold">Artisan Supplies</span>
+            {/* Minimal Icon Bar Tray */}
+            <div className="pt-6 border-t border-[#E8D8CC]/70 flex items-center gap-3 sm:gap-4 text-[#7A6153]">
+              <div 
+                className="w-9 h-9 rounded-full border border-[#DCC7B8] flex items-center justify-center bg-[#FCFAF7] hover:bg-[#F2E7DC] hover:text-[#4A2818] transition-colors cursor-pointer"
+                title="Baking Packaging"
+              >
+                <ShoppingBag className="w-4 h-4 stroke-[1.8]" />
               </div>
-              <div className="flex flex-col">
-                <span className="font-heading text-xl sm:text-2xl font-black text-[#FF5C34]">100% Fresh</span>
-                <span className="text-xs text-[#351E28]/70 font-semibold">Store Quality</span>
+              <div 
+                className="w-9 h-9 rounded-full border border-[#DCC7B8] flex items-center justify-center bg-[#FCFAF7] hover:bg-[#F2E7DC] hover:text-[#4A2818] transition-colors cursor-pointer"
+                title="Store Inquiries"
+              >
+                <Mail className="w-4 h-4 stroke-[1.8]" />
               </div>
-              <div className="flex flex-col">
-                <span className="font-heading text-xl sm:text-2xl font-black text-[#351E28]">Same-Day</span>
-                <span className="text-xs text-[#351E28]/70 font-semibold">Bangalore Pickup</span>
+              <div 
+                className="w-9 h-9 rounded-full border border-[#DCC7B8] flex items-center justify-center bg-[#FCFAF7] hover:bg-[#F2E7DC] hover:text-[#4A2818] transition-colors cursor-pointer"
+                title="Artisanal Decor"
+              >
+                <Sparkles className="w-4 h-4 stroke-[1.8]" />
+              </div>
+              <div 
+                className="w-9 h-9 rounded-full border border-[#DCC7B8] flex items-center justify-center bg-[#FCFAF7] hover:bg-[#F2E7DC] hover:text-[#4A2818] transition-colors cursor-pointer"
+                title="Baker's Favorites"
+              >
+                <Heart className="w-4 h-4 stroke-[1.8]" />
+              </div>
+              <div 
+                className="w-9 h-9 rounded-full border border-[#DCC7B8] flex items-center justify-center bg-[#FCFAF7] hover:bg-[#F2E7DC] hover:text-[#4A2818] transition-colors cursor-pointer"
+                title="Gift Sets & Combos"
+              >
+                <Gift className="w-4 h-4 stroke-[1.8]" />
               </div>
             </div>
 
           </div>
 
-          {/* Right Column: Hero Visual Showcase */}
-          <div className="lg:col-span-5 relative">
-            <div className="relative mx-auto max-w-md lg:max-w-none">
+          {/* Right Column: Artisan Strawberry Cake on Ceramic Dish */}
+          <div className="lg:col-span-5 relative flex justify-center lg:justify-end">
+            <div className="relative max-w-sm sm:max-w-md w-full">
               
-              {/* Backing decorative frame */}
-              <div className="absolute inset-0 bg-[#351E28] rounded-[2.5rem] rotate-2 transform transition-transform group-hover:rotate-1" />
+              {/* Soft background ambient halo */}
+              <div className="absolute inset-0 bg-[#E8D8CC]/40 rounded-full blur-2xl transform scale-95 pointer-events-none" />
 
-              {/* Main Image Container */}
-              <div className="relative bg-white rounded-[2.25rem] p-3 -rotate-1 border-2 border-[#351E28] shadow-2xl overflow-hidden">
+              {/* Ceramic Dish & Strawberry Layer Cake */}
+              <div className="relative rounded-[2.5rem] overflow-hidden aspect-square bg-[#FCFAF7] border-2 border-white/80 shadow-2xl p-2.5">
                 <img
-                  src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=900&q=85"
-                  alt="Artisan cake decoration and baking tools"
-                  className="w-full h-80 sm:h-96 object-cover rounded-[1.75rem]"
+                  src="https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=1000&q=85"
+                  alt="Fresh artisan strawberry cream cake"
+                  className="w-full h-full object-cover rounded-[2rem] transform hover:scale-105 transition-transform duration-700"
                 />
 
-                {/* Floating Wasabi Badge: Store Counter Pick-up */}
-                <div className="absolute top-6 left-6 bg-[#EAF05C] border-2 border-[#351E28] text-[#351E28] px-4 py-2 rounded-2xl shadow-md rotate-[-3deg] flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-[#351E28] stroke-[2.5]" />
-                  <div>
-                    <div className="text-[11px] font-black uppercase tracking-wider">Fast Counter Pickup</div>
-                    <div className="text-[10px] font-bold text-[#351E28]/75">Bangalore Store</div>
+                {/* Floating Artisan Quality Tag */}
+                <div className="absolute bottom-5 right-5 bg-white/95 backdrop-blur-md px-3.5 py-2 rounded-2xl shadow-lg border border-[#E8D8CC] flex items-center gap-2.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#4A2818] animate-pulse" />
+                  <div className="text-left">
+                    <div className="text-xs font-serif font-bold text-[#4A2818]">100% Pure Couverture</div>
+                    <div className="text-[10px] text-[#7A6153]">Cake & Confectionery Essentials</div>
                   </div>
                 </div>
-
-                {/* Floating Cool Blue Card: Featured Callets */}
-                <div className="absolute bottom-6 right-6 bg-[#D7EFFF] border-2 border-[#351E28] p-3 rounded-2xl shadow-lg rotate-[2deg] flex items-center gap-3 max-w-[200px]">
-                  <img
-                    src="https://images.unsplash.com/photo-1587248720327-8eb72564be1e?auto=format&fit=crop&w=150&q=80"
-                    alt="Belgian chocolate"
-                    className="w-11 h-11 object-cover rounded-xl border border-[#351E28]/20 shrink-0"
-                  />
-                  <div>
-                    <div className="text-xs font-black text-[#351E28] leading-tight">Dark Couverture</div>
-                    <div className="text-[11px] font-bold text-[#FF5C34]">₹590 / 500g</div>
-                  </div>
-                </div>
-
               </div>
 
             </div>
