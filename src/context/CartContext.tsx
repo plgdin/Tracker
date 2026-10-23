@@ -1,87 +1,101 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
-
-export interface CartItem {
-  productId: string;
-  name: string;
-  price: string;
-  quantity: number;
-  image?: string | null;
-}
+import type { CartItem } from "../types/ecommerce";
 
 interface CartContextType {
   items: CartItem[];
-  addItem: (item: Omit<CartItem, "quantity">) => void;
-  removeItem: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  addItem: (item: Omit<CartItem, "quantity">, quantity?: number) => void;
+  removeItem: (productId: string, selectedVariant?: string) => void;
+  updateQuantity: (productId: string, quantity: number, selectedVariant?: string) => void;
   clearCart: () => void;
   totalItems: number;
-  totalAmount: string;
+  totalAmount: number;
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
+  isCheckoutOpen: boolean;
+  setIsCheckoutOpen: (open: boolean) => void;
 }
 
 const CartContext = createContext<CartContextType | null>(null);
 
+const CART_STORAGE_KEY = "bnj_customer_cart";
+
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>(() => {
-    const saved = localStorage.getItem("cart");
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem(CART_STORAGE_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
   });
+
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
-  const addItem = useCallback((item: Omit<CartItem, "quantity">) => {
+  const persist = (newItems: CartItem[]) => {
+    setItems(newItems);
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(newItems));
+  };
 
+  const addItem = useCallback((item: Omit<CartItem, "quantity">, quantity = 1) => {
     setItems((prev) => {
-      const existing = prev.find((i) => i.productId === item.productId);
+      const existingIdx = prev.findIndex(
+        (i) => i.productId === item.productId && (i.selectedVariant || "") === (item.selectedVariant || "")
+      );
+
       let newItems: CartItem[];
-      if (existing) {
-        newItems = prev.map((i) =>
-          i.productId === item.productId ? { ...i, quantity: i.quantity + 1 } : i
-        );
+      if (existingIdx > -1) {
+        newItems = [...prev];
+        newItems[existingIdx] = {
+          ...newItems[existingIdx],
+          quantity: newItems[existingIdx].quantity + quantity,
+        };
       } else {
-        newItems = [...prev, { ...item, quantity: 1 }];
+        newItems = [...prev, { ...item, quantity }];
       }
-      localStorage.setItem("cart", JSON.stringify(newItems));
+
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(newItems));
       return newItems;
     });
   }, []);
 
-  const removeItem = useCallback((productId: string) => {
+  const removeItem = useCallback((productId: string, selectedVariant?: string) => {
     setItems((prev) => {
-      const newItems = prev.filter((i) => i.productId !== productId);
-      localStorage.setItem("cart", JSON.stringify(newItems));
+      const newItems = prev.filter(
+        (i) => !(i.productId === productId && (i.selectedVariant || "") === (selectedVariant || ""))
+      );
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(newItems));
       return newItems;
     });
   }, []);
 
-  const updateQuantity = useCallback((productId: string, quantity: number) => {
-    if (quantity <= 0) {
+  const updateQuantity = useCallback(
+    (productId: string, quantity: number, selectedVariant?: string) => {
+      if (quantity <= 0) {
+        removeItem(productId, selectedVariant);
+        return;
+      }
       setItems((prev) => {
-        const newItems = prev.filter((i) => i.productId !== productId);
-        localStorage.setItem("cart", JSON.stringify(newItems));
+        const newItems = prev.map((i) => {
+          if (i.productId === productId && (i.selectedVariant || "") === (selectedVariant || "")) {
+            return { ...i, quantity };
+          }
+          return i;
+        });
+        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(newItems));
         return newItems;
       });
-      return;
-    }
-    setItems((prev) => {
-      const newItems = prev.map((i) =>
-        i.productId === productId ? { ...i, quantity } : i
-      );
-      localStorage.setItem("cart", JSON.stringify(newItems));
-      return newItems;
-    });
-  }, []);
+    },
+    [removeItem]
+  );
 
   const clearCart = useCallback(() => {
-    setItems([]);
-    localStorage.removeItem("cart");
+    persist([]);
   }, []);
 
   const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
-  const totalAmount = items
-    .reduce((sum, i) => sum + Number(i.price) * i.quantity, 0)
-    .toFixed(2);
+  const totalAmount = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
   return (
     <CartContext.Provider
@@ -95,6 +109,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         totalAmount,
         isCartOpen,
         setIsCartOpen,
+        isCheckoutOpen,
+        setIsCheckoutOpen,
       }}
     >
       {children}

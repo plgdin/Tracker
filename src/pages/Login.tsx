@@ -245,7 +245,7 @@ export default function Login() {
                   onClick={() => setActiveTab("signup")}
                   className="text-base text-taupe hover:text-burnt-orange transition-colors cursor-pointer"
                 >
-                  Don't have an account? <span className="font-semibold text-burnt-orange underline">Sign Up</span>
+                  Don't have an account? <span className="font-semibold text-burnt-orange hover:opacity-80 transition-opacity">Sign Up</span>
                 </button>
               ) : (
                 <button
@@ -253,7 +253,7 @@ export default function Login() {
                   onClick={() => setActiveTab("signin")}
                   className="text-base text-taupe hover:text-burnt-orange transition-colors cursor-pointer"
                 >
-                  Already have an account? <span className="font-semibold text-burnt-orange underline">Sign In</span>
+                  Already have an account? <span className="font-semibold text-burnt-orange hover:opacity-80 transition-opacity">Sign In</span>
                 </button>
               )}
             </CardFooter>

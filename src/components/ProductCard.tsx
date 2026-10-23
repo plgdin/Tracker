@@ -42,8 +42,8 @@ export default function ProductCard({
     addItem({
       productId: id,
       name,
-      price,
-      image,
+      price: Number(price) || 0,
+      image: image || undefined,
     });
 
     // Trigger toast
