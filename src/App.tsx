@@ -11,6 +11,7 @@ import AdminCategories from './pages/admin/AdminCategories';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminSettings from './pages/admin/AdminSettings';
 import Toast from './components/Toast';
+import { MobileBottomNav } from './components/storefront/MobileBottomNav';
 import './index.css';
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
     <BrowserRouter>
       <CartProvider>
         <Toast />
+        <MobileBottomNav />
         <Routes>
           {/* Public Customer Storefront Routes */}
           <Route path="/" element={<Home />} />
