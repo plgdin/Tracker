@@ -17,7 +17,7 @@ function hwfHex(hex: string): [number, number, number] | null {
 
 function hwfRadius(coverage: number, gap: number): number {
   const c = coverage < 0 ? 0 : coverage > 1 ? 1 : coverage;
-  return Math.sqrt(c) * gap * 0.58;
+  return Math.sqrt(c) * gap * 0.62;
 }
 
 function hwfStep(
@@ -29,18 +29,13 @@ function hwfStep(
   const d2 = dx * dx + dy * dy;
   if (r > 0 && d2 < r * r) {
     const d = Math.sqrt(d2) + 0.001;
-    const f = (1 - d / r) * 2.8;
+    const f = (1 - d / r) * 3.6;
     vx += (dx / d) * f;
     vy += (dy / d) * f;
   }
-  vx = (vx + (hx - x) * 0.05) * 0.84;
-  vy = (vy + (hy - y) * 0.05) * 0.84;
+  vx = (vx + (hx - x) * 0.06) * 0.82;
+  vy = (vy + (hy - y) * 0.06) * 0.82;
   return [x + vx, y + vy, vx, vy];
-}
-
-function hwfWarmth(x: number, y: number, hx: number, hy: number, span: number): number {
-  const d = Math.hypot(x - hx, y - hy);
-  return span > 0 ? Math.min(1, d / span) : 0;
 }
 
 export const LandingIntro: React.FC<LandingIntroProps> = ({
@@ -66,14 +61,9 @@ export const LandingIntro: React.FC<LandingIntroProps> = ({
   const ringRef = useRef({ x: 0, y: 0, t: -1 });
   const isReducedMotion = useRef(false);
 
-  const colors = {
-    bg: '#F9F4EE',
-    ink: '#4A2818',
-    warm: '#C87D55',
-  };
-
-  const inkRgb = hwfHex(colors.ink) || [74, 40, 24];
-  const warmRgb = hwfHex(colors.warm) || [200, 125, 85];
+  // Intense glowing palette: Deep cocoa ink warming into blazing neon amber/terracotta
+  const inkRgb: [number, number, number] = [74, 40, 24]; // #4A2818 deep artisan cocoa
+  const warmRgb: [number, number, number] = [255, 95, 20]; // #FF5F14 vivid glowing ember
 
   // Trigger smooth transition into navbar
   const triggerTransition = () => {
@@ -102,7 +92,7 @@ export const LandingIntro: React.FC<LandingIntroProps> = ({
       // Gradually fade out background overlay to reveal storefront underneath
       setTimeout(() => {
         setOverlayOpacity(0);
-      }, 50);
+      }, 80);
 
       // Finish and cleanup
       setTimeout(() => {
@@ -141,8 +131,8 @@ export const LandingIntro: React.FC<LandingIntroProps> = ({
     let visible = true;
     let grainTile: HTMLCanvasElement | null = null;
 
-    const gap = 6;
-    const pushRadius = 85;
+    const gap = 5.5; // High resolution dots
+    const pushRadius = 95; // Wide reactive hover radius
 
     const layout = () => {
       const rect = box.getBoundingClientRect();
@@ -164,8 +154,8 @@ export const LandingIntro: React.FC<LandingIntroProps> = ({
       m.font = `italic 700 ${testSize}px ${fontStack}`;
       const measured = m.measureText(storeName).width;
 
-      const targetWidth = Math.min(w * 0.92, 980);
-      const fitSize = measured > 0 ? Math.min(Math.round((targetWidth / measured) * testSize), Math.round(h * 0.72)) : 60;
+      const targetWidth = Math.min(w * 0.94, 1020);
+      const fitSize = measured > 0 ? Math.min(Math.round((targetWidth / measured) * testSize), Math.round(h * 0.75)) : 70;
 
       m.font = `italic 700 ${fitSize}px ${fontStack}`;
       m.fillStyle = '#000';
@@ -224,7 +214,8 @@ export const LandingIntro: React.FC<LandingIntroProps> = ({
       const r = !isReducedMotion.current ? pushRadius : 0;
       const ring = ringRef.current;
       const ringAge = ring.t < 0 ? 1e9 : now - ring.t;
-      const ringR = ringAge * 0.95;
+      // Shockwave speed: 1.15 px per ms, traveling across the word in ~800ms
+      const ringR = ringAge * 1.15;
       const dots = dotsRef.current;
       const count = dotsCountRef.current;
       const px = pointerRef.current.x;
@@ -240,16 +231,23 @@ export const LandingIntro: React.FC<LandingIntroProps> = ({
         const hx = dots[j + 4];
         const hy = dots[j + 5];
 
+        let ringForce = 0;
+        let ringWarmthBonus = 0;
+
         if (!isReducedMotion.current) {
-          if (ringAge < 900) {
+          // Shockwave ripple physics
+          if (ringAge < 850) {
             const dx = hx - ring.x;
             const dy = hy - ring.y;
             const d = Math.sqrt(dx * dx + dy * dy) + 0.001;
-            const band = 1 - Math.min(1, Math.abs(d - ringR) / 28);
+            const bandWidth = 38;
+            const band = 1 - Math.min(1, Math.abs(d - ringR) / bandWidth);
             if (band > 0) {
-              const f = band * 3.5 * (1 - ringAge / 900);
-              vx += (dx / d) * f;
-              vy += (dy / d) * f;
+              const power = (1 - ringAge / 850);
+              ringForce = band * 5.4 * power;
+              ringWarmthBonus = band * power * 1.35;
+              vx += (dx / d) * ringForce;
+              vy += (dy / d) * ringForce;
             }
           }
 
@@ -259,7 +257,7 @@ export const LandingIntro: React.FC<LandingIntroProps> = ({
           vx = s[2];
           vy = s[3];
 
-          if (Math.abs(vx) + Math.abs(vy) > 0.02 || Math.abs(x - hx) + Math.abs(y - hy) > 0.05) {
+          if (Math.abs(vx) + Math.abs(vy) > 0.02 || Math.abs(x - hx) + Math.abs(y - hy) > 0.04) {
             moving = true;
           } else {
             x = hx;
@@ -274,22 +272,43 @@ export const LandingIntro: React.FC<LandingIntroProps> = ({
           dots[j + 3] = vy;
         }
 
-        const k = hwfWarmth(x, y, hx, hy, 28);
-        ctx.fillStyle =
-          k > 0.02
-            ? 'rgb(' +
-              Math.round(inkRgb[0] + (warmRgb[0] - inkRgb[0]) * k) + ',' +
-              Math.round(inkRgb[1] + (warmRgb[1] - inkRgb[1]) * k) + ',' +
-              Math.round(inkRgb[2] + (warmRgb[2] - inkRgb[2]) * k) + ')'
-            : colors.ink;
+        // Highly sensitive warmth calculation: displacements + velocity + ripple
+        const distFromHome = Math.hypot(x - hx, y - hy);
+        const velocity = Math.hypot(vx, vy);
+        let k = Math.min(1, distFromHome / 5.5 + velocity * 0.45 + ringWarmthBonus);
+
+        // Radiant Glowing Color and Glow Shadow
+        if (k > 0.06) {
+          const red = Math.round(inkRgb[0] + (warmRgb[0] - inkRgb[0]) * k);
+          const green = Math.round(inkRgb[1] + (warmRgb[1] - inkRgb[1]) * k);
+          const blue = Math.round(inkRgb[2] + (warmRgb[2] - inkRgb[2]) * k);
+          ctx.fillStyle = `rgb(${red}, ${green}, ${blue})`;
+
+          // Genuine glowing halo when activated
+          if (k > 0.2) {
+            ctx.shadowColor = `rgba(${warmRgb[0]}, ${warmRgb[1]}, ${warmRgb[2]}, ${Math.min(1, k * 0.95)})`;
+            ctx.shadowBlur = k * 16;
+          } else {
+            ctx.shadowBlur = 0;
+          }
+        } else {
+          ctx.fillStyle = '#4A2818';
+          ctx.shadowBlur = 0;
+        }
+
+        // Slight dot blooming expansion when glowing
+        const baseRadius = dots[j + 6];
+        const displayRadius = baseRadius * (1 + k * 0.45);
 
         ctx.beginPath();
-        ctx.arc(x, y, dots[j + 6], 0, Math.PI * 2);
+        ctx.arc(x, y, displayRadius, 0, Math.PI * 2);
         ctx.fill();
       }
 
+      ctx.shadowBlur = 0;
+
       if (grainTile) {
-        ctx.globalAlpha = 0.05;
+        ctx.globalAlpha = 0.04;
         ctx.globalCompositeOperation = 'overlay';
         const pattern = ctx.createPattern(grainTile, 'repeat');
         if (pattern) {
@@ -300,7 +319,7 @@ export const LandingIntro: React.FC<LandingIntroProps> = ({
         ctx.globalCompositeOperation = 'source-over';
       }
 
-      awake = moving || ringAge < 900 || px > -1e4;
+      awake = moving || ringAge < 850 || px > -1e4;
     };
 
     const loop = (now: number) => {
@@ -315,14 +334,14 @@ export const LandingIntro: React.FC<LandingIntroProps> = ({
       if (!raf && visible) raf = requestAnimationFrame(loop);
     };
 
-    const toLocal = (e: MouseEvent | PointerEvent) => {
+    const toLocal = (clientX: number, clientY: number) => {
       const b = canvas.getBoundingClientRect();
-      return [e.clientX - b.left, e.clientY - b.top];
+      return [clientX - b.left, clientY - b.top];
     };
 
     const onPointerMove = (e: PointerEvent) => {
-      const p = toLocal(e);
-      pointerRef.current = { x: p[0], y: p[1] };
+      const [localX, localY] = toLocal(e.clientX, e.clientY);
+      pointerRef.current = { x: localX, y: localY };
       wake();
     };
 
@@ -332,13 +351,16 @@ export const LandingIntro: React.FC<LandingIntroProps> = ({
     };
 
     const onPointerDown = (e: PointerEvent) => {
-      const p = toLocal(e);
-      ringRef.current = { x: p[0], y: p[1], t: performance.now() };
+      const [localX, localY] = toLocal(e.clientX, e.clientY);
+      
+      // Trigger instant glowing shockwave ripple!
+      ringRef.current = { x: localX, y: localY, t: performance.now() };
       wake();
-      // Trigger transition with brief ripple anticipation
+
+      // Allow the shockwave to radiate visibly across the full wordmark, then transition smoothly
       setTimeout(() => {
         triggerTransition();
-      }, 140);
+      }, 700);
     };
 
     layout();
@@ -438,11 +460,11 @@ export const LandingIntro: React.FC<LandingIntroProps> = ({
       {/* Centered Large Halftone Wordmark Container */}
       <div 
         ref={wordmarkBoxRef}
-        className="relative w-[92vw] max-w-4xl h-56 sm:h-72 md:h-80 flex items-center justify-center cursor-pointer"
+        className="relative w-[94vw] max-w-5xl h-64 sm:h-80 md:h-96 flex items-center justify-center cursor-pointer"
         style={transformStyle}
-        title="Move pointer to see spring dots · Click or scroll to enter"
+        title="Hover to glow · Click for shockwave ripple"
       >
-        {/* Halftone Canvas with Interactive Spring Dots */}
+        {/* Halftone Canvas with Interactive Glowing Spring Dots */}
         <canvas
           ref={canvasRef}
           className={`w-full h-full block transition-opacity duration-700 ${
@@ -450,10 +472,10 @@ export const LandingIntro: React.FC<LandingIntroProps> = ({
           }`}
         />
 
-        {/* Crisp Solid Text that blends in as the logo reaches the navbar */}
+        {/* Crisp Solid Text that smoothly takes over as logo nests into the navbar */}
         <span
           ref={solidTextRef}
-          className={`absolute inset-0 flex items-center justify-center font-serif italic text-6xl sm:text-7xl md:text-8xl tracking-tight text-[#4A2818] pointer-events-none transition-opacity duration-500 ${
+          className={`absolute inset-0 flex items-center justify-center font-serif italic text-6xl sm:text-7xl md:text-8xl lg:text-9xl tracking-tight text-[#4A2818] pointer-events-none transition-opacity duration-500 ${
             stage === 'animating' ? 'opacity-100' : 'opacity-0'
           }`}
         >
@@ -461,16 +483,23 @@ export const LandingIntro: React.FC<LandingIntroProps> = ({
         </span>
       </div>
 
-      {/* Elegant Invitation Cue with subtle particle sparkle */}
+      {/* Elegant Invitation Cue with Live Action Controls */}
       <div 
-        className="mt-6 sm:mt-8 flex flex-col items-center gap-2 text-[#7A6153]/70 transition-opacity duration-300 pointer-events-none"
+        className="mt-6 sm:mt-8 flex flex-col items-center gap-3 text-[#7A6153] transition-opacity duration-300"
         style={{ opacity: hintOpacity }}
       >
-        <div className="flex items-center gap-1.5 text-[11px] sm:text-xs font-sans font-medium tracking-[0.2em] uppercase">
-          <Sparkles className="w-3.5 h-3.5 text-[#C87D55]" />
-          <span>Move to deflect dots · Click or scroll to enter</span>
+        <button
+          onClick={triggerTransition}
+          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#4A2818] hover:bg-[#361B0E] text-[#F9F4EE] font-serif font-bold text-xs shadow-md transition-all active:scale-95 cursor-pointer"
+        >
+          <Sparkles className="w-3.5 h-3.5 text-[#FFA000]" />
+          <span>Enter Storefront</span>
+        </button>
+
+        <div className="flex items-center gap-1.5 text-[11px] font-sans font-medium tracking-[0.18em] uppercase opacity-75">
+          <span>Click letters for shockwave · Scroll to enter</span>
+          <ChevronDown className="w-3.5 h-3.5 animate-bounce text-[#4A2818] inline-block ml-0.5" />
         </div>
-        <ChevronDown className="w-4 h-4 animate-bounce text-[#4A2818]/60 mt-1" />
       </div>
 
     </div>
