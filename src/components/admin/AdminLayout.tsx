@@ -37,21 +37,21 @@ export const AdminLayout: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F8F7F0] flex font-body selection:bg-[#EAF05C]">
+    <div className="min-h-screen bg-[#F9F4EE] flex font-sans selection:bg-[#EAD9CF] selection:text-[#4A2818]">
       
-      {/* Cassis Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col justify-between w-64 bg-[#351E28] text-white shrink-0 border-r border-[#351E28]/20">
+      {/* Warm Dark Cocoa Desktop Sidebar */}
+      <aside className="hidden md:flex flex-col justify-between w-64 bg-[#361B0E] text-[#F9F4EE] shrink-0 border-r border-[#4A2818]">
         <div>
           {/* Brand Logo & Tag */}
-          <div className="p-6 border-b border-white/10 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#EAF05C] text-[#351E28] flex items-center justify-center shadow-md">
-              <Cake className="w-6 h-6 stroke-[2.2]" />
+          <div className="p-6 border-b border-[#4A2818] flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-[#F2E7DC] text-[#4A2818] flex items-center justify-center shadow-sm">
+              <Cake className="w-5 h-5 stroke-[2.2]" />
             </div>
             <div>
-              <div className="font-heading font-black text-xl text-white tracking-tight leading-tight">
+              <div className="font-serif font-bold text-xl text-[#F9F4EE] tracking-tight leading-tight italic">
                 Bake & Joy
               </div>
-              <div className="text-[10px] font-bold text-[#EAF05C] uppercase tracking-wider">
+              <div className="text-[10px] font-semibold text-[#F2E7DC]/80 uppercase tracking-wider">
                 Admin Console
               </div>
             </div>
@@ -67,10 +67,10 @@ export const AdminLayout: React.FC = () => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-xs transition-all ${
+                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl font-medium text-xs transition-all ${
                     isActive
-                      ? 'bg-[#FF5C34] text-white shadow-md'
-                      : 'text-white/70 hover:bg-white/10 hover:text-white'
+                      ? 'bg-[#4A2818] text-[#F9F4EE] shadow-sm border border-[#673D26]'
+                      : 'text-[#F9F4EE]/70 hover:bg-white/10 hover:text-[#F9F4EE]'
                   }`}
                 >
                   <Icon className="w-4 h-4 shrink-0" />
@@ -83,16 +83,16 @@ export const AdminLayout: React.FC = () => {
         </div>
 
         {/* User Status & Bottom Actions */}
-        <div className="p-4 border-t border-white/10 space-y-3">
+        <div className="p-4 border-t border-[#4A2818] space-y-3">
           
           {/* Demo User Pill */}
           <div className="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-[#EAF05C] text-[#351E28] font-black text-xs flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-[#F2E7DC] text-[#4A2818] font-bold text-xs flex items-center justify-center">
               AD
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-xs font-bold text-white truncate">Demo Store Manager</div>
-              <div className="text-[10px] text-[#AEBBA0] truncate">{user?.email || 'admin@demo.com'}</div>
+              <div className="text-xs font-semibold text-[#F9F4EE] truncate">Store Manager</div>
+              <div className="text-[10px] text-[#F9F4EE]/60 truncate">{user?.email || 'admin@demo.com'}</div>
             </div>
           </div>
 
@@ -100,16 +100,16 @@ export const AdminLayout: React.FC = () => {
           <Link
             to="/"
             target="_blank"
-            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs transition-colors"
+            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-[#F9F4EE] font-medium text-xs transition-colors"
           >
-            <ExternalLink className="w-3.5 h-3.5 text-[#EAF05C]" />
+            <ExternalLink className="w-3.5 h-3.5 text-[#F2E7DC]" />
             <span>View Live Storefront</span>
           </Link>
 
           {/* Logout Button */}
           <button
             onClick={handleLogout}
-            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-300 font-bold text-xs transition-colors"
+            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-full bg-red-500/20 hover:bg-red-500/30 text-red-200 font-medium text-xs transition-colors"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>Sign Out</span>
@@ -121,28 +121,28 @@ export const AdminLayout: React.FC = () => {
       <div className="flex-1 flex flex-col min-w-0">
         
         {/* Top Header */}
-        <header className="bg-white border-b border-[#351E28]/10 h-16 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-30">
+        <header className="bg-[#FCFAF7] border-b border-[#E8D8CC] h-16 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-30">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
-              className="md:hidden p-2 rounded-xl text-[#351E28] hover:bg-[#F8F7F0]"
+              className="md:hidden p-2 rounded-xl text-[#4A2818] hover:bg-[#F2E7DC]"
             >
-              {isMobileNavOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isMobileNavOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
-            <span className="font-heading font-black text-lg text-[#351E28]">
+            <span className="font-serif font-bold text-lg text-[#4A2818]">
               Bake & Joy Bangalore · Store Portal
             </span>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="hidden sm:inline-flex items-center gap-1.5 bg-[#EAF05C] text-[#351E28] text-xs font-black px-3 py-1 rounded-full border border-[#351E28]/15 shadow-sm">
-              <Sparkles className="w-3.5 h-3.5 fill-[#351E28]" />
-              <span>Demo Mock Data Engine Active</span>
+            <div className="hidden sm:inline-flex items-center gap-1.5 bg-[#F2E7DC] text-[#4A2818] text-xs font-medium px-3.5 py-1 rounded-full border border-[#E8D8CC]">
+              <Sparkles className="w-3.5 h-3.5 fill-[#4A2818]" />
+              <span>Mock Engine Active</span>
             </div>
 
             <Link
               to="/"
-              className="text-xs font-bold text-[#FF5C34] hover:text-[#e44c26] transition-colors flex items-center gap-1"
+              className="text-xs font-semibold text-[#4A2818] hover:text-[#673D26] transition-colors flex items-center gap-1"
             >
               <span>Storefront</span>
               <ExternalLink className="w-3.5 h-3.5" />
@@ -152,7 +152,7 @@ export const AdminLayout: React.FC = () => {
 
         {/* Mobile Navigation Drawer */}
         {isMobileNavOpen && (
-          <div className="md:hidden bg-[#351E28] text-white p-4 border-b border-white/10 space-y-2 animate-in slide-in-from-top-2">
+          <div className="md:hidden bg-[#361B0E] text-[#F9F4EE] p-4 border-b border-[#4A2818] space-y-2 animate-in slide-in-from-top-2">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
@@ -161,8 +161,8 @@ export const AdminLayout: React.FC = () => {
                   key={item.path}
                   to={item.path}
                   onClick={() => setIsMobileNavOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs ${
-                    isActive ? 'bg-[#FF5C34] text-white' : 'text-white/80 hover:bg-white/10'
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-xs ${
+                    isActive ? 'bg-[#4A2818] text-[#F9F4EE]' : 'text-[#F9F4EE]/80 hover:bg-white/10'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -170,9 +170,9 @@ export const AdminLayout: React.FC = () => {
                 </Link>
               );
             })}
-            <div className="pt-2 border-t border-white/10 flex justify-between items-center text-xs">
-              <Link to="/" className="text-[#EAF05C] font-bold">Visit Storefront</Link>
-              <button onClick={handleLogout} className="text-red-400 font-bold">Sign Out</button>
+            <div className="pt-2 border-t border-[#4A2818] flex justify-between items-center text-xs">
+              <Link to="/" className="text-[#F2E7DC] font-semibold">Visit Storefront</Link>
+              <button onClick={handleLogout} className="text-red-300 font-semibold">Sign Out</button>
             </div>
           </div>
         )}

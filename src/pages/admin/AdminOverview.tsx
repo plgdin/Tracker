@@ -60,18 +60,18 @@ export default function AdminOverview() {
       {/* Page Title & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="font-heading font-black text-3xl text-[#351E28]">
+          <h1 className="font-serif text-3xl font-bold text-[#4A2818]">
             Dashboard Overview
           </h1>
-          <p className="text-xs sm:text-sm text-[#351E28]/70 mt-0.5">
-            Real-time frontend performance metrics and pickup pipeline
+          <p className="text-xs sm:text-sm text-[#7A6153] mt-0.5 font-normal">
+            Real-time bakery store metrics and counter pickup pipeline
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <button
             onClick={handleResetCatalog}
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full border border-[#351E28]/20 bg-white hover:bg-[#F8F7F0] text-xs font-bold text-[#351E28] transition-all"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full border border-[#E8D8CC] bg-[#FCFAF7] hover:bg-[#F2E7DC] text-xs font-semibold text-[#4A2818] transition-all"
             title="Reset to default mock data"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -80,7 +80,7 @@ export default function AdminOverview() {
 
           <Link
             to="/admin/products"
-            className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-[#FF5C34] hover:bg-[#e44c26] text-white text-xs font-bold shadow-md transition-all active:scale-95"
+            className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-[#4A2818] hover:bg-[#361B0E] text-[#F9F4EE] text-xs font-serif font-bold shadow-xs transition-all active:scale-95"
           >
             <Plus className="w-4 h-4" />
             <span>Add New Product</span>
@@ -88,112 +88,112 @@ export default function AdminOverview() {
         </div>
       </div>
 
-      {/* KPI Cards as specified in Section 5.B */}
+      {/* KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
         
         {/* 1. Total Products */}
-        <div className="bg-white rounded-3xl p-4 border-2 border-[#351E28]/10 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between text-[11px] font-bold text-[#351E28]/60 mb-2">
+        <div className="bg-white rounded-[1.75rem] p-4 border border-[#E8D8CC] shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-[11px] font-medium text-[#7A6153] mb-2">
             <span>Products</span>
-            <div className="w-7 h-7 rounded-lg bg-[#D7EFFF] text-[#351E28] flex items-center justify-center">
+            <div className="w-7 h-7 rounded-xl bg-[#F2E7DC] text-[#4A2818] flex items-center justify-center">
               <ShoppingBag className="w-3.5 h-3.5" />
             </div>
           </div>
           <div>
-            <div className="font-heading font-black text-2xl text-[#351E28]">
+            <div className="font-serif font-bold text-2xl text-[#4A2818]">
               {totalProducts}
             </div>
-            <div className="text-[10px] font-semibold text-[#AEBBA0] mt-0.5">
+            <div className="text-[10px] text-[#7A6153] mt-0.5">
               {activeProducts} active
             </div>
           </div>
         </div>
 
         {/* 2. Total Orders */}
-        <div className="bg-white rounded-3xl p-4 border-2 border-[#351E28]/10 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between text-[11px] font-bold text-[#351E28]/60 mb-2">
+        <div className="bg-white rounded-[1.75rem] p-4 border border-[#E8D8CC] shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-[11px] font-medium text-[#7A6153] mb-2">
             <span>Orders</span>
-            <div className="w-7 h-7 rounded-lg bg-[#EAF05C] text-[#351E28] flex items-center justify-center">
-              <ClipboardList className="w-3.5 h-3.5 stroke-[2.5]" />
+            <div className="w-7 h-7 rounded-xl bg-[#F2E7DC] text-[#4A2818] flex items-center justify-center">
+              <ClipboardList className="w-3.5 h-3.5 stroke-[2.2]" />
             </div>
           </div>
           <div>
-            <div className="font-heading font-black text-2xl text-[#351E28]">
+            <div className="font-serif font-bold text-2xl text-[#4A2818]">
               {totalOrders}
             </div>
-            <div className="text-[10px] font-semibold text-[#FF5C34] mt-0.5">
+            <div className="text-[10px] text-[#7A6153] mt-0.5">
               ₹{totalRevenue.toLocaleString('en-IN')} vol
             </div>
           </div>
         </div>
 
         {/* 3. Pending Orders */}
-        <div className="bg-white rounded-3xl p-4 border-2 border-[#351E28]/10 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between text-[11px] font-bold text-[#351E28]/60 mb-2">
+        <div className="bg-white rounded-[1.75rem] p-4 border border-[#E8D8CC] shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-[11px] font-medium text-[#7A6153] mb-2">
             <span>Pending</span>
-            <div className="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-xl bg-[#F2E7DC] text-[#4A2818] flex items-center justify-center">
               <Clock className="w-3.5 h-3.5" />
             </div>
           </div>
           <div>
-            <div className="font-heading font-black text-2xl text-amber-600">
+            <div className="font-serif font-bold text-2xl text-[#4A2818]">
               {pendingOrders}
             </div>
-            <div className="text-[10px] font-semibold text-[#351E28]/50 mt-0.5">
+            <div className="text-[10px] text-[#7A6153] mt-0.5">
               Needs check
             </div>
           </div>
         </div>
 
         {/* 4. Confirmed Orders */}
-        <div className="bg-white rounded-3xl p-4 border-2 border-[#351E28]/10 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between text-[11px] font-bold text-[#351E28]/60 mb-2">
+        <div className="bg-white rounded-[1.75rem] p-4 border border-[#E8D8CC] shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-[11px] font-medium text-[#7A6153] mb-2">
             <span>Confirmed</span>
-            <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-xl bg-[#F2E7DC] text-[#4A2818] flex items-center justify-center">
               <CheckCircle2 className="w-3.5 h-3.5" />
             </div>
           </div>
           <div>
-            <div className="font-heading font-black text-2xl text-blue-700">
+            <div className="font-serif font-bold text-2xl text-[#4A2818]">
               {confirmedOrders}
             </div>
-            <div className="text-[10px] font-semibold text-[#351E28]/50 mt-0.5">
+            <div className="text-[10px] text-[#7A6153] mt-0.5">
               In packing
             </div>
           </div>
         </div>
 
         {/* 5. Ready for Pickup */}
-        <div className="bg-white rounded-3xl p-4 border-2 border-[#351E28]/10 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between text-[11px] font-bold text-[#351E28]/60 mb-2">
+        <div className="bg-white rounded-[1.75rem] p-4 border border-[#E8D8CC] shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-[11px] font-medium text-[#7A6153] mb-2">
             <span>Pickup Ready</span>
-            <div className="w-7 h-7 rounded-lg bg-[#EAF05C] text-[#351E28] flex items-center justify-center">
+            <div className="w-7 h-7 rounded-xl bg-[#F2E7DC] text-[#4A2818] flex items-center justify-center">
               <PackageCheck className="w-3.5 h-3.5" />
             </div>
           </div>
           <div>
-            <div className="font-heading font-black text-2xl text-[#351E28]">
+            <div className="font-serif font-bold text-2xl text-[#4A2818]">
               {readyOrders}
             </div>
-            <div className="text-[10px] font-semibold text-[#AEBBA0] mt-0.5">
+            <div className="text-[10px] text-[#7A6153] mt-0.5">
               At counter
             </div>
           </div>
         </div>
 
         {/* 6. Completed Orders */}
-        <div className="bg-white rounded-3xl p-4 border-2 border-[#351E28]/10 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between text-[11px] font-bold text-[#351E28]/60 mb-2">
+        <div className="bg-white rounded-[1.75rem] p-4 border border-[#E8D8CC] shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-[11px] font-medium text-[#7A6153] mb-2">
             <span>Completed</span>
-            <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-xl bg-[#F2E7DC] text-[#4A2818] flex items-center justify-center">
               <CheckCircle2 className="w-3.5 h-3.5" />
             </div>
           </div>
           <div>
-            <div className="font-heading font-black text-2xl text-emerald-700">
+            <div className="font-serif font-bold text-2xl text-[#4A2818]">
               {completedOrders}
             </div>
-            <div className="text-[10px] font-semibold text-[#351E28]/50 mt-0.5">
+            <div className="text-[10px] text-[#7A6153] mt-0.5">
               Collected
             </div>
           </div>
@@ -202,21 +202,21 @@ export default function AdminOverview() {
       </div>
 
       {/* Recent Orders Section with Status Controls */}
-      <div className="bg-white rounded-3xl border-2 border-[#351E28]/10 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-[2rem] border border-[#E8D8CC] shadow-xs overflow-hidden">
         
-        <div className="p-5 sm:p-6 border-b border-[#351E28]/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="p-5 sm:p-6 border-b border-[#E8D8CC] flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#FCFAF7]">
           <div>
-            <h2 className="font-heading font-black text-xl text-[#351E28]">
+            <h2 className="font-serif text-xl font-bold text-[#4A2818]">
               Recent Customer Orders
             </h2>
-            <p className="text-xs text-[#351E28]/60 mt-0.5">
+            <p className="text-xs text-[#7A6153] mt-0.5">
               Live orders submitted through WhatsApp checkout flow
             </p>
           </div>
 
           <Link
             to="/admin/orders"
-            className="text-xs font-bold text-[#FF5C34] hover:text-[#e44c26] transition-colors flex items-center gap-1"
+            className="text-xs font-semibold text-[#4A2818] hover:text-[#673D26] transition-colors flex items-center gap-1"
           >
             <span>View All Orders</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -226,7 +226,7 @@ export default function AdminOverview() {
         {/* Orders Table */}
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#F8F7F0] border-b border-[#351E28]/10 text-[#351E28]/70 font-bold uppercase tracking-wider">
+            <thead className="bg-[#F9F4EE] border-b border-[#E8D8CC] text-[#7A6153] font-serif font-semibold uppercase tracking-wider">
               <tr>
                 <th className="py-3.5 px-4 sm:px-6">Order ID</th>
                 <th className="py-3.5 px-4">Customer</th>
@@ -237,38 +237,30 @@ export default function AdminOverview() {
                 <th className="py-3.5 px-4 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#351E28]/5 text-[#351E28]">
+            <tbody className="divide-y divide-[#E8D8CC]/50 text-[#4A2818]">
               {orders.slice(0, 5).map((order) => (
-                <tr key={order.id} className="hover:bg-[#F8F7F0]/60 transition-colors">
-                  <td className="py-4 px-4 sm:px-6 font-mono font-bold text-[#FF5C34]">
+                <tr key={order.id} className="hover:bg-[#F9F4EE]/40 transition-colors">
+                  <td className="py-4 px-4 sm:px-6 font-serif font-bold text-[#4A2818]">
                     {order.orderNumber}
                   </td>
                   <td className="py-4 px-4">
-                    <div className="font-bold">{order.customerName}</div>
-                    <div className="text-[11px] text-[#351E28]/60">{order.customerPhone}</div>
+                    <div className="font-semibold">{order.customerName}</div>
+                    <div className="text-[11px] text-[#7A6153]">{order.customerPhone}</div>
                   </td>
-                  <td className="py-4 px-4 text-xs font-semibold text-[#351E28]/80 max-w-[150px] truncate">
+                  <td className="py-4 px-4 text-xs font-medium text-[#7A6153] max-w-[150px] truncate">
                     {order.pickupPreference}
                   </td>
-                  <td className="py-4 px-4 font-semibold text-[#351E28]/70">
+                  <td className="py-4 px-4 font-medium text-[#7A6153]">
                     {order.items.length} {order.items.length === 1 ? 'item' : 'items'}
                   </td>
-                  <td className="py-4 px-4 font-heading font-black text-sm">
+                  <td className="py-4 px-4 font-serif font-bold text-sm text-[#4A2818]">
                     ₹{order.total}
                   </td>
                   <td className="py-4 px-4">
                     <select
                       value={order.orderStatus}
                       onChange={(e) => handleQuickStatusChange(order.id, e.target.value as OrderStatus)}
-                      className={`text-xs font-bold rounded-xl px-2.5 py-1 border outline-none cursor-pointer ${
-                        order.orderStatus === 'ready_for_pickup'
-                          ? 'bg-[#EAF05C] text-[#351E28] border-[#351E28]'
-                          : order.orderStatus === 'confirmed'
-                          ? 'bg-[#D7EFFF] text-[#351E28] border-blue-300'
-                          : order.orderStatus === 'completed'
-                          ? 'bg-[#AEBBA0]/30 text-[#351E28] border-[#AEBBA0]'
-                          : 'bg-[#F8F7F0] text-[#351E28] border-[#351E28]/20'
-                      }`}
+                      className="text-xs font-semibold rounded-full px-3 py-1 bg-[#F2E7DC] text-[#4A2818] border border-[#E8D8CC] outline-none cursor-pointer"
                     >
                       <option value="new">New Order</option>
                       <option value="pending">Pending</option>
@@ -283,7 +275,7 @@ export default function AdminOverview() {
                       href={`https://wa.me/${(order.customerWhatsapp || order.customerPhone).replace(/\D/g, '')}?text=Hi%20${encodeURIComponent(order.customerName)}%2C%20regarding%20your%20Bake%20%26%20Joy%20order%20${order.orderNumber}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 bg-[#D7EFFF] hover:bg-[#bfe2fa] text-[#351E28] font-bold text-[11px] px-3 py-1.5 rounded-full transition-colors"
+                      className="inline-flex items-center gap-1 bg-[#F2E7DC] hover:bg-[#E8D8CC] text-[#4A2818] font-medium text-[11px] px-3 py-1.5 rounded-full transition-colors"
                       title="Message customer on WhatsApp"
                     >
                       <MessageCircle className="w-3.5 h-3.5" />
