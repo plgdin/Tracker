@@ -16,6 +16,7 @@ import { CheckoutModal } from '../components/storefront/CheckoutModal';
 import { OrderConfirmationModal } from '../components/storefront/OrderConfirmationModal';
 import { StoreInfoSection } from '../components/storefront/StoreInfoSection';
 import { StorefrontFooter } from '../components/storefront/StorefrontFooter';
+import { LandingIntro } from '../components/storefront/LandingIntro';
 
 import { productService } from '../services/productService';
 import { categoryService } from '../services/categoryService';
@@ -29,6 +30,7 @@ export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [popularProducts, setPopularProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isIntroActive, setIsIntroActive] = useState<boolean>(true);
 
   // Completed order state for confirmation modal
   const [confirmedOrder, setConfirmedOrder] = useState<Order | null>(null);
@@ -57,8 +59,19 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F9F4EE] text-[#4A2818] flex flex-col font-sans selection:bg-[#EAD9CF] selection:text-[#4A2818]">
+    <div className={`min-h-screen bg-[#F9F4EE] text-[#4A2818] flex flex-col font-sans selection:bg-[#EAD9CF] selection:text-[#4A2818] ${
+      isIntroActive ? 'overflow-hidden' : ''
+    }`}>
       
+      {/* 0. Fullscreen Landing Intro with Centered Logo */}
+      {isIntroActive && (
+        <LandingIntro
+          storeName={settings.storeName || 'Bake & Joy'}
+          targetElementId="storefront-navbar-logo"
+          onFinished={() => setIsIntroActive(false)}
+        />
+      )}
+
       {/* 1. Warm Announcement Bar */}
       <AnnouncementBar settings={settings} />
 
@@ -66,6 +79,7 @@ export default function Home() {
       <StorefrontNavbar
         settings={settings}
         categories={categories}
+        isIntroActive={isIntroActive}
         onSelectProduct={(p) => setSelectedProduct(p)}
       />
 

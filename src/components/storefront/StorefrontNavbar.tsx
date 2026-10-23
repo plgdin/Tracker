@@ -21,6 +21,7 @@ interface StorefrontNavbarProps {
   searchQuery?: string;
   onSearchChange?: (q: string) => void;
   onSelectProduct?: (product: Product) => void;
+  isIntroActive?: boolean;
 }
 
 export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
@@ -29,6 +30,7 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
   searchQuery = '',
   onSearchChange,
   onSelectProduct,
+  isIntroActive = false,
 }) => {
   const { totalItems, setIsCartOpen } = useCartContext();
   const navigate = useNavigate();
@@ -104,7 +106,12 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
           
           {/* Brand Logo in Artisan Script / Serif style (like 'Frem' in reference image) */}
           <Link to="/" className="flex items-center gap-2 group shrink-0">
-            <span className="font-serif text-3xl sm:text-4xl font-medium tracking-tight text-[#4A2818] italic group-hover:opacity-80 transition-opacity">
+            <span 
+              id="storefront-navbar-logo"
+              className={`font-serif text-3xl sm:text-4xl font-normal tracking-tight text-[#4A2818] italic group-hover:opacity-80 transition-opacity inline-block ${
+                isIntroActive ? 'opacity-0' : 'opacity-100'
+              }`}
+            >
               {settings.storeName || 'Bake & Joy'}
             </span>
           </Link>
