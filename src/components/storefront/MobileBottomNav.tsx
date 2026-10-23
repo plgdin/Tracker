@@ -1,6 +1,6 @@
 import { useLocation } from 'react-router-dom';
 import { Home, ShoppingBag, Sparkles, Package, ShieldCheck } from 'lucide-react';
-import { NavBar, NavItem } from '../ui/tubelight-navbar';
+import { NavBar, type NavItem } from '../ui/tubelight-navbar';
 
 export function MobileBottomNav() {
   const location = useLocation();
