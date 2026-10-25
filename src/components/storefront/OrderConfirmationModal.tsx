@@ -73,7 +73,7 @@ export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
 
           <div className="pt-2 border-t border-[#E8D8CC] flex items-start gap-2 text-[11px] text-[#7A6153]">
             <MapPin className="w-4 h-4 text-[#4A2818] shrink-0 mt-0.5" />
-            <span>{settings.address || 'NayaKart Main Market Road, Trivandrum, Kerala, India'}</span>
+            <span>{settings.address || 'TC.1/4575 (1) Ground Floor, Kazhakoottam to Karyavattom Road, Kazhakuttam, Thiruvananthapuram - 695582, Kerala'}</span>
           </div>
         </div>
 

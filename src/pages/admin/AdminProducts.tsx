@@ -57,9 +57,9 @@ export default function AdminProducts() {
     setPrice(250);
     setDiscountPrice(undefined);
     setCategoryId(categories[0]?.id || 'cat-cake-decoration');
-    setBrand('NayaKart Select');
+    setBrand('Bake N Joy Select');
     setStock(20);
-    setImageUrl('https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=600&q=80');
+    setImageUrl('https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-85hi5gmdrc.jpg');
     setIsFeatured(false);
     setIsActive(true);
     setUnit('Piece');

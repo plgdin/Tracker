@@ -42,7 +42,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ settings }) => {
           {/* Bottom Subtext & Action Buttons */}
           <div className="space-y-5 flex flex-col items-center translate-y-3 sm:translate-y-5">
             <p className="text-sm sm:text-base text-[#5A3825] max-w-lg leading-relaxed font-normal bg-[#F9F4EE]/95 backdrop-blur-md px-6 py-3 rounded-2xl border border-[#E8D8CC] shadow-xs">
-              Trivandrum's dedicated destination for fine baking supplies, calibrated Belgian couverture chocolates, silicone moulds, and artisanal dessert essentials.
+              Kazhakuttam's trusted specialty retail store for professional baking tools, silicone moulds, cake packaging boxes, couverture chocolate, and raw materials.
             </p>
 
             <div className="flex flex-wrap items-center justify-center gap-4 pointer-events-auto">

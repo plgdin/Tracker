@@ -66,7 +66,7 @@ export default function Home() {
       {/* 0. Fullscreen Landing Intro with Centered Logo */}
       {isIntroActive && (
         <LandingIntro
-          storeName={settings.storeName || 'NayaKart'}
+          storeName={settings.storeName || 'Bake N Joy'}
           targetElementId="storefront-navbar-logo"
           onFinished={() => setIsIntroActive(false)}
         />

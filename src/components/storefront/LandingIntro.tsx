@@ -39,7 +39,7 @@ function hwfStep(
 }
 
 export const LandingIntro: React.FC<LandingIntroProps> = ({
-  storeName = 'NayaKart',
+  storeName = 'Bake N Joy',
   targetElementId = 'storefront-navbar-logo',
   onFinished,
 }) => {

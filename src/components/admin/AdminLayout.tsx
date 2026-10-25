@@ -65,7 +65,7 @@ export const AdminLayout: React.FC = () => {
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold uppercase tracking-wider text-[#7A6153]/70 hidden sm:inline">
-                  NayaKart Trivandrum
+                  Bake N Joy Kazhakuttam
                 </span>
                 <span className="text-[#E8D8CC] hidden sm:inline">•</span>
                 <h1 className="truncate text-sm sm:text-base font-serif font-bold text-[#4A2818]">
@@ -82,7 +82,7 @@ export const AdminLayout: React.FC = () => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
-              <span>Trivandrum Counter Active</span>
+              <span>Kazhakuttam Counter Active</span>
             </div>
 
             {/* Quick View Storefront Button */}

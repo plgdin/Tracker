@@ -17,7 +17,7 @@ interface StorefrontFooterProps {
 }
 
 export const StorefrontFooter: React.FC<StorefrontFooterProps> = ({ settings, categories }) => {
-  const storeName = settings.storeName || 'NayaKart';
+  const storeName = settings.storeName || 'Bake N Joy';
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -117,13 +117,13 @@ export const StorefrontFooter: React.FC<StorefrontFooterProps> = ({ settings, ca
               <li className="flex items-center gap-2.5">
                 <Phone className="w-4 h-4 text-[#E29578] shrink-0" />
                 <a href={`tel:${settings.phone || '+919845012345'}`} className="hover:text-white transition-colors">
-                  {settings.phone || '+91 98450 12345'}
+                  {settings.phone || '+91 94471 13608'}
                 </a>
               </li>
               <li className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-[#E29578] shrink-0" />
-                <a href={`mailto:${settings.email || 'hello@nayakart.in'}`} className="hover:text-white transition-colors">
-                  {settings.email || 'hello@nayakart.in'}
+                <a href={`mailto:${settings.email || 'bakenjoy.trivandrum@gmail.com'}`} className="hover:text-white transition-colors">
+                  {settings.email || 'bakenjoy.trivandrum@gmail.com'}
                 </a>
               </li>
             </ul>

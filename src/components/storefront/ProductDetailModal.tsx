@@ -80,7 +80,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
   const handleWhatsAppInquiry = () => {
     const text = encodeURIComponent(
-      `Hi NayaKart, I am interested in: "${product.name}" (Price: ₹${activePrice}). Do you currently have it in stock at your Trivandrum store?`
+      `Hi Bake N Joy, I am interested in: "${product.name}" (Price: ₹${activePrice}). Do you currently have it in stock at your Kazhakuttam store?`
     );
     window.open(`https://wa.me/${whatsappNumber.replace(/\D/g, '')}?text=${text}`, '_blank');
   };

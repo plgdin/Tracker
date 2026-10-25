@@ -1,7 +1,7 @@
 import type { Product } from '../types/ecommerce';
 import { INITIAL_PRODUCTS } from './mockData';
 
-const STORAGE_KEY = 'bnj_products';
+const STORAGE_KEY = 'bnj_products_v3';
 
 const getStoredProducts = (): Product[] => {
   try {

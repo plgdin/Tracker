@@ -1,14 +1,12 @@
 import type { StoreSettings } from '../types/ecommerce';
 import { INITIAL_SETTINGS } from './mockData';
 
-const STORAGE_KEY = 'nayakart_settings';
+const STORAGE_KEY = 'bakenjoy_settings_v4';
 
 const getStoredSettings = (): StoreSettings => {
   try {
-    const legacy = localStorage.getItem('bnj_settings');
-    if (legacy) {
-      localStorage.removeItem('bnj_settings');
-    }
+    localStorage.removeItem('bnj_settings');
+    localStorage.removeItem('nayakart_settings');
 
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
@@ -16,11 +14,9 @@ const getStoredSettings = (): StoreSettings => {
       return INITIAL_SETTINGS;
     }
     const parsed = JSON.parse(raw);
-    if (parsed.storeName === 'Bake & Joy' || !parsed.storeName) {
-      parsed.storeName = 'NayaKart';
-      parsed.address = parsed.address?.replace(/Bake\s*&\s*Joy/gi, 'NayaKart') || INITIAL_SETTINGS.address;
-      parsed.email = parsed.email?.replace(/bakeandjoy\.in/gi, 'nayakart.in') || INITIAL_SETTINGS.email;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+    if (!parsed.storeName || parsed.storeName === 'NayaKart' || parsed.storeName === 'Bake & Joy') {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_SETTINGS));
+      return INITIAL_SETTINGS;
     }
     return { ...INITIAL_SETTINGS, ...parsed };
   } catch {

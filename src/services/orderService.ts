@@ -121,7 +121,7 @@ export const orderService = {
 
     const lines: string[] = [
       `🍰 *NEW ORDER: ${order.orderNumber}*`,
-      `*Store:* NayaKart (Trivandrum)`,
+      `*Store:* Bake N Joy (Kazhakuttam, Thiruvananthapuram)`,
       `---------------------------------`,
       `👤 *Customer:* ${order.customerName}`,
       `📞 *Phone:* ${order.customerPhone}`,
@@ -142,7 +142,7 @@ export const orderService = {
     lines.push(`💰 *TOTAL AMOUNT: ₹${order.total}*`);
     lines.push(`💳 *Payment:* In-store at counter / UPI`);
     lines.push(``);
-    lines.push(`Hi NayaKart, I have placed order *${order.orderNumber}*. Please confirm item availability and let me know when ready for pickup!`);
+    lines.push(`Hi Bake N Joy, I have placed order *${order.orderNumber}*. Please confirm item availability and let me know when ready for pickup!`);
 
     const messageText = lines.join('\n');
     const encodedMessage = encodeURIComponent(messageText);

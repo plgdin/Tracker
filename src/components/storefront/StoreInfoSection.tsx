@@ -47,10 +47,10 @@ export const StoreInfoSection: React.FC<StoreInfoSectionProps> = ({ settings }) 
                     Store Location & Counter
                   </h3>
                   <p className="text-sm text-[#7A6153] font-normal leading-relaxed">
-                    {settings.address || 'NayaKart Main Market Road, Trivandrum, Kerala, India'}
+                    {settings.address || 'TC.1/4575 (1) Ground Floor, Kazhakoottam to Karyavattom Road, Kazhakuttam, Thiruvananthapuram - 695582, Kerala'}
                   </p>
                   <p className="text-xs text-[#4A2818]/60 font-medium mt-1">
-                    Central Trivandrum · Easy customer parking available
+                    Kazhakuttam, Thiruvananthapuram · Easy customer parking available
                   </p>
                 </div>
               </div>
@@ -64,7 +64,7 @@ export const StoreInfoSection: React.FC<StoreInfoSectionProps> = ({ settings }) 
                     Opening Hours
                   </h3>
                   <p className="text-sm text-[#7A6153] font-normal">
-                    {settings.openingHours || 'Mon – Sat: 9:30 AM to 8:30 PM · Sunday: 10:00 AM to 6:00 PM'}
+                    {settings.openingHours || 'Mon – Sat: 10:30 AM to 9:00 PM · Sunday: 10:30 AM to 3:00 PM'}
                   </p>
                   <p className="text-xs text-[#4A2818] font-semibold mt-1">
                     WhatsApp pickup requests processed daily
@@ -81,10 +81,10 @@ export const StoreInfoSection: React.FC<StoreInfoSectionProps> = ({ settings }) 
                     Direct Contact
                   </h3>
                   <p className="text-sm text-[#7A6153] font-normal">
-                    Call: <a href={`tel:${settings.phone || '+919845012345'}`} className="font-bold text-[#4A2818] hover:text-[#673D26] transition-colors">{settings.phone || '+91 98450 12345'}</a>
+                    Call: <a href={`tel:${settings.phone || '+919447113608'}`} className="font-bold text-[#4A2818] hover:text-[#673D26] transition-colors">{settings.phone || '+91 94471 13608'}</a>
                   </p>
                   <p className="text-xs text-[#7A6153]/70 mt-0.5">
-                    Email: {settings.email || 'hello@nayakart.in'}
+                    Email: {settings.email || 'bakenjoy.trivandrum@gmail.com'}
                   </p>
                 </div>
               </div>
@@ -94,7 +94,7 @@ export const StoreInfoSection: React.FC<StoreInfoSectionProps> = ({ settings }) 
             {/* Action Buttons */}
             <div className="pt-6 mt-6 border-t border-[#E8D8CC]/60 flex flex-wrap gap-3">
               <a
-                href={`https://wa.me/${(settings.whatsappNumber || '919999999999').replace(/\D/g, '')}?text=Hi%20NayaKart%2C%20I%20would%20like%20to%20visit%20your%20Trivandrum%20store`}
+                href={`https://wa.me/${(settings.whatsappNumber || '919447113608').replace(/\D/g, '')}?text=Hi%20Bake%20N%20Joy%2C%20I%20would%20like%20to%20inquire%20about%20baking%20supplies%20at%20your%20Kazhakuttam%20store`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-[#4A2818] hover:bg-[#361B0E] text-[#F9F4EE] font-medium text-xs sm:text-sm px-6 py-3 rounded-full shadow-sm hover:shadow-md transition-all active:scale-95"
@@ -104,7 +104,7 @@ export const StoreInfoSection: React.FC<StoreInfoSectionProps> = ({ settings }) 
               </a>
 
               <a
-                href="https://maps.google.com"
+                href="https://www.google.com/maps/search/?api=1&query=Bake+N+Joy+Kazhakuttam+Thiruvananthapuram"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-[#F9F4EE] hover:bg-[#F2E7DC] text-[#4A2818] font-medium text-xs sm:text-sm px-5 py-3 rounded-full border border-[#E8D8CC] transition-all"

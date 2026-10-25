@@ -1,7 +1,7 @@
 import type { Category } from '../types/ecommerce';
 import { INITIAL_CATEGORIES } from './mockData';
 
-const STORAGE_KEY = 'bnj_categories';
+const STORAGE_KEY = 'bnj_categories_v3';
 
 const getStoredCategories = (): Category[] => {
   try {

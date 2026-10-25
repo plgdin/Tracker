@@ -129,8 +129,8 @@ export default function Login() {
           <div className="w-20 h-20 bg-burnt-orange rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-burnt-orange/20">
             <ChefHat className="w-10 h-10 text-white" />
           </div>
-          <h1 className="font-heading text-4xl font-bold text-espresso">NayaKart</h1>
-          <p className="text-taupe text-lg mt-1.5">Freshly baked happiness</p>
+          <h1 className="font-heading text-4xl font-bold text-espresso">Bake N Joy</h1>
+          <p className="text-taupe text-lg mt-1.5">Baking tools, moulds & supplies pantry</p>
         </div>
 
         <Card className="border-espresso/5 shadow-xl shadow-espresso/5 rounded-[2rem] overflow-hidden bg-white p-6 md:p-10">

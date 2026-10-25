@@ -180,9 +180,9 @@ const HWF_CSS = `
 `
 
 export function HalftoneWordmarkFooter({
-  wordmark = "nayakart",
-  label = "NayaKart",
-  meta = "Artisan Bakery Supplies · Trivandrum Market",
+  wordmark = "bakenjoy",
+  label = "Bake N Joy",
+  meta = "Baking Tools, Moulds & Raw Materials · Kazhakuttam, Thiruvananthapuram",
   columns = DEFAULT_COLUMNS,
   backToTop = true,
   preset = "night",
