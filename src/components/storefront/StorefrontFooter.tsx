@@ -5,7 +5,6 @@ import {
   Mail, 
   MapPin, 
   Clock, 
-  MessageCircle, 
   ArrowUp,
   ShieldCheck,
   Heart
@@ -19,7 +18,6 @@ interface StorefrontFooterProps {
 
 export const StorefrontFooter: React.FC<StorefrontFooterProps> = ({ settings, categories }) => {
   const storeName = settings.storeName || 'NayaKart';
-  const whatsappUrl = `https://wa.me/${(settings.whatsappNumber || '919999999999').replace(/\D/g, '')}`;
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -41,17 +39,6 @@ export const StorefrontFooter: React.FC<StorefrontFooterProps> = ({ settings, ca
             <p className="text-sm text-[#D5C2B4] leading-relaxed max-w-sm">
               Trivandrum's premier destination for fine baking supplies, calibrated Belgian couverture chocolates, silicone moulds, and artisanal dessert packaging.
             </p>
-            <div className="pt-2">
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#20ba59] text-white px-4 py-2 rounded-full text-xs font-semibold shadow-sm transition-all hover:scale-105 active:scale-95"
-              >
-                <MessageCircle className="w-4 h-4 fill-white text-white" />
-                <span>WhatsApp Order Desk</span>
-              </a>
-            </div>
           </div>
 
           {/* Col 2: Categories / Pantry */}
