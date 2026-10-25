@@ -288,10 +288,10 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ settings, onOrderS
               type="submit"
               form="checkout-form"
               disabled={isSubmitting}
-              className="w-full sm:w-auto px-7 py-3 rounded-full bg-[#4A2818] hover:bg-[#361B0E] text-[#F9F4EE] font-serif font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 disabled:opacity-50"
+              className="w-full sm:w-auto px-7 py-3 rounded-full bg-[#25D366] hover:bg-[#1EBE5D] text-white font-medium text-sm flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 disabled:opacity-50"
             >
-              <MessageCircle className="w-4 h-4 fill-white text-[#4A2818]" />
-              <span>{isSubmitting ? 'Placing Order...' : `Place Order (₹${totalAmount})`}</span>
+              <MessageCircle className="w-4 h-4 fill-white text-[#25D366]" />
+              <span className="text-white font-medium">{isSubmitting ? 'Placing Order...' : `Place Order (₹${totalAmount})`}</span>
             </button>
           </div>
         </div>

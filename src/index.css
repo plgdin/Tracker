@@ -26,16 +26,17 @@ html, body {
 }
 
 /* Strictly remove default browser underline across ALL links, buttons, and text */
-a, 
-a:link, 
-a:visited, 
-a:hover, 
-a:active, 
-a:focus,
+a,
 button,
 [role="button"] {
-  text-decoration: none !important;
+  text-decoration: none;
   color: inherit;
+}
+
+a:hover,
+a:focus,
+a:active {
+  text-decoration: none;
 }
 
 /* Ensure headings, paragraphs, and inline text never get default browser underlines */
