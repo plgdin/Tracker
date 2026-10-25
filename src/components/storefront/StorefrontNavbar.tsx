@@ -101,10 +101,7 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
 
   return (
     <header
-      className={cn(
-        'sticky top-0 z-50 w-full h-20 pointer-events-none transition-opacity duration-700',
-        isIntroActive ? 'opacity-0 invisible pointer-events-none' : 'opacity-100 visible'
-      )}
+      className="sticky top-0 z-50 w-full h-20 pointer-events-none"
     >
       {/* Floating Animated Pill Card */}
       <div
@@ -123,8 +120,7 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
               id="storefront-navbar-logo"
               className={cn(
                 'font-serif font-normal tracking-tight text-[#F9F4EE] italic group-hover:text-[#EAD9CF] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] inline-block',
-                scrolled && !isMobileMenuOpen ? 'text-2xl sm:text-3xl' : 'text-3xl sm:text-4xl',
-                isIntroActive ? 'opacity-0' : 'opacity-100'
+                scrolled && !isMobileMenuOpen ? 'text-2xl sm:text-3xl' : 'text-3xl sm:text-4xl'
               )}
             >
               {settings.storeName || 'NayaKart'}

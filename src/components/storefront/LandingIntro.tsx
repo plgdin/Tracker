@@ -51,7 +51,7 @@ export const LandingIntro: React.FC<LandingIntroProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const wordmarkBoxRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const solidTextRef = useRef<HTMLSpanElement>(null);
+  const wakeRef = useRef<() => void>(() => {});
   const hasTriggered = useRef(false);
 
   // Halftone simulation refs
@@ -65,51 +65,37 @@ export const LandingIntro: React.FC<LandingIntroProps> = ({
   const inkRgb: [number, number, number] = [74, 40, 24]; // #4A2818 deep artisan cocoa
   const warmRgb: [number, number, number] = [255, 95, 20]; // #FF5F14 vivid glowing ember
 
-  // Trigger smooth transition into navbar
+  // Trigger silky smooth cinematic transition into storefront
   const triggerTransition = () => {
     if (hasTriggered.current || stage !== 'idle') return;
     hasTriggered.current = true;
     setStage('animating');
     setHintOpacity(0);
 
-    const targetElem = document.getElementById(targetElementId);
-    const boxElem = wordmarkBoxRef.current;
-
-    if (targetElem && boxElem) {
-      const targetRect = targetElem.getBoundingClientRect();
-      const originRect = boxElem.getBoundingClientRect();
-
-      const deltaX = targetRect.left - originRect.left;
-      const deltaY = targetRect.top - originRect.top;
-      const scale = targetRect.height / originRect.height;
-
-      setTransformStyle({
-        transform: `translate3d(${deltaX}px, ${deltaY}px, 0) scale(${scale})`,
-        transformOrigin: 'top left',
-        transition: 'transform 1050ms cubic-bezier(0.16, 1, 0.3, 1), opacity 950ms ease',
-      });
-
-      // Gradually fade out background overlay to reveal storefront underneath
-      setTimeout(() => {
-        setOverlayOpacity(0);
-      }, 80);
-
-      // Finish and cleanup
-      setTimeout(() => {
-        setStage('done');
-        if (onFinished) {
-          onFinished();
-        }
-      }, 1050);
-    } else {
-      setOverlayOpacity(0);
-      setTimeout(() => {
-        setStage('done');
-        if (onFinished) {
-          onFinished();
-        }
-      }, 600);
+    // Trigger radiant glowing shockwave ripple from center of wordmark outward
+    if (canvasRef.current) {
+      const rect = canvasRef.current.getBoundingClientRect();
+      ringRef.current = { x: rect.width / 2, y: rect.height / 2, t: performance.now() };
+      wakeRef.current();
     }
+
+    // Elegant, buttery smooth upward float and fade
+    setTransformStyle({
+      transform: 'translate3d(0, -28px, 0) scale(0.97)',
+      opacity: 0,
+      transition: 'transform 950ms cubic-bezier(0.16, 1, 0.3, 1), opacity 850ms cubic-bezier(0.16, 1, 0.3, 1)',
+    });
+
+    // Fade out overlay container smoothly to reveal storefront
+    setOverlayOpacity(0);
+
+    // Finish after animation completes
+    setTimeout(() => {
+      setStage('done');
+      if (onFinished) {
+        onFinished();
+      }
+    }, 950);
   };
 
   // Halftone Canvas simulation setup
@@ -333,6 +319,7 @@ export const LandingIntro: React.FC<LandingIntroProps> = ({
       awake = true;
       if (!raf && visible) raf = requestAnimationFrame(loop);
     };
+    wakeRef.current = wake;
 
     const toLocal = (clientX: number, clientY: number) => {
       const b = canvas.getBoundingClientRect();
@@ -360,7 +347,7 @@ export const LandingIntro: React.FC<LandingIntroProps> = ({
       // Allow the shockwave to radiate visibly across the full wordmark, then transition smoothly
       setTimeout(() => {
         triggerTransition();
-      }, 700);
+      }, 450);
     };
 
     layout();
@@ -456,14 +443,14 @@ export const LandingIntro: React.FC<LandingIntroProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center select-none overflow-hidden transition-opacity duration-1000 ${
+      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-[950ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
         stage === 'animating' ? 'pointer-events-none' : ''
       }`}
       style={{
-        backgroundColor: `rgba(249, 244, 238, ${overlayOpacity})`,
+        backgroundColor: '#F9F4EE',
+        opacity: overlayOpacity,
       }}
-      onClick={(e) => {
-        // If clicking outside canvas or wordmark, also trigger entry
+      onClick={() => {
         if (stage === 'idle') triggerTransition();
       }}
     >
@@ -471,34 +458,26 @@ export const LandingIntro: React.FC<LandingIntroProps> = ({
       <div 
         ref={wordmarkBoxRef}
         onClick={triggerTransition}
-        className="relative w-[94vw] max-w-5xl h-64 sm:h-80 md:h-96 flex items-center justify-center cursor-pointer"
+        className="relative w-[94vw] max-w-5xl h-64 sm:h-80 md:h-96 flex items-center justify-center cursor-pointer will-change-transform will-change-opacity"
         style={transformStyle}
         title="Click or scroll to enter"
       >
         {/* Halftone Canvas with Interactive Glowing Spring Dots */}
         <canvas
           ref={canvasRef}
-          className={`w-full h-full block transition-opacity duration-700 ${
-            stage === 'animating' ? 'opacity-20' : 'opacity-100'
-          }`}
+          className="w-full h-full block"
         />
-
-        {/* Crisp Solid Text that smoothly takes over as logo nests into the navbar */}
-        <span
-          ref={solidTextRef}
-          className={`absolute inset-0 flex items-center justify-center font-serif italic text-6xl sm:text-7xl md:text-8xl lg:text-9xl tracking-tight text-[#4A2818] pointer-events-none transition-opacity duration-500 ${
-            stage === 'animating' ? 'opacity-100' : 'opacity-0'
-          }`}
-        >
-          {storeName}
-        </span>
       </div>
 
       {/* Clean 'Click or scroll to enter' cue */}
       <div 
         onClick={triggerTransition}
-        className="mt-6 sm:mt-8 flex items-center gap-2 text-[#7A6153] hover:text-[#4A2818] transition-all duration-300 cursor-pointer select-none"
-        style={{ opacity: hintOpacity }}
+        className="mt-6 sm:mt-8 flex items-center gap-2 text-[#7A6153] hover:text-[#4A2818] cursor-pointer select-none"
+        style={{ 
+          opacity: hintOpacity,
+          transform: stage === 'animating' ? 'translate3d(0, 8px, 0)' : 'translate3d(0, 0, 0)',
+          transition: 'opacity 250ms ease, transform 250ms ease'
+        }}
       >
         <span className="text-xs sm:text-sm font-medium tracking-wide">
           Click or scroll to enter
