@@ -12,6 +12,7 @@ import AdminOrders from './pages/admin/AdminOrders';
 import AdminSettings from './pages/admin/AdminSettings';
 import Toast from './components/Toast';
 import { MobileBottomNav } from './components/storefront/MobileBottomNav';
+import { FloatingSearch } from './components/storefront/FloatingSearch';
 import './index.css';
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
       <CartProvider>
         <Toast />
         <MobileBottomNav />
+        <FloatingSearch />
         <Routes>
           {/* Public Customer Storefront Routes */}
           <Route path="/" element={<Home />} />
