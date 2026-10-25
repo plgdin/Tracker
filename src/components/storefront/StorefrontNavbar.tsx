@@ -127,7 +127,7 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
                 isIntroActive ? 'opacity-0' : 'opacity-100'
               )}
             >
-              {settings.storeName || 'Bake & Joy'}
+              {settings.storeName || 'NayaKart'}
             </span>
           </Link>
 

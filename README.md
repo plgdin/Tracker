@@ -1,6 +1,6 @@
-# 🍰 Bake & Joy — Premium Baking Supplies & Cake Decor E-Commerce
+# 🍰 NayaKart — Premium Baking Supplies & Cake Decor E-Commerce
 
-A complete, modern, responsive e-commerce web application for **Bake & Joy**, a physical retail store in Trivandrum specializing in professional baking ingredients, cake decoration accessories, silicone moulds, cake toppers, whipping creams, food colours, and packaging supplies.
+A complete, modern, responsive e-commerce web application for **NayaKart**, a physical retail store in Trivandrum specializing in professional baking ingredients, cake decoration accessories, silicone moulds, cake toppers, whipping creams, food colours, and packaging supplies.
 
 ---
 

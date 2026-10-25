@@ -32,7 +32,7 @@ export const StorefrontFooter: React.FC<StorefrontFooterProps> = ({ settings, ca
       links: [
         { label: 'WhatsApp Order Desk', href: whatsappUrl },
         { label: settings.phone || '+91 98450 12345', href: `tel:${settings.phone || '+919845012345'}` },
-        { label: settings.email || 'hello@bakeandjoy.in', href: `mailto:${settings.email || 'hello@bakeandjoy.in'}` },
+        { label: settings.email || 'hello@nayakart.in', href: `mailto:${settings.email || 'hello@nayakart.in'}` },
         { label: 'Store Management Console', href: '/admin/login' },
       ],
     },
@@ -41,8 +41,8 @@ export const StorefrontFooter: React.FC<StorefrontFooterProps> = ({ settings, ca
   return (
     <div className="w-full relative">
       <HalftoneWordmarkFooter
-        wordmark={(settings.storeName || 'bake & joy').toLowerCase()}
-        label={settings.storeName || 'Bake & Joy'}
+        wordmark={(settings.storeName || 'nayakart').toLowerCase()}
+        label={settings.storeName || 'NayaKart'}
         meta="Artisan Pantry & Cake Decor · Trivandrum Market Road"
         columns={columns}
         palette={{

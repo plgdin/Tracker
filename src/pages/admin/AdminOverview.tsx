@@ -229,11 +229,11 @@ export default function AdminOverview() {
     
     let message = '';
     if (order.orderStatus === 'ready_for_pickup') {
-      message = `Hi ${order.customerName}! 🎂 Your Bake & Joy Trivandrum pickup order ${order.orderNumber} is packed and ready for collection at our Main Market Road counter! Total: ₹${order.total}. We look forward to seeing you.`;
+      message = `Hi ${order.customerName}! 🎂 Your NayaKart Trivandrum pickup order ${order.orderNumber} is packed and ready for collection at our Main Market Road counter! Total: ₹${order.total}. We look forward to seeing you.`;
     } else if (order.orderStatus === 'confirmed') {
-      message = `Hi ${order.customerName}! Your Bake & Joy order ${order.orderNumber} has been confirmed and is now being packed by our pastry team. We will notify you once it is ready for counter pickup.`;
+      message = `Hi ${order.customerName}! Your NayaKart order ${order.orderNumber} has been confirmed and is now being packed by our pastry team. We will notify you once it is ready for counter pickup.`;
     } else {
-      message = `Hi ${order.customerName}! We have received your Bake & Joy order ${order.orderNumber} for counter pickup. Our Trivandrum store team is currently reviewing your items.`;
+      message = `Hi ${order.customerName}! We have received your NayaKart order ${order.orderNumber} for counter pickup. Our Trivandrum store team is currently reviewing your items.`;
     }
 
     const cleanPhone = phone.startsWith('91') ? phone : '91' + phone;
@@ -259,7 +259,7 @@ export default function AdminOverview() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `bake-and-joy-orders-${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `nayakart-orders-${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

@@ -57,7 +57,7 @@ export default function AdminProducts() {
     setPrice(250);
     setDiscountPrice(undefined);
     setCategoryId(categories[0]?.id || 'cat-cake-decoration');
-    setBrand('Bake & Joy Select');
+    setBrand('NayaKart Select');
     setStock(20);
     setImageUrl('https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=600&q=80');
     setIsFeatured(false);

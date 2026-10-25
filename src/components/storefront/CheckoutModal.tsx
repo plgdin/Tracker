@@ -129,7 +129,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ settings, onOrderS
             <MapPin className="w-5 h-5 text-[#4A2818] shrink-0 mt-0.5" />
             <div className="text-xs text-[#4A2818]">
               <div className="font-serif font-bold text-[#4A2818] mb-0.5">Counter Pickup Location:</div>
-              <div className="text-[#7A6153]">{settings.address || 'Bake & Joy Main Market Road, Trivandrum, Kerala, India'}</div>
+              <div className="text-[#7A6153]">{settings.address || 'NayaKart Main Market Road, Trivandrum, Kerala, India'}</div>
               <div className="mt-1 text-[11px] font-semibold text-[#4A2818]">
                 Payment will be handled at the shop counter via UPI, Cash, or Card!
               </div>
