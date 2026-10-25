@@ -26,16 +26,34 @@ function measure(
   const effectiveW = width > 0 ? width : 1200;
   const effectiveH = height > 0 ? height : 600;
 
+  const isMobile = effectiveW < 640;
+  const isTablet = effectiveW >= 640 && effectiveW < 1024;
+
+  // On mobile screens (< 640px), high bend angles (like 78°) compress the cylinder radius to < 100px,
+  // which forces individual cards to fold into harsh U-shaped taco curves with extreme perspective fish-eye.
+  // We automatically calculate a smooth, natural bend angle for mobile screens:
+  let effectiveBend = bend;
+  if (isMobile) {
+    const mobileCurveDeg = Math.min((bend * 180) / Math.PI, 22);
+    effectiveBend = (mobileCurveDeg * Math.PI) / 180;
+  } else if (isTablet) {
+    const tabletCurveDeg = Math.min((bend * 180) / Math.PI, 46);
+    effectiveBend = (tabletCurveDeg * Math.PI) / 180;
+  }
+
+  const effectiveMaxWidth = isMobile ? 60 : MAX_WIDTH;
+
   const h = Math.min(
     (tile / 100) * effectiveH,
-    ((MAX_WIDTH / 100) * effectiveW) / aspect,
+    ((effectiveMaxWidth / 100) * effectiveW) / aspect,
   );
-  const radius = effectiveW * arc(bend);
+  const radius = effectiveW * arc(effectiveBend);
   const deg = (rad: number) => (rad * 180) / Math.PI;
   const unit = deg(h / radius);
-  const pitch = (aspect + gap / 100) * unit;
-  const limit = deg(bend) + (aspect * unit) / 2;
-  const columns = Math.min(60, Math.max(3, Math.ceil((2 * limit) / pitch)));
+  const effectiveGap = isMobile ? Math.max(gap, 8) : gap;
+  const pitch = (aspect + effectiveGap / 100) * unit;
+  const limit = deg(effectiveBend) + (aspect * unit) / 2;
+  const columns = Math.min(60, Math.max(4, Math.ceil((2 * limit) / pitch)));
   const round = (n: number) => +n.toFixed(4);
   const sweep = round((columns * pitch) / 2);
 
@@ -44,10 +62,11 @@ function measure(
     sweep,
     unit: round(unit),
     limit: round(Math.min(sweep, limit)),
-    tileHeightPx: round(h > 0 ? h : 160),
-    radiusPx: round(radius > 0 ? radius : 850),
+    tileHeightPx: round(h > 0 ? h : (isMobile ? 135 : 160)),
+    radiusPx: round(radius > 0 ? radius : (isMobile ? 480 : 850)),
     width: effectiveW,
     height: effectiveH,
+    isMobile,
   };
 }
 
@@ -135,7 +154,11 @@ export function TiltedGridHero({
     }
   }, [images]);
 
-  const { columns, sweep, unit, limit, tileHeightPx, radiusPx } = layout;
+  const { columns, sweep, unit, limit, tileHeightPx, radiusPx, isMobile } = layout;
+
+  const effectiveAxis = isMobile ? 46.5 : axis;
+  const effectiveSpeed = isMobile ? Math.max(speed, 5.8) : speed;
+  const effectiveFade = isMobile ? 10 : fade;
 
   const u = (n: number) => `${+(n * tileHeightPx).toFixed(2)}px`;
   const radius = `${radiusPx}px`;
@@ -152,9 +175,9 @@ export function TiltedGridHero({
     `@media(prefers-reduced-motion:reduce){.${tile}{animation-play-state:paused}}`;
 
   const share = aspectRatio / SLICES;
-  const duration = columns * speed;
-  const mask = `linear-gradient(90deg,transparent,#000 ${fade}%,#000 ${
-    100 - fade
+  const duration = columns * effectiveSpeed;
+  const mask = `linear-gradient(90deg,transparent,#000 ${effectiveFade}%,#000 ${
+    100 - effectiveFade
   }%,transparent)`;
 
   return (
@@ -172,7 +195,7 @@ export function TiltedGridHero({
         style={{
           opacity: 1,
           perspective: `${+(radiusPx * CAMERA).toFixed(2)}px`,
-          perspectiveOrigin: `50% ${axis}%`,
+          perspectiveOrigin: `50% ${effectiveAxis}%`,
           maskImage: mask,
           WebkitMaskImage: mask,
         }}
@@ -187,11 +210,11 @@ export function TiltedGridHero({
               className={cn(tile, "absolute")}
               style={{
                 left: `calc(50% - ${u(aspectRatio / 2)})`,
-                top: `calc(${axis}% - ${u(0.5)})`,
+                top: `calc(${effectiveAxis}% - ${u(0.5)})`,
                 width: u(aspectRatio),
                 height: u(1),
                 transformStyle: "preserve-3d",
-                animation: `${orbit} ${duration}s linear ${-t * speed}s infinite`,
+                animation: `${orbit} ${duration}s linear ${-t * effectiveSpeed}s infinite`,
               }}
               onAnimationIteration={(e) => {
                 const lap = Math.round(e.elapsedTime / duration);
