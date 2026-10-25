@@ -7,7 +7,7 @@ import {
   PackageOpen,
   ChevronRight
 } from 'lucide-react';
-import { AnnouncementBar } from '../components/storefront/AnnouncementBar';
+
 import { StorefrontNavbar } from '../components/storefront/StorefrontNavbar';
 import { ProductCard } from '../components/storefront/ProductCard';
 import { ProductDetailModal } from '../components/storefront/ProductDetailModal';
@@ -173,8 +173,7 @@ export default function Products() {
   return (
     <div className="min-h-screen bg-[#F9F4EE] text-[#4A2818] flex flex-col font-sans selection:bg-[#EAD9CF] selection:text-[#4A2818]">
       
-      {/* Announcement Bar */}
-      <AnnouncementBar settings={settings} />
+
 
       {/* Main Navbar */}
       <StorefrontNavbar
@@ -327,7 +326,7 @@ export default function Products() {
 
               {/* Store Counter Pickup Notice */}
               <div className="p-3.5 bg-[#F9F4EE] rounded-2xl border border-[#E8D8CC] text-xs text-[#7A6153]">
-                <div className="font-serif font-bold text-[#4A2818] mb-1">Bangalore Counter Pickup</div>
+                <div className="font-serif font-bold text-[#4A2818] mb-1">Trivandrum Counter Pickup</div>
                 Orders placed online can be picked up same day with instant WhatsApp booking.
               </div>
 

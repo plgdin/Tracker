@@ -210,7 +210,7 @@ export default function TermsAndConditions() {
                   <p><strong>Business Name:</strong> Bake & Joy Stores</p>
                   <p><strong>WhatsApp Support:</strong> +91-9876543210</p>
                   <p><strong>Support Hours:</strong> 9:00 AM - 8:00 PM (Monday - Saturday)</p>
-                  <p><strong>Address:</strong> Bake & Joy Main Market Road, Bangalore, Karnataka, India</p>
+                  <p><strong>Address:</strong> Bake & Joy Main Market Road, Trivandrum, Kerala, India</p>
                 </div>
               </section>
 

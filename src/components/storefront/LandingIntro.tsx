@@ -450,19 +450,24 @@ export const LandingIntro: React.FC<LandingIntroProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`fixed inset-0 z-50 flex flex-col items-center justify-center select-none overflow-hidden transition-opacity duration-1000 ${
+      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center select-none overflow-hidden transition-opacity duration-1000 ${
         stage === 'animating' ? 'pointer-events-none' : ''
       }`}
       style={{
         backgroundColor: `rgba(249, 244, 238, ${overlayOpacity})`,
       }}
+      onClick={(e) => {
+        // If clicking outside canvas or wordmark, also trigger entry
+        if (stage === 'idle') triggerTransition();
+      }}
     >
       {/* Centered Large Halftone Wordmark Container */}
       <div 
         ref={wordmarkBoxRef}
+        onClick={triggerTransition}
         className="relative w-[94vw] max-w-5xl h-64 sm:h-80 md:h-96 flex items-center justify-center cursor-pointer"
         style={transformStyle}
-        title="Hover to glow · Click for shockwave ripple"
+        title="Click or scroll to enter"
       >
         {/* Halftone Canvas with Interactive Glowing Spring Dots */}
         <canvas
@@ -483,23 +488,16 @@ export const LandingIntro: React.FC<LandingIntroProps> = ({
         </span>
       </div>
 
-      {/* Elegant Invitation Cue with Live Action Controls */}
+      {/* Clean 'Click or scroll to enter' cue */}
       <div 
-        className="mt-6 sm:mt-8 flex flex-col items-center gap-3 text-[#7A6153] transition-opacity duration-300"
+        onClick={triggerTransition}
+        className="mt-6 sm:mt-8 flex items-center gap-2 text-[#7A6153] hover:text-[#4A2818] transition-all duration-300 cursor-pointer select-none"
         style={{ opacity: hintOpacity }}
       >
-        <button
-          onClick={triggerTransition}
-          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#4A2818] hover:bg-[#361B0E] text-[#F9F4EE] font-serif font-bold text-xs shadow-md transition-all active:scale-95 cursor-pointer"
-        >
-          <Sparkles className="w-3.5 h-3.5 text-[#FFA000]" />
-          <span>Enter Storefront</span>
-        </button>
-
-        <div className="flex items-center gap-1.5 text-[11px] font-sans font-medium tracking-[0.18em] uppercase opacity-75">
-          <span>Click letters for shockwave · Scroll to enter</span>
-          <ChevronDown className="w-3.5 h-3.5 animate-bounce text-[#4A2818] inline-block ml-0.5" />
-        </div>
+        <span className="text-xs sm:text-sm font-medium tracking-wide">
+          Click or scroll to enter
+        </span>
+        <ChevronDown className="w-4 h-4 animate-bounce text-[#4A2818]" />
       </div>
 
     </div>

@@ -13,7 +13,7 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ settings }) =>
         {/* Left: Announcement / Offer */}
         <div className="flex items-center gap-2 justify-center">
           <span className="inline-flex items-center justify-center bg-[#4A2818] text-[#F9F4EE] px-2 py-0.5 rounded-full font-bold text-[10px] tracking-wide uppercase">
-            Bangalore
+            Trivandrum
           </span>
           <span className="text-[#4A2818]/90">
             {settings.announcement || '🎂 In-Store Counter Pickup Available at Main Market Road · Same-Day Ready!'}
@@ -24,7 +24,7 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ settings }) =>
         <div className="flex items-center gap-4 text-[11px] text-[#7A6153]">
           <div className="hidden md:flex items-center gap-1.5">
             <MapPin className="w-3.5 h-3.5 text-[#4A2818]" />
-            <span className="text-[#4A2818]/80">Main Market Road, Bangalore</span>
+            <span className="text-[#4A2818]/80">Main Market Road, Trivandrum</span>
           </div>
           <span className="hidden md:inline text-[#E8D8CC]">•</span>
           <a

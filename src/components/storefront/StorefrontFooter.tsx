@@ -22,7 +22,7 @@ export const StorefrontFooter: React.FC<StorefrontFooterProps> = ({ settings, ca
     {
       title: 'Store Location',
       links: [
-        { label: settings.address || 'Bangalore Main Market Road' },
+        { label: settings.address || 'Trivandrum Main Market Road' },
         { label: settings.openingHours || 'Mon–Sat: 9:30 AM – 8:30 PM' },
         { label: 'Counter Pickup Ready' },
       ],
@@ -43,7 +43,7 @@ export const StorefrontFooter: React.FC<StorefrontFooterProps> = ({ settings, ca
       <HalftoneWordmarkFooter
         wordmark={(settings.storeName || 'bake & joy').toLowerCase()}
         label={settings.storeName || 'Bake & Joy'}
-        meta="Artisan Pantry & Cake Decor · Bangalore Market Road"
+        meta="Artisan Pantry & Cake Decor · Trivandrum Market Road"
         columns={columns}
         palette={{
           background: '#361B0E',

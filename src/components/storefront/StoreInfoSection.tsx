@@ -24,7 +24,7 @@ export const StoreInfoSection: React.FC<StoreInfoSectionProps> = ({ settings }) 
         <div className="text-center max-w-xl mx-auto mb-12 sm:mb-16">
           <div className="inline-flex items-center gap-2 bg-[#F2E7DC] text-[#4A2818] text-xs font-semibold px-3.5 py-1.5 rounded-full mb-3">
             <Sparkles className="w-3.5 h-3.5 fill-[#4A2818]" />
-            <span>Bangalore Physical Pantry</span>
+            <span>Trivandrum Physical Pantry</span>
           </div>
           <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-medium text-[#4A2818] tracking-tight mb-3">
             Visit Our Store
@@ -51,10 +51,10 @@ export const StoreInfoSection: React.FC<StoreInfoSectionProps> = ({ settings }) 
                     Store Location & Counter
                   </h3>
                   <p className="text-sm text-[#7A6153] font-normal leading-relaxed">
-                    {settings.address || 'Bake & Joy Main Market Road, Bangalore, Karnataka, India'}
+                    {settings.address || 'Bake & Joy Main Market Road, Trivandrum, Kerala, India'}
                   </p>
                   <p className="text-xs text-[#4A2818]/60 font-medium mt-1">
-                    Central Bangalore · Easy customer parking available
+                    Central Trivandrum · Easy customer parking available
                   </p>
                 </div>
               </div>
@@ -98,7 +98,7 @@ export const StoreInfoSection: React.FC<StoreInfoSectionProps> = ({ settings }) 
             {/* Action Buttons */}
             <div className="pt-6 mt-6 border-t border-[#E8D8CC]/60 flex flex-wrap gap-3">
               <a
-                href={`https://wa.me/${(settings.whatsappNumber || '919999999999').replace(/\D/g, '')}?text=Hi%20Bake%20%26%20Joy%2C%20I%20would%20like%20to%20visit%20your%20Bangalore%20store`}
+                href={`https://wa.me/${(settings.whatsappNumber || '919999999999').replace(/\D/g, '')}?text=Hi%20Bake%20%26%20Joy%2C%20I%20would%20like%20to%20visit%20your%20Trivandrum%20store`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-[#4A2818] hover:bg-[#361B0E] text-[#F9F4EE] font-medium text-xs sm:text-sm px-6 py-3 rounded-full shadow-sm hover:shadow-md transition-all active:scale-95"

@@ -1,27 +1,30 @@
-import { Home, User, Briefcase, FileText, ShoppingBag, Sparkles, Package, ShieldCheck } from 'lucide-react'
-import { NavBar } from "@/components/ui/tubelight-navbar"
+import React from 'react';
+import { Header } from "@/components/ui/header-2";
 
-export function NavBarDemo() {
-  const navItems = [
-    { name: 'Home', url: '#', icon: Home },
-    { name: 'About', url: '#', icon: User },
-    { name: 'Projects', url: '#', icon: Briefcase },
-    { name: 'Resume', url: '#', icon: FileText }
-  ]
+export default function Demo() {
+	return (
+		<div className="w-full">
+			<Header />
 
-  return <NavBar items={navItems} />
+			<main className="mx-auto min-h-screen w-full max-w-3xl px-4 py-12">
+				<div  className="space-y-2 mb-4">
+					<div className="bg-accent h-6 w-4/6 rounded-md border" />
+					<div className="bg-accent h-6 w-1/2 rounded-md border" />
+				</div>
+				<div  className="flex gap-2 mb-8">
+					<div className="bg-accent h-3 w-14 rounded-md border" />
+					<div className="bg-accent h-3 w-12 rounded-md border" />
+				</div>
+
+				{Array.from({ length: 7 }).map((_, i) => (
+					<div key={i} className="space-y-2 mb-8">
+						<div className="bg-accent h-4 w-full rounded-md border" />
+						<div className="bg-accent h-4 w-full rounded-md border" />
+						<div className="bg-accent h-4 w-full rounded-md border" />
+						<div className="bg-accent h-4 w-1/2 rounded-md border" />
+					</div>
+				))}
+			</main>
+		</div>
+	);
 }
-
-export function StoreNavBarDemo() {
-  const storeItems = [
-    { name: 'Home', url: '/', icon: Home },
-    { name: 'Products', url: '/products', icon: ShoppingBag },
-    { name: 'Decorations', url: '/products?category=cat-cake-decoration', icon: Sparkles },
-    { name: 'Ingredients', url: '/products?category=cat-baking-ingredients', icon: Package },
-    { name: 'Admin', url: '/admin', icon: ShieldCheck },
-  ]
-
-  return <NavBar items={storeItems} />
-}
-
-export default NavBarDemo

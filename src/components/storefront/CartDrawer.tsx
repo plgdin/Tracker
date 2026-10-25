@@ -156,7 +156,7 @@ export const CartDrawer: React.FC = () => {
               <div className="flex items-center gap-2 p-3 bg-white rounded-2xl border border-[#E8D8CC] text-[11px] text-[#4A2818]">
                 <MapPin className="w-4 h-4 text-[#4A2818] shrink-0" />
                 <span>
-                  <strong>Counter Pickup:</strong> Collect at Bangalore Main Market Road with zero delivery fee.
+                  <strong>Counter Pickup:</strong> Collect at Trivandrum Main Market Road with zero delivery fee.
                 </span>
               </div>
 

@@ -852,8 +852,8 @@ export const INITIAL_ORDERS: Order[] = [
 export const INITIAL_SETTINGS: StoreSettings = {
   storeName: 'Bake & Joy',
   tagline: 'Professional Baking Supplies & Cake Decoration Essentials',
-  description: 'Your premier neighbourhood baking pantry and cake decoration supply store in Bangalore. We stock professional couverture chocolate, piping nozzles, silicone moulds, food colours, boxes, and high-quality ingredients for home bakers and patisseries.',
-  address: 'Bake & Joy Main Market Road, Bangalore, Karnataka, India',
+  description: 'Your premier neighbourhood baking pantry and cake decoration supply store in Trivandrum. We stock professional couverture chocolate, piping nozzles, silicone moulds, food colours, boxes, and high-quality ingredients for home bakers and patisseries.',
+  address: 'Bake & Joy Main Market Road, Trivandrum, Kerala, India',
   phone: '+91 98450 12345',
   whatsappNumber: '919999999999',
   email: 'hello@bakeandjoy.in',

@@ -80,7 +80,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
   const handleWhatsAppInquiry = () => {
     const text = encodeURIComponent(
-      `Hi Bake & Joy, I am interested in: "${product.name}" (Price: ₹${activePrice}). Do you currently have it in stock at your Bangalore store?`
+      `Hi Bake & Joy, I am interested in: "${product.name}" (Price: ₹${activePrice}). Do you currently have it in stock at your Trivandrum store?`
     );
     window.open(`https://wa.me/${whatsappNumber.replace(/\D/g, '')}?text=${text}`, '_blank');
   };
@@ -141,7 +141,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             <div className="mt-4 p-3 bg-white rounded-2xl border border-[#E8D8CC] flex items-center gap-3">
               <PackageCheck className="w-5 h-5 text-[#4A2818] shrink-0" />
               <div className="text-[11px] text-[#7A6153] leading-tight">
-                <span className="font-serif font-bold text-[#4A2818]">Bangalore Counter Pickup:</span> Ready within 30 minutes during shop hours.
+                <span className="font-serif font-bold text-[#4A2818]">Trivandrum Counter Pickup:</span> Ready within 30 minutes during shop hours.
               </div>
             </div>
           </div>
@@ -296,7 +296,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 className="w-full py-3 rounded-full font-medium text-xs bg-[#F2E7DC] hover:bg-[#E8D8CC] text-[#4A2818] border border-[#E8D8CC] flex items-center justify-center gap-2 transition-all"
               >
                 <MessageCircle className="w-4 h-4 text-[#4A2818]" />
-                <span>Ask Bangalore Store on WhatsApp</span>
+                <span>Ask Trivandrum Store on WhatsApp</span>
               </button>
             </div>
           </div>

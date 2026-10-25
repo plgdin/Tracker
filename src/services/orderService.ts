@@ -121,7 +121,7 @@ export const orderService = {
 
     const lines: string[] = [
       `🍰 *NEW ORDER: ${order.orderNumber}*`,
-      `*Store:* Bake & Joy (Bangalore)`,
+      `*Store:* Bake & Joy (Trivandrum)`,
       `---------------------------------`,
       `👤 *Customer:* ${order.customerName}`,
       `📞 *Phone:* ${order.customerPhone}`,

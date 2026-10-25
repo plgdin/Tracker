@@ -182,7 +182,7 @@ const HWF_CSS = `
 export function HalftoneWordmarkFooter({
   wordmark = "bake & joy",
   label = "Bake & Joy",
-  meta = "Artisan Bakery Supplies · Bangalore Market",
+  meta = "Artisan Bakery Supplies · Trivandrum Market",
   columns = DEFAULT_COLUMNS,
   backToTop = true,
   preset = "night",

@@ -61,7 +61,7 @@ export default function AdminOrders() {
           Customer Orders & In-Store Pickups
         </h1>
         <p className="text-xs sm:text-sm text-[#7A6153] mt-0.5">
-          Process Bangalore counter pickups, coordinate WhatsApp communications, and manage order flow
+          Process Trivandrum counter pickups, coordinate WhatsApp communications, and manage order flow
         </p>
       </div>
 

@@ -105,7 +105,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ settings, onOrderS
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#4A2818]" />
               <span className="text-xs font-semibold text-[#7A6153]">
-                Express Bangalore Counter Pickup
+                Express Trivandrum Counter Pickup
               </span>
             </div>
             <h2 className="font-serif text-2xl font-bold text-[#4A2818] mt-0.5">
@@ -129,7 +129,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ settings, onOrderS
             <MapPin className="w-5 h-5 text-[#4A2818] shrink-0 mt-0.5" />
             <div className="text-xs text-[#4A2818]">
               <div className="font-serif font-bold text-[#4A2818] mb-0.5">Counter Pickup Location:</div>
-              <div className="text-[#7A6153]">{settings.address || 'Bake & Joy Main Market Road, Bangalore, Karnataka, India'}</div>
+              <div className="text-[#7A6153]">{settings.address || 'Bake & Joy Main Market Road, Trivandrum, Kerala, India'}</div>
               <div className="mt-1 text-[11px] font-semibold text-[#4A2818]">
                 Payment will be handled at the shop counter via UPI, Cash, or Card!
               </div>

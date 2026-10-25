@@ -163,7 +163,7 @@ export default function AdminLogin() {
 
       {/* Footer */}
       <div className="p-4 text-center text-xs text-[#7A6153]">
-        &copy; {new Date().getFullYear()} Bake & Joy · Bangalore Main Market Road
+        &copy; {new Date().getFullYear()} Bake & Joy · Trivandrum Main Market Road
       </div>
 
     </div>

@@ -5,7 +5,7 @@ import {
   Sparkles,
   ShoppingBag
 } from 'lucide-react';
-import { AnnouncementBar } from '../components/storefront/AnnouncementBar';
+
 import { StorefrontNavbar } from '../components/storefront/StorefrontNavbar';
 import { HeroSection } from '../components/storefront/HeroSection';
 import { CategoryCards } from '../components/storefront/CategoryCards';
@@ -72,8 +72,7 @@ export default function Home() {
         />
       )}
 
-      {/* 1. Warm Announcement Bar */}
-      <AnnouncementBar settings={settings} />
+
 
       {/* 2. Main Artisan Storefront Navigation */}
       <StorefrontNavbar
@@ -154,7 +153,7 @@ export default function Home() {
               </h3>
 
               <p className="text-sm sm:text-base text-[#7A6153] leading-relaxed max-w-xl font-normal">
-                Calibrated Belgian chocolate callets, Tropelite whipping creams, fine piping nozzles, and concentrated oil colours formulated for flawless patisserie finishes. Handcrafted for professional dessert studios and passionate home bakers across Bangalore.
+                Calibrated Belgian chocolate callets, Tropelite whipping creams, fine piping nozzles, and concentrated oil colours formulated for flawless patisserie finishes. Handcrafted for professional dessert studios and passionate home bakers across Trivandrum.
               </p>
 
               {/* Circular Dark Cocoa Button (from reference mockup) */}

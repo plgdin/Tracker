@@ -47,7 +47,7 @@ export default function AdminSettings() {
             Store & Brand Settings
           </h1>
           <p className="text-xs sm:text-sm text-[#7A6153] mt-0.5">
-            Configure store branding, Bangalore physical address, WhatsApp counter ordering desk, and announcement banner
+            Configure store branding, Trivandrum physical address, WhatsApp counter ordering desk, and announcement banner
           </p>
         </div>
 

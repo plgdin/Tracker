@@ -1,6 +1,6 @@
 # 🍰 Bake & Joy — Premium Baking Supplies & Cake Decor E-Commerce
 
-A complete, modern, responsive e-commerce web application for **Bake & Joy**, a physical retail store in Bangalore specializing in professional baking ingredients, cake decoration accessories, silicone moulds, cake toppers, whipping creams, food colours, and packaging supplies.
+A complete, modern, responsive e-commerce web application for **Bake & Joy**, a physical retail store in Trivandrum specializing in professional baking ingredients, cake decoration accessories, silicone moulds, cake toppers, whipping creams, food colours, and packaging supplies.
 
 ---
 
@@ -25,7 +25,7 @@ A complete, modern, responsive e-commerce web application for **Bake & Joy**, a 
    - 10 distinct category cards styled with brand palette colors.
    - Featured products & trending supplies grids with quick Add-to-Cart.
    - Promotional showcase for Belgian couverture chocolate and oil-based candy colours.
-   - Physical Bangalore store location section with address, timings, and direct WhatsApp inquiries.
+   - Physical Trivandrum store location section with address, timings, and direct WhatsApp inquiries.
    - Rich Cassis footer with quick links and store hours.
 
 2. **Full Product Catalogue (`/products`):**
@@ -44,7 +44,7 @@ A complete, modern, responsive e-commerce web application for **Bake & Joy**, a 
 4. **Shopping Cart & Checkout Flow:**
    - Persistent slide-over cart drawer with quantity steppers.
    - Checkout modal capturing Name, Phone, WhatsApp, and Pickup Time Preference.
-   - Zero-fee Bangalore counter pickup information.
+   - Zero-fee Trivandrum counter pickup information.
    - Form validation with formatted error messages.
 
 5. **WhatsApp Click-to-Chat Dispatch:**
