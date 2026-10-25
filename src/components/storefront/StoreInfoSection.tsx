@@ -22,10 +22,6 @@ export const StoreInfoSection: React.FC<StoreInfoSectionProps> = ({ settings }) 
         
         {/* Top Header */}
         <div className="text-center max-w-xl mx-auto mb-12 sm:mb-16">
-          <div className="inline-flex items-center gap-2 bg-[#F2E7DC] text-[#4A2818] text-xs font-semibold px-3.5 py-1.5 rounded-full mb-3">
-            <Sparkles className="w-3.5 h-3.5 fill-[#4A2818]" />
-            <span>Trivandrum Physical Pantry</span>
-          </div>
           <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-medium text-[#4A2818] tracking-tight mb-3">
             Visit Our Store
           </h2>
