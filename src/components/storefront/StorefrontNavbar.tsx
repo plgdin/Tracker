@@ -4,7 +4,10 @@ import {
   ShoppingBag, 
   Search, 
   ShieldCheck, 
-  ArrowRight
+  ArrowRight,
+  X,
+  Sparkles,
+  TrendingUp
 } from 'lucide-react';
 import { useCartContext } from '../../context/CartContext';
 import type { Category, Product, StoreSettings } from '../../types/ecommerce';
@@ -36,11 +39,32 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
   const [suggestions, setSuggestions] = useState<Product[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   
   // Smooth hysteresis-based scroll detector (triggers at 25px, releases below 10px)
   const scrolled = useScroll(25);
 
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Global hotkey: '/' or 'Cmd+K' / 'Ctrl+K' to focus search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.key === '/' || ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k')) && document.activeElement !== inputRef.current) {
+        const tag = document.activeElement?.tagName.toLowerCase();
+        if (tag !== 'input' && tag !== 'textarea') {
+          e.preventDefault();
+          inputRef.current?.focus();
+          setShowSuggestions(true);
+        }
+      } else if (e.key === 'Escape' && isFocused) {
+        inputRef.current?.blur();
+        setShowSuggestions(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isFocused]);
 
   useEffect(() => {
     setLocalQuery(searchQuery);
@@ -164,52 +188,191 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
           {/* Right Action Icons & Controls */}
           <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
             
-            {/* Live Search Input with Smooth Width Transition */}
+            {/* Live Search Input with Glassmorphism & Expanding Focus */}
             <div ref={searchContainerRef} className="relative hidden sm:block">
-              <form onSubmit={handleSearchSubmit}>
-                <input
-                  type="text"
-                  value={localQuery}
-                  onChange={(e) => {
-                    setLocalQuery(e.target.value);
-                    setShowSuggestions(true);
-                  }}
-                  onFocus={() => setShowSuggestions(true)}
-                  placeholder="Search..."
+              <form onSubmit={handleSearchSubmit} className="relative">
+                <div
                   className={cn(
-                    'bg-[#241108]/80 border border-[#542B16] rounded-full pl-8 pr-3 py-1.5 text-xs text-[#F9F4EE] placeholder:text-[#C5B3A6] outline-none focus:border-[#EAD9CF] focus:bg-[#200E06] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]',
-                    scrolled && !isMobileMenuOpen ? 'w-28 sm:w-36 md:w-40' : 'w-32 sm:w-40 md:w-48'
+                    'relative flex items-center h-9 sm:h-10 rounded-full transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]',
+                    isFocused
+                      ? 'bg-[#FCFAF7] border border-white/90 shadow-xl shadow-black/25 w-52 sm:w-64 md:w-72 lg:w-80 ring-2 ring-white/30'
+                      : 'bg-white/10 hover:bg-white/15 border border-white/20 hover:border-white/30 w-36 sm:w-44 md:w-52 lg:w-60 shadow-inner shadow-black/10'
                   )}
-                />
-                <Search className="w-3.5 h-3.5 text-[#C5B3A6] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                >
+                  <Search
+                    className={cn(
+                      'w-4 h-4 ml-3.5 shrink-0 pointer-events-none transition-colors duration-200',
+                      isFocused ? 'text-[#4A2818]' : 'text-[#EAD9CF]'
+                    )}
+                  />
+
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={localQuery}
+                    onChange={(e) => {
+                      setLocalQuery(e.target.value);
+                      setShowSuggestions(true);
+                    }}
+                    onFocus={() => {
+                      setIsFocused(true);
+                      setShowSuggestions(true);
+                    }}
+                    onBlur={() => {
+                      setIsFocused(false);
+                    }}
+                    placeholder="Search supplies..."
+                    className={cn(
+                      'w-full h-full bg-transparent pl-2.5 pr-8 text-xs sm:text-sm font-normal outline-none transition-colors duration-200',
+                      isFocused
+                        ? 'text-[#361B0E] placeholder:text-[#8C7162]'
+                        : 'text-[#F9F4EE] placeholder:text-[#EAD9CF]/70'
+                    )}
+                  />
+
+                  {/* Clear Button (when text entered) OR subtle Shortcut Hint */}
+                  {localQuery ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLocalQuery('');
+                        inputRef.current?.focus();
+                      }}
+                      className={cn(
+                        'mr-2.5 p-1 rounded-full hover:bg-black/10 transition-colors',
+                        isFocused ? 'text-[#7A6153] hover:text-[#4A2818]' : 'text-[#EAD9CF] hover:text-white'
+                      )}
+                      title="Clear search"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  ) : (
+                    <span
+                      className={cn(
+                        'mr-2.5 hidden lg:inline-flex items-center text-[10px] font-mono font-medium px-1.5 py-0.5 rounded border pointer-events-none transition-colors duration-200',
+                        isFocused
+                          ? 'border-[#E8D8CC] text-[#7A6153] bg-[#F2E7DC]/60'
+                          : 'border-white/20 text-[#EAD9CF]/70 bg-white/5'
+                      )}
+                    >
+                      ⌘K
+                    </span>
+                  )}
+                </div>
               </form>
 
-              {/* Autocomplete Dropdown */}
-              {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-[#E8D8CC] overflow-hidden z-50">
-                  <div className="p-2 border-b border-[#E8D8CC]/40 text-[10px] font-bold text-[#7A6153] uppercase tracking-wider px-3">
-                    Baking Supplies
-                  </div>
-                  <div className="divide-y divide-[#E8D8CC]/40 max-h-72 overflow-y-auto">
-                    {suggestions.map((p) => (
+              {/* Autocomplete Dropdown Popover */}
+              {showSuggestions && (
+                <div 
+                  onMouseDown={(e) => e.preventDefault()} // Prevent blur before clicking items
+                  className="absolute top-full right-0 mt-2.5 w-80 sm:w-96 bg-[#FCFAF7] rounded-2xl shadow-2xl border border-[#E8D8CC] overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200"
+                >
+                  {/* Case 1: Active query with suggestions */}
+                  {suggestions.length > 0 && (
+                    <>
+                      <div className="flex items-center justify-between px-3.5 py-2.5 bg-[#F4ECE4]/70 border-b border-[#E8D8CC]">
+                        <span className="text-[11px] font-semibold text-[#5A3825] uppercase tracking-wider flex items-center gap-1.5">
+                          <Sparkles className="w-3 h-3 text-[#C87D55]" />
+                          Matching Supplies ({suggestions.length})
+                        </span>
+                        <span className="text-[10px] text-[#7A6153]">Press Enter to view all</span>
+                      </div>
+                      
+                      <div className="divide-y divide-[#E8D8CC]/50 max-h-80 overflow-y-auto">
+                        {suggestions.map((p) => (
+                          <button
+                            key={p.id}
+                            onClick={() => handleSelectSuggestion(p)}
+                            className="w-full flex items-center gap-3 p-3 text-left hover:bg-[#F2E7DC]/60 transition-colors group"
+                          >
+                            <img
+                              src={p.images[0]}
+                              alt={p.name}
+                              className="w-10 h-10 object-cover rounded-xl border border-[#E8D8CC] shrink-0 group-hover:scale-105 transition-transform duration-200 shadow-xs"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className="text-xs sm:text-sm font-serif font-bold text-[#4A2818] truncate group-hover:text-[#200E05]">
+                                {p.name}
+                              </div>
+                              <div className="text-[11px] text-[#7A6153] flex items-center gap-1.5 mt-0.5">
+                                <span className="inline-block w-1 h-1 rounded-full bg-[#C87D55]" />
+                                <span>{p.categoryName}</span>
+                              </div>
+                            </div>
+                            <div className="shrink-0 text-right">
+                              <span className="text-xs font-bold text-[#4A2818] bg-[#F2E7DC] px-2 py-1 rounded-lg">
+                                ₹{p.discountPrice || p.price}
+                              </span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="p-2.5 bg-[#F9F4EE] border-t border-[#E8D8CC]">
+                        <button
+                          onClick={handleSearchSubmit}
+                          className="w-full py-2 px-3 rounded-xl bg-[#4A2818] hover:bg-[#361B0E] text-white text-xs font-semibold flex items-center justify-center gap-2 transition-colors shadow-xs"
+                        >
+                          <span>View all results for "{localQuery}"</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Case 2: Query entered but no results */}
+                  {localQuery.trim().length >= 2 && suggestions.length === 0 && (
+                    <div className="p-6 text-center">
+                      <div className="w-10 h-10 rounded-full bg-[#F2E7DC] flex items-center justify-center mx-auto mb-2.5 text-[#7A6153]">
+                        <Search className="w-5 h-5" />
+                      </div>
+                      <p className="text-xs font-serif font-bold text-[#4A2818] mb-1">
+                        No supplies found for "{localQuery}"
+                      </p>
+                      <p className="text-[11px] text-[#7A6153] mb-3">
+                        Try searching for chocolate, moulds, boxes, or sprinkles.
+                      </p>
                       <button
-                        key={p.id}
-                        onClick={() => handleSelectSuggestion(p)}
-                        className="w-full flex items-center gap-3 p-2.5 text-left hover:bg-[#F9F4EE] transition-colors"
+                        onClick={() => navigate('/products')}
+                        className="text-xs font-semibold text-[#4A2818] bg-[#F2E7DC] hover:bg-[#EAD9CF] px-3.5 py-1.5 rounded-full transition-colors"
                       >
-                        <img
-                          src={p.images[0]}
-                          alt={p.name}
-                          className="w-8 h-8 object-cover rounded-lg border border-[#E8D8CC]"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs font-serif font-bold text-[#4A2818] truncate">{p.name}</div>
-                          <div className="text-[10px] text-[#7A6153]">{p.categoryName}</div>
-                        </div>
-                        <div className="text-xs font-serif font-bold text-[#4A2818]">₹{p.discountPrice || p.price}</div>
+                        Browse all catalog
                       </button>
-                    ))}
-                  </div>
+                    </div>
+                  )}
+
+                  {/* Case 3: Empty query - Show Quick Trending Searches */}
+                  {localQuery.trim().length < 2 && (
+                    <div className="p-3.5">
+                      <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[#5A3825] uppercase tracking-wider mb-2.5">
+                        <TrendingUp className="w-3.5 h-3.5 text-[#C87D55]" />
+                        Popular Searches
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {[
+                          'Belgian Couverture',
+                          'Silicone Moulds',
+                          'Cake Boxes',
+                          'Vanilla Extract',
+                          'Fondant',
+                          'Baking Powder',
+                        ].map((term) => (
+                          <button
+                            key={term}
+                            onClick={() => {
+                              setLocalQuery(term);
+                              if (onSearchChange) onSearchChange(term);
+                              setShowSuggestions(false);
+                              navigate(`/products?q=${encodeURIComponent(term)}`);
+                            }}
+                            className="text-xs font-medium text-[#4A2818] bg-[#F2E7DC]/80 hover:bg-[#F2E7DC] hover:text-[#200E05] px-2.5 py-1.5 rounded-lg border border-[#E8D8CC] transition-colors"
+                          >
+                            {term}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -268,14 +431,25 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
           <div className="space-y-4">
             {/* Search Input for Mobile */}
             <form onSubmit={handleSearchSubmit} className="relative">
-              <input
-                type="text"
-                value={localQuery}
-                onChange={(e) => setLocalQuery(e.target.value)}
-                placeholder="Search baking supplies..."
-                className="w-full bg-[#241108] border border-[#542B16] rounded-full pl-9 pr-4 py-2 text-xs text-[#F9F4EE] placeholder:text-[#C5B3A6] outline-none"
-              />
-              <Search className="w-4 h-4 text-[#C5B3A6] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <div className="relative flex items-center h-11 rounded-full bg-white/10 border border-white/20 focus-within:bg-[#FCFAF7] focus-within:border-white transition-all shadow-inner shadow-black/10">
+                <Search className="w-4 h-4 ml-3.5 text-[#EAD9CF] pointer-events-none shrink-0" />
+                <input
+                  type="text"
+                  value={localQuery}
+                  onChange={(e) => setLocalQuery(e.target.value)}
+                  placeholder="Search baking supplies..."
+                  className="w-full h-full bg-transparent pl-2.5 pr-8 text-sm text-[#F9F4EE] placeholder:text-[#EAD9CF]/70 focus:text-[#361B0E] focus:placeholder:text-[#8C7162] outline-none"
+                />
+                {localQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setLocalQuery('')}
+                    className="mr-3 p-1 rounded-full text-[#EAD9CF] hover:text-white"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
             </form>
 
             <div className="grid gap-y-1">
