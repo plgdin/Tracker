@@ -84,7 +84,7 @@ export const StoreInfoSection: React.FC<StoreInfoSectionProps> = ({ settings }) 
                     Call: <a href={`tel:${settings.phone || '+919447113608'}`} className="font-bold text-[#4A2818] hover:text-[#673D26] transition-colors">{settings.phone || '+91 94471 13608'}</a>
                   </p>
                   <p className="text-xs text-[#7A6153]/70 mt-0.5">
-                    Email: {settings.email || 'bakenjoy.trivandrum@gmail.com'}
+                    Email: {settings.email || 'hello@nayakart.in'}
                   </p>
                 </div>
               </div>
@@ -94,7 +94,7 @@ export const StoreInfoSection: React.FC<StoreInfoSectionProps> = ({ settings }) 
             {/* Action Buttons */}
             <div className="pt-6 mt-6 border-t border-[#E8D8CC]/60 flex flex-wrap gap-3">
               <a
-                href={`https://wa.me/${(settings.whatsappNumber || '919447113608').replace(/\D/g, '')}?text=Hi%20Bake%20N%20Joy%2C%20I%20would%20like%20to%20inquire%20about%20baking%20supplies%20at%20your%20Kazhakuttam%20store`}
+                href={`https://wa.me/${(settings.whatsappNumber || '919447113608').replace(/\D/g, '')}?text=Hi%20NayaKart%2C%20I%20would%20like%20to%20inquire%20about%20baking%20supplies%20at%20your%20Kazhakuttam%20store`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-[#4A2818] hover:bg-[#361B0E] text-[#F9F4EE] font-medium text-xs sm:text-sm px-6 py-3 rounded-full shadow-sm hover:shadow-md transition-all active:scale-95"
@@ -104,7 +104,7 @@ export const StoreInfoSection: React.FC<StoreInfoSectionProps> = ({ settings }) 
               </a>
 
               <a
-                href="https://www.google.com/maps/search/?api=1&query=Bake+N+Joy+Kazhakuttam+Thiruvananthapuram"
+                href="https://www.google.com/maps/search/?api=1&query=NayaKart+Kazhakuttam+Thiruvananthapuram"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-[#F9F4EE] hover:bg-[#F2E7DC] text-[#4A2818] font-medium text-xs sm:text-sm px-5 py-3 rounded-full border border-[#E8D8CC] transition-all"

@@ -49,7 +49,7 @@ export default function AdminLogin() {
           <div className="w-8 h-8 rounded-xl bg-[#4A2818] text-[#F9F4EE] flex items-center justify-center">
             <Cake className="w-4 h-4" />
           </div>
-          <span className="font-serif font-bold text-lg text-[#4A2818] italic">Bake N Joy</span>
+          <span className="font-serif font-bold text-lg text-[#4A2818] italic">NayaKart</span>
         </div>
       </div>
 
@@ -163,7 +163,7 @@ export default function AdminLogin() {
 
       {/* Footer */}
       <div className="p-4 text-center text-xs text-[#7A6153]">
-        &copy; {new Date().getFullYear()} Bake N Joy · Kazhakuttam to Karyavattom Road, Thiruvananthapuram
+        &copy; {new Date().getFullYear()} NayaKart · Kazhakuttam to Karyavattom Road, Thiruvananthapuram
       </div>
 
     </div>

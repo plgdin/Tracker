@@ -77,7 +77,7 @@ export default function AdminSettings() {
               <span>Verified Store Profile · Justdial Listing</span>
             </div>
             <h2 className="font-serif text-2xl sm:text-3xl font-bold text-white tracking-tight">
-              Bake N Joy — Kazhakuttam
+              NayaKart — Kazhakuttam
             </h2>
             <div className="flex flex-wrap items-center gap-4 text-xs text-white/80">
               <span className="inline-flex items-center gap-1 font-bold text-[#EAF05C]">
@@ -274,7 +274,7 @@ export default function AdminSettings() {
               Scraped Justdial Visual Media
             </h3>
             <p className="text-xs text-[#7A6153] mt-0.5">
-              Authentic high-resolution photographs of Bake N Joy Kazhakuttam store shelves, baking tools, cake packaging, and ingredients. Click to copy URLs for use in products.
+              Authentic high-resolution photographs of NayaKart Kazhakuttam store shelves, baking tools, cake packaging, and ingredients. Click to copy URLs for use in products.
             </p>
           </div>
           <span className="text-xs font-semibold px-3 py-1 rounded-full bg-[#F2E7DC] text-[#4A2818] shrink-0 self-start sm:self-auto">

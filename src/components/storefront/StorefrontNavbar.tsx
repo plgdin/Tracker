@@ -87,7 +87,7 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
                 scrolled && !isMobileMenuOpen ? 'text-2xl sm:text-3xl' : 'text-3xl sm:text-4xl'
               )}
             >
-              {settings.storeName || 'Bake N Joy'}
+              {settings.storeName || 'NayaKart'}
             </span>
           </Link>
 

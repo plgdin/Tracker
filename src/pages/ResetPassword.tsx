@@ -66,7 +66,7 @@ export default function ResetPassword() {
   return (
     <div className="auth-shell">
       <div className="auth-card">
-        <h1 className="auth-title">Bake N Joy</h1>
+        <h1 className="auth-title">NayaKart</h1>
         <p className="auth-subtitle">Reset your password</p>
 
         {status === 'success' && (

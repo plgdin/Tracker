@@ -1,12 +1,13 @@
 import type { StoreSettings } from '../types/ecommerce';
 import { INITIAL_SETTINGS } from './mockData';
 
-const STORAGE_KEY = 'bakenjoy_settings_v4';
+const STORAGE_KEY = 'nayakart_settings_v5';
 
 const getStoredSettings = (): StoreSettings => {
   try {
     localStorage.removeItem('bnj_settings');
     localStorage.removeItem('nayakart_settings');
+    localStorage.removeItem('bakenjoy_settings_v4');
 
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
@@ -14,7 +15,7 @@ const getStoredSettings = (): StoreSettings => {
       return INITIAL_SETTINGS;
     }
     const parsed = JSON.parse(raw);
-    if (!parsed.storeName || parsed.storeName === 'NayaKart' || parsed.storeName === 'Bake & Joy') {
+    if (!parsed.storeName || parsed.storeName !== 'NayaKart') {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_SETTINGS));
       return INITIAL_SETTINGS;
     }

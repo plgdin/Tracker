@@ -118,7 +118,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const handleCheckout = () => {
     if (!canPlaceOrder) return;
 
-    let text = `*New Order - Bake N Joy*\n\n`;
+    let text = `*New Order - NayaKart*\n\n`;
     text += `*Customer:* ${customerName}\n`;
     text += `*Phone:* ${customerPhone}\n`;
     if (customerEmail) text += `*Email:* ${customerEmail}\n`;

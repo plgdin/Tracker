@@ -893,16 +893,16 @@ export const STORE_SHOWROOM_IMAGES = [
 ];
 
 export const INITIAL_SETTINGS: StoreSettings = {
-  storeName: 'Bake N Joy',
+  storeName: 'NayaKart',
   tagline: 'Wholesale & Retail Baking Tools, Raw Materials & Cake Packaging',
-  description: 'Bake N Joy is Kazhakuttam\'s trusted wholesale and retail store for all professional baking tools, silicone moulds, cake packaging boxes, couverture chocolate slabs, essences, and confectionery raw materials. Located on Kazhakoottam to Karyavattom Road, serving home bakers, pastry chefs, and bakeries across Thiruvananthapuram.',
+  description: 'NayaKart is your trusted wholesale and retail store for all professional baking tools, silicone moulds, cake packaging boxes, couverture chocolate slabs, essences, and confectionery raw materials. Located on Kazhakoottam to Karyavattom Road, Kazhakuttam, serving home bakers, pastry chefs, and bakeries across Thiruvananthapuram.',
   address: 'TC.1/4575 (1) Ground Floor, Kazhakoottam to Karyavattom Road, Kazhakuttam, Thiruvananthapuram - 695582, Kerala',
   phone: '+91 94471 13608',
   whatsappNumber: '919447113608',
-  email: 'bakenjoy.trivandrum@gmail.com',
+  email: 'hello@nayakart.in',
   openingHours: 'Mon – Sat: 10:30 AM to 9:00 PM · Sunday: 10:30 AM to 3:00 PM',
   currency: 'INR',
   currencySymbol: '₹',
-  announcement: '🛒 Specialty Baking Tools, Moulds & Raw Materials · Counter Pickup & WhatsApp Orders in Kazhakuttam!',
+  announcement: '🛒 NayaKart: Specialty Baking Tools, Moulds & Raw Materials · Counter Pickup & WhatsApp Orders in Kazhakuttam!',
   logoUrl: '',
 };

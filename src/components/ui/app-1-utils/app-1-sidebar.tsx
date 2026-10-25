@@ -55,7 +55,7 @@ export function App1Sidebar() {
           </div>
           <div className="flex flex-col min-w-0 group-data-[collapsible=icon]:hidden">
             <span className="font-serif font-bold text-base tracking-tight italic truncate">
-              Bake N Joy
+              NayaKart
             </span>
             <span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider">
               Admin Console

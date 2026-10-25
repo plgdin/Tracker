@@ -180,8 +180,8 @@ const HWF_CSS = `
 `
 
 export function HalftoneWordmarkFooter({
-  wordmark = "bakenjoy",
-  label = "Bake N Joy",
+  wordmark = "nayakart",
+  label = "NayaKart",
   meta = "Baking Tools, Moulds & Raw Materials · Kazhakuttam, Thiruvananthapuram",
   columns = DEFAULT_COLUMNS,
   backToTop = true,
