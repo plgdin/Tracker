@@ -403,9 +403,14 @@ export const LandingIntro: React.FC<LandingIntroProps> = ({
     };
   }, [storeName]);
 
-  // Global scroll & key event triggers
+  // Global scroll, key event triggers, and 3-second auto-transition
   useEffect(() => {
     if (stage !== 'idle') return;
+
+    // Automatically transition to storefront in 3 seconds without needing to click
+    const autoTimer = setTimeout(() => {
+      triggerTransition();
+    }, 3000);
 
     const handleWheel = (e: WheelEvent) => {
       if (Math.abs(e.deltaY) > 5 || Math.abs(e.deltaX) > 5) {
@@ -436,6 +441,7 @@ export const LandingIntro: React.FC<LandingIntroProps> = ({
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
+      clearTimeout(autoTimer);
       window.removeEventListener('wheel', handleWheel);
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchmove', handleTouchMove);
