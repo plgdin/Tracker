@@ -97,10 +97,10 @@ export const StoreInfoSection: React.FC<StoreInfoSectionProps> = ({ settings }) 
                 href={`https://wa.me/${(settings.whatsappNumber || '919447113608').replace(/\D/g, '')}?text=Hi%20NayaKart%2C%20I%20would%20like%20to%20inquire%20about%20baking%20supplies%20at%20your%20Kazhakuttam%20store`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#1EBE5D] text-white font-medium text-xs sm:text-sm px-6 py-3 rounded-full shadow-sm hover:shadow-md transition-all active:scale-95"
+                className="inline-flex items-center gap-2 bg-[#4A2818] hover:bg-[#361B0E] text-[#F9F4EE] font-medium text-xs sm:text-sm px-6 py-3 rounded-full shadow-sm hover:shadow-md transition-all active:scale-95"
               >
-                <MessageCircle className="w-4 h-4 fill-white text-[#25D366]" />
-                <span className="text-white font-medium">Chat on WhatsApp</span>
+                <MessageCircle className="w-4 h-4 text-[#F9F4EE] stroke-[2.2]" />
+                <span className="text-[#F9F4EE] font-medium">Chat on WhatsApp</span>
               </a>
 
               <a

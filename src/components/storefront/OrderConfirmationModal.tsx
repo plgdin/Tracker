@@ -86,10 +86,10 @@ export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 w-full py-2.5 rounded-full bg-[#25D366] hover:bg-[#1EBE5D] text-white font-medium text-xs shadow-sm transition-all"
+            className="inline-flex items-center justify-center gap-2 w-full py-2.5 rounded-full bg-[#4A2818] hover:bg-[#361B0E] text-[#F9F4EE] font-medium text-xs shadow-sm transition-all"
           >
-            <MessageCircle className="w-4 h-4 fill-white text-[#25D366]" />
-            <span className="text-white">Re-open WhatsApp Chat Message</span>
+            <MessageCircle className="w-4 h-4 text-[#F9F4EE] stroke-[2.2]" />
+            <span className="text-[#F9F4EE]">Re-open WhatsApp Chat Message</span>
           </a>
         </div>
 
