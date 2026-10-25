@@ -235,10 +235,11 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
             {/* Admin Desk Pill */}
             <Link
               to="/admin"
-              className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#5C2E17] bg-[#4A2818] hover:bg-[#5C2E17] text-[#F9F4EE] text-xs font-medium transition-colors duration-200"
+              style={{ color: '#FFFFFF' }}
+              className="hidden lg:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-[#6B371B] bg-[#4A2818] hover:bg-[#5C2E17] !text-white text-white text-xs font-semibold shadow-xs hover:shadow-sm transition-all duration-200"
             >
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Admin</span>
+              <ShieldCheck className="w-3.5 h-3.5 !text-white text-white stroke-[2.2]" />
+              <span className="!text-white text-white font-semibold">Admin</span>
             </Link>
 
             {/* Mobile Menu Toggle Button */}
@@ -339,10 +340,11 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
             <Link
               to="/admin"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="w-full flex items-center justify-center gap-2 border border-[#5C2E17] bg-[#4A2818] text-[#F9F4EE] py-2.5 rounded-xl font-medium text-xs transition-colors"
+              style={{ color: '#FFFFFF' }}
+              className="w-full flex items-center justify-center gap-2 border border-[#6B371B] bg-[#4A2818] !text-white text-white py-2.5 rounded-xl font-semibold text-xs transition-colors"
             >
-              <ShieldCheck className="w-4 h-4" />
-              <span>Admin Portal</span>
+              <ShieldCheck className="w-4 h-4 !text-white text-white" />
+              <span className="!text-white text-white font-semibold">Admin Portal</span>
             </Link>
           </div>
         </div>
