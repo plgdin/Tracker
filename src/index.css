@@ -55,6 +55,15 @@ button, input, select, textarea {
   color: inherit;
 }
 
+input, textarea, select {
+  border: 0;
+  outline: none;
+}
+
+.rounded-ele {
+  border-radius: var(--radius, 0.75rem);
+}
+
 button {
   background: transparent;
   border: none;

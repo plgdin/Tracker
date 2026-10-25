@@ -11,6 +11,7 @@ import {
 import { productService } from '../../services/productService';
 import type { Product } from '../../types/ecommerce';
 import { cn } from '@/lib/utils';
+import { Input } from '../ui/input';
 
 const POPULAR_SEARCH_CHIPS = [
   'Belgian Couverture',
@@ -122,33 +123,27 @@ export const FloatingSearch: React.FC = () => {
           className="fixed bottom-24 right-4 sm:bottom-28 sm:right-8 z-50 w-[calc(100vw-32px)] sm:w-[440px] md:w-[460px] max-h-[75vh] bg-[#FCFAF7] rounded-3xl shadow-2xl border border-[#E8D8CC] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-200"
         >
           {/* Search Header Bar */}
-          <form onSubmit={handleSubmit} className="p-3.5 sm:p-4 bg-white border-b border-[#E8D8CC] flex items-center gap-3">
-            <Search className="w-5 h-5 text-[#4A2818] shrink-0" />
-            <input
-              ref={inputRef}
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search baking supplies, flavours, moulds..."
-              className="flex-1 bg-transparent text-sm sm:text-base text-[#361B0E] placeholder:text-[#8C7162] outline-none font-normal"
-            />
-            {query ? (
-              <button
-                type="button"
-                onClick={() => {
+          <form onSubmit={handleSubmit} className="p-3 sm:p-3.5 bg-white border-b border-[#E8D8CC] flex items-center gap-2">
+            <div className="flex-1">
+              <Input
+                ref={inputRef}
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search baking supplies, flavours, moulds..."
+                leftIcon={<Search className="text-[#4A2818]" />}
+                clearable
+                onClear={() => {
                   setQuery('');
                   inputRef.current?.focus();
                 }}
-                className="p-1 rounded-full text-[#7A6153] hover:text-[#4A2818] hover:bg-[#F2E7DC] transition-colors"
-                title="Clear"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            ) : (
-              <span className="hidden sm:inline-flex items-center text-[10px] font-mono font-semibold px-2 py-0.5 rounded-md border border-[#E8D8CC] text-[#7A6153] bg-[#F9F4EE]">
-                ESC
-              </span>
-            )}
+                size="lg"
+                className="bg-[#FCFAF7] border-[#E8D8CC] focus-visible:ring-[#C87D55]/30 text-sm sm:text-base text-[#361B0E] placeholder:text-[#8C7162] rounded-2xl"
+              />
+            </div>
+            <span className="hidden sm:inline-flex items-center text-[10px] font-mono font-semibold px-2 py-2 rounded-xl border border-[#E8D8CC] text-[#7A6153] bg-[#F9F4EE] shrink-0">
+              ESC
+            </span>
           </form>
 
           {/* Body Content */}

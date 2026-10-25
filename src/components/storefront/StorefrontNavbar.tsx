@@ -12,6 +12,7 @@ import type { Category, Product, StoreSettings } from '../../types/ecommerce';
 import { cn } from '@/lib/utils';
 import { MenuToggleIcon } from '@/components/ui/menu-toggle-icon';
 import { useScroll } from '@/components/ui/use-scroll';
+import { Input } from '../ui/input';
 
 interface StorefrontNavbarProps {
   settings: StoreSettings;
@@ -181,25 +182,17 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
           <div className="space-y-4">
             {/* Search Input for Mobile */}
             <form onSubmit={handleSearchSubmit} className="relative">
-              <div className="relative flex items-center h-11 rounded-full bg-white/10 border border-white/20 focus-within:bg-[#FCFAF7] focus-within:border-white transition-all shadow-inner shadow-black/10">
-                <Search className="w-4 h-4 ml-3.5 text-[#EAD9CF] pointer-events-none shrink-0" />
-                <input
-                  type="text"
-                  value={localQuery}
-                  onChange={(e) => setLocalQuery(e.target.value)}
-                  placeholder="Search baking supplies..."
-                  className="w-full h-full bg-transparent pl-2.5 pr-8 text-sm text-[#F9F4EE] placeholder:text-[#EAD9CF]/70 focus:text-[#361B0E] focus:placeholder:text-[#8C7162] outline-none"
-                />
-                {localQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setLocalQuery('')}
-                    className="mr-3 p-1 rounded-full text-[#EAD9CF] hover:text-white"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
+              <Input
+                type="text"
+                value={localQuery}
+                onChange={(e) => setLocalQuery(e.target.value)}
+                placeholder="Search baking supplies..."
+                leftIcon={<Search className="text-[#EAD9CF]" />}
+                clearable
+                onClear={() => setLocalQuery('')}
+                size="lg"
+                className="bg-white/10 border-white/20 text-[#F9F4EE] placeholder:text-[#EAD9CF]/70 focus-visible:bg-[#FCFAF7] focus-visible:text-[#361B0E] focus-visible:border-white rounded-full"
+              />
             </form>
 
             <div className="grid gap-y-1">
