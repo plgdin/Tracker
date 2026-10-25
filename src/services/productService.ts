@@ -1,10 +1,13 @@
 import type { Product } from '../types/ecommerce';
 import { INITIAL_PRODUCTS } from './mockData';
 
-const STORAGE_KEY = 'bnj_products_v3';
+const STORAGE_KEY = 'nayakart_products_v5';
 
 const getStoredProducts = (): Product[] => {
   try {
+    localStorage.removeItem('bnj_products_v3');
+    localStorage.removeItem('bnj_products_v2');
+    localStorage.removeItem('bnj_products_v1');
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_PRODUCTS));

@@ -1,10 +1,13 @@
 import type { Category } from '../types/ecommerce';
 import { INITIAL_CATEGORIES } from './mockData';
 
-const STORAGE_KEY = 'bnj_categories_v3';
+const STORAGE_KEY = 'nayakart_categories_v5';
 
 const getStoredCategories = (): Category[] => {
   try {
+    localStorage.removeItem('bnj_categories_v3');
+    localStorage.removeItem('bnj_categories_v2');
+    localStorage.removeItem('bnj_categories_v1');
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_CATEGORIES));

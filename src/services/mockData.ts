@@ -2,6 +2,17 @@ import type { Product, Category, Order, StoreSettings } from '../types/ecommerce
 
 export const INITIAL_CATEGORIES: Category[] = [
   {
+    id: 'cat-dry-fruits',
+    name: 'Dry Fruits, Nuts & Seeds',
+    slug: 'dry-fruits-nuts-seeds',
+    description: 'Premium international Queen Kalmi dates, Medjoul dates, Mamra almonds, cashews, pistachios, figs, and superseeds.',
+    imageUrl: 'https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-ahhl2flolc.jpg',
+    color: '#EAF05C',
+    iconName: 'Cookie',
+    displayOrder: 1,
+  },
+
+  {
     id: 'cat-tools-equipment',
     name: 'Baking Tools & Equipment',
     slug: 'tools-equipment',
@@ -104,587 +115,1540 @@ export const INITIAL_CATEGORIES: Category[] = [
 ];
 
 export const INITIAL_PRODUCTS: Product[] = [
-  // 1. Cake Decoration
   {
-    id: 'prod-01',
-    name: 'Russian Piping Tips Set (12-Piece)',
-    slug: 'russian-piping-tips-set',
-    description: 'Food-grade 304 stainless steel nozzles to pipe entire buttercream tulips, roses, and daisies in a single squeeze. Includes tri-color coupler.',
-    price: 499,
-    discountPrice: 389,
-    categoryId: 'cat-cake-decoration',
-    categoryName: 'Cake Decoration & Nozzles',
-    images: [
-      'https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-xvwotvyf9p.jpg',
-      'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=800&q=80',
+    "id": "jd-prod-01",
+    "name": "Happilo Premium International Queen Kalmi Dates",
+    "slug": "happilo-premium-international-queen-kalmi-dates",
+    "description": "Authentic Happilo Premium International Queen Kalmi Dates sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 340,
+    "discountPrice": 299,
+    "categoryId": "cat-dry-fruits",
+    "categoryName": "Dry Fruits, Nuts & Seeds",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-xvwotvyf9p.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/happilo-queen-kalmi-dates-r1t2z3.jpg"
     ],
-    stock: 24,
-    rating: 4.9,
-    reviewsCount: 38,
-    isFeatured: true,
-    isActive: true,
-    brand: 'MasterBake',
-    unit: 'Set of 12',
-    variants: [
-      { id: 'v-12pc', name: '12 Tips + Coupler', price: 389, stock: 18 },
-      { id: 'v-24pc', name: '24 Tips + Coupler + 10 Bags', price: 649, discountPrice: 599, stock: 6 },
+    "stock": 21,
+    "rating": 4.7,
+    "reviewsCount": 15,
+    "isFeatured": true,
+    "isActive": true,
+    "brand": "Happilo",
+    "unit": "500g Pack",
+    "tags": [
+      "Dates",
+      "Kazhakuttam In Stock"
     ],
-    tags: ['Best Seller', 'Bestseller'],
-    createdAt: '2026-03-01T10:00:00Z',
+    "createdAt": "2026-10-25T18:23:46.984Z"
   },
   {
-    id: 'prod-02',
-    name: 'Pure Gold Edible Luster Dust (10g)',
-    slug: 'pure-gold-edible-luster-dust',
-    description: 'Ultra-fine edible metallic dust for dry brushing or mixing with lemon extract/rejuvenator spirit for painting cakes and chocolates.',
-    price: 320,
-    discountPrice: 280,
-    categoryId: 'cat-cake-decoration',
-    categoryName: 'Cake Decoration & Nozzles',
-    images: [
-      'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?auto=format&fit=crop&w=800&q=80',
+    "id": "jd-prod-02",
+    "name": "Happilo Premium International King Medjoul Dates",
+    "slug": "happilo-premium-international-king-medjoul-dates",
+    "description": "Authentic Happilo Premium International King Medjoul Dates sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 340,
+    "discountPrice": 299,
+    "categoryId": "cat-dry-fruits",
+    "categoryName": "Dry Fruits, Nuts & Seeds",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-85hi5gmdrc.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/happilo-king-medjoul-dates-r1t2z4.jpg"
     ],
-    stock: 45,
-    rating: 4.8,
-    reviewsCount: 64,
-    isFeatured: false,
-    isActive: true,
-    brand: 'ShimmerArt',
-    unit: 'Jar',
-    variants: [
-      { id: 'v-gold', name: 'Imperial Gold (10g)', price: 280, stock: 25 },
-      { id: 'v-rosegold', name: 'Rose Gold (10g)', price: 280, stock: 12 },
-      { id: 'v-silver', name: 'Sterling Silver (10g)', price: 260, stock: 8 },
+    "stock": 25,
+    "rating": 4.8,
+    "reviewsCount": 16,
+    "isFeatured": true,
+    "isActive": true,
+    "brand": "Happilo",
+    "unit": "500g Pack",
+    "tags": [
+      "Dates",
+      "Kazhakuttam In Stock"
     ],
-    tags: ['Metallic', 'Edible'],
-    createdAt: '2026-03-02T10:00:00Z',
+    "createdAt": "2026-10-24T18:23:46.987Z"
   },
   {
-    id: 'prod-03',
-    name: 'Silicone Fondant Ribbon & Border Mould',
-    slug: 'silicone-fondant-ribbon-border-mould',
-    description: 'Heat-resistant, flexible silicone mould designed to form immaculate pearl borders, rope twists, and lace trims around wedding and birthday tiers.',
-    price: 280,
-    discountPrice: 220,
-    categoryId: 'cat-moulds-cutters',
-    categoryName: 'Cake Moulds & Bakeware',
-    images: [
-      'https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-gfxnhuf12m.jpg',
+    "id": "jd-prod-03",
+    "name": "Happilo Premium Afghani Seedless Black Raisins",
+    "slug": "happilo-premium-afghani-seedless-black-raisins",
+    "description": "Authentic Happilo Premium Afghani Seedless Black Raisins sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 220,
+    "discountPrice": 194,
+    "categoryId": "cat-dry-fruits",
+    "categoryName": "Dry Fruits, Nuts & Seeds",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-ahhl2flolc.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/happilo-black-raisins-r1t2z5.jpg"
     ],
-    stock: 15,
-    rating: 4.7,
-    reviewsCount: 19,
-    isFeatured: false,
-    isActive: true,
-    brand: 'Kanchan Udyog',
-    unit: 'Piece',
-    createdAt: '2026-03-03T10:00:00Z',
-  },
-
-  // 2. Baking Ingredients
-  {
-    id: 'prod-04',
-    name: 'Belgian Dark Couverture & Compound Chocolate Slabs',
-    slug: 'belgian-dark-couverture-buttons',
-    description: 'Authentic imported dark couverture chocolate callets & professional compound slabs with intense cocoa flavour and balanced sweetness. Melts smoothly with optimal fluidity for tempering.',
-    price: 650,
-    discountPrice: 590,
-    categoryId: 'cat-baking-ingredients',
-    categoryName: 'Baking Raw Materials & Ingredients',
-    images: [
-      'https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-ahhl2flolc.jpg',
-      'https://images.unsplash.com/photo-1587248720327-8eb72564be1e?auto=format&fit=crop&w=800&q=80',
+    "stock": 30,
+    "rating": 4.9,
+    "reviewsCount": 17,
+    "isFeatured": true,
+    "isActive": true,
+    "brand": "Happilo",
+    "unit": "250g Pack",
+    "tags": [
+      "Raisins",
+      "Kazhakuttam In Stock"
     ],
-    stock: 35,
-    rating: 5.0,
-    reviewsCount: 82,
-    isFeatured: true,
-    isActive: true,
-    brand: 'Callebaut / Belcolade',
-    unit: 'Pack',
-    variants: [
-      { id: 'v-500g', name: '500g Pouch', price: 590, stock: 20 },
-      { id: 'v-1kg', name: '1kg Pouch', price: 1120, discountPrice: 1050, stock: 15 },
-    ],
-    tags: ['Couverture', 'Artisan Choice'],
-    createdAt: '2026-03-04T10:00:00Z',
+    "createdAt": "2026-10-23T18:23:46.987Z"
   },
   {
-    id: 'prod-05',
-    name: 'Superfine California Blanched Almond Flour',
-    slug: 'superfine-blanched-almond-flour',
-    description: '100% pure skinless blanched almonds ground into an ultra-fine grain. The gold standard for glossy French macarons, keto sponges, and financiers.',
-    price: 520,
-    discountPrice: 460,
-    categoryId: 'cat-baking-ingredients',
-    categoryName: 'Baking Ingredients',
-    images: [
-      'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80',
+    "id": "jd-prod-04",
+    "name": "Urban Platter Mamra Almonds",
+    "slug": "urban-platter-mamra-almonds",
+    "description": "Authentic Urban Platter Mamra Almonds sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 480,
+    "discountPrice": 422,
+    "categoryId": "cat-dry-fruits",
+    "categoryName": "Dry Fruits, Nuts & Seeds",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-96i8b18arz.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/urban-platter-mamra-almonds-r1t2z6.jpg"
     ],
-    stock: 22,
-    rating: 4.9,
-    reviewsCount: 41,
-    isFeatured: true,
-    isActive: true,
-    brand: 'NutriBake',
-    unit: '500g Pack',
-    variants: [
-      { id: 'v-af-500g', name: '500g', price: 460, stock: 14 },
-      { id: 'v-af-1kg', name: '1kg', price: 880, stock: 8 },
+    "stock": 20,
+    "rating": 5,
+    "reviewsCount": 18,
+    "isFeatured": true,
+    "isActive": true,
+    "brand": "Urban Platter",
+    "unit": "500g Pack",
+    "tags": [
+      "Almonds",
+      "Kazhakuttam In Stock"
     ],
-    tags: ['Macaron Grade', 'Gluten Free'],
-    createdAt: '2026-03-05T10:00:00Z',
+    "createdAt": "2026-10-22T18:23:46.987Z"
   },
   {
-    id: 'prod-06',
-    name: 'Madagascar Bourbon Vanilla Bean Paste with Seeds (100g)',
-    slug: 'madagascar-bourbon-vanilla-bean-paste',
-    description: 'Rich, thick aromatic paste made from authentic Madagascar Bourbon vanilla beans packed with signature gourmet black vanilla caviar seeds.',
-    price: 799,
-    discountPrice: 720,
-    categoryId: 'cat-baking-ingredients',
-    categoryName: 'Baking Ingredients',
-    images: [
-      'https://images.unsplash.com/photo-1587248720327-8eb72564be1e?auto=format&fit=crop&w=800&q=80',
+    "id": "jd-prod-05",
+    "name": "Dried Jumbo Afghan Figs",
+    "slug": "dried-jumbo-afghan-figs",
+    "description": "Authentic Dried Jumbo Afghan Figs sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 450,
+    "discountPrice": 396,
+    "categoryId": "cat-dry-fruits",
+    "categoryName": "Dry Fruits, Nuts & Seeds",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-gfxnhuf12m.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/jumbo-afghan-figs-r1t2z7.jpg"
     ],
-    stock: 18,
-    rating: 5.0,
-    reviewsCount: 52,
-    isFeatured: false,
-    isActive: true,
-    brand: 'Nielsen-Massey Grade',
-    unit: '100g Jar',
-    createdAt: '2026-03-06T10:00:00Z',
-  },
-
-  // 3. Creams and Frosting
-  {
-    id: 'prod-07',
-    name: 'Rich Tropelite Non-Dairy Whipping Cream (1kg)',
-    slug: 'rich-tropelite-whipping-cream',
-    description: 'Professional non-dairy topping cream formulated to withstand warm Indian climates without collapsing or weeping. Delivers sharp rosettes and silky sheen.',
-    price: 240,
-    discountPrice: 215,
-    categoryId: 'cat-creams-frosting',
-    categoryName: 'Creams and Frosting',
-    images: [
-      'https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=800&q=80',
+    "stock": 21,
+    "rating": 4.7,
+    "reviewsCount": 19,
+    "isFeatured": true,
+    "isActive": true,
+    "brand": "NayaKart Select",
+    "unit": "250g Pack",
+    "tags": [
+      "Figs",
+      "Kazhakuttam In Stock"
     ],
-    stock: 50,
-    rating: 4.8,
-    reviewsCount: 97,
-    isFeatured: true,
-    isActive: true,
-    brand: 'Tropelite',
-    unit: '1kg Tetra Pack',
-    tags: ['High Yield', 'Counter Pick-up Only'],
-    createdAt: '2026-03-07T10:00:00Z',
+    "createdAt": "2026-10-21T18:23:46.987Z"
   },
   {
-    id: 'prod-08',
-    name: 'Ready-to-Use Silky Vanilla Buttercream Tub (850g)',
-    slug: 'ready-to-use-silky-vanilla-buttercream',
-    description: 'Fluffy, spreadable American style buttercream frosting. Pure white base ready to tint with gel colours or pipe directly on cupcakes.',
-    price: 420,
-    discountPrice: 380,
-    categoryId: 'cat-creams-frosting',
-    categoryName: 'Creams and Frosting',
-    images: [
-      'https://images.unsplash.com/photo-1535141192574-5d4897c13136?auto=format&fit=crop&w=800&q=80',
+    "id": "jd-prod-06",
+    "name": "California Gold Almonds",
+    "slug": "california-gold-almonds",
+    "description": "Authentic California Gold Almonds sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 480,
+    "discountPrice": 422,
+    "categoryId": "cat-dry-fruits",
+    "categoryName": "Dry Fruits, Nuts & Seeds",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-s550i6yh1y.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/california-gold-almonds-r1t2z8.jpg"
     ],
-    stock: 16,
-    rating: 4.6,
-    reviewsCount: 23,
-    isFeatured: false,
-    isActive: true,
-    brand: 'SweetFrost',
-    unit: '850g Tub',
-    variants: [
-      { id: 'v-van', name: 'Swiss Vanilla', price: 380, stock: 10 },
-      { id: 'v-choc', name: 'Fudge Chocolate', price: 410, stock: 6 },
+    "stock": 18,
+    "rating": 4.8,
+    "reviewsCount": 20,
+    "isFeatured": true,
+    "isActive": true,
+    "brand": "NayaKart Select",
+    "unit": "500g Pack",
+    "tags": [
+      "Almonds",
+      "Kazhakuttam In Stock"
     ],
-    createdAt: '2026-03-08T10:00:00Z',
-  },
-
-  // 4. Colours and Flavours
-  {
-    id: 'prod-09',
-    name: 'Chefmaster Liqua-Gel & Magic Colours Food Colour Set',
-    slug: 'chefmaster-liqua-gel-color-set',
-    description: 'Highly concentrated gel formula that disperses immediately without altering hydration or consistency. Safe for icing, fondant, macarons and chocolate work.',
-    price: 850,
-    discountPrice: 749,
-    categoryId: 'cat-colours-flavours',
-    categoryName: 'Colours, Essences & Flavours',
-    images: [
-      'https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-s550i6yh1y.jpg',
-      'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80',
-    ],
-    stock: 28,
-    rating: 4.9,
-    reviewsCount: 76,
-    isFeatured: true,
-    isActive: true,
-    brand: 'Chefmaster',
-    unit: 'Set of 8 x 20ml',
-    tags: ['Vibrant', 'Professional'],
-    createdAt: '2026-03-09T10:00:00Z',
+    "createdAt": "2026-10-20T18:23:46.987Z"
   },
   {
-    id: 'prod-10',
-    name: 'Oil-Based Chocolate & Candy Colour - Royal Red',
-    slug: 'oil-based-chocolate-colour-royal-red',
-    description: 'Specialised oil-dispersible pigment engineered specifically for white chocolate and ganache. Will never seize or harden chocolate.',
-    price: 210,
-    discountPrice: 185,
-    categoryId: 'cat-colours-flavours',
-    categoryName: 'Colours, Essences & Flavours',
-    images: [
-      'https://images.unsplash.com/photo-1511381939415-e44015466834?auto=format&fit=crop&w=800&q=80',
+    "id": "jd-prod-07",
+    "name": "Borges California Pistachios Roasted & Salted",
+    "slug": "borges-california-pistachios-roasted-salted",
+    "description": "Authentic Borges California Pistachios Roasted & Salted sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 490,
+    "discountPrice": 431,
+    "categoryId": "cat-dry-fruits",
+    "categoryName": "Dry Fruits, Nuts & Seeds",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-xvwotvyf9p.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/borges-pistachios-r1t2z9.jpg"
     ],
-    stock: 40,
-    rating: 4.8,
-    reviewsCount: 33,
-    isFeatured: false,
-    isActive: true,
-    brand: 'ColourMist',
-    unit: '30ml Dropper',
-    variants: [
-      { id: 'v-red', name: 'Royal Red', price: 185, stock: 15 },
-      { id: 'v-blue', name: 'Ocean Blue', price: 185, stock: 12 },
-      { id: 'v-black', name: 'Jet Black', price: 195, stock: 13 },
+    "stock": 32,
+    "rating": 4.9,
+    "reviewsCount": 21,
+    "isFeatured": true,
+    "isActive": true,
+    "brand": "Borges",
+    "unit": "250g Pack",
+    "tags": [
+      "Pistachios",
+      "Kazhakuttam In Stock"
     ],
-    createdAt: '2026-03-10T10:00:00Z',
-  },
-
-  // 5. Cake Toppers
-  {
-    id: 'prod-11',
-    name: 'Mirror Acrylic "Happy Birthday" Geometric Topper',
-    slug: 'mirror-acrylic-happy-birthday-topper',
-    description: 'High gloss double-sided laser-cut mirror acrylic topper. Adds an instant modern luxury aesthetic to celebration cakes.',
-    price: 180,
-    discountPrice: 140,
-    categoryId: 'cat-cake-toppers',
-    categoryName: 'Cake Toppers & Accents',
-    images: [
-      'https://images.unsplash.com/photo-1535141192574-5d4897c13136?auto=format&fit=crop&w=800&q=80',
-    ],
-    stock: 65,
-    rating: 4.7,
-    reviewsCount: 54,
-    isFeatured: true,
-    isActive: true,
-    brand: 'CelebrationCraft',
-    unit: 'Piece',
-    variants: [
-      { id: 'v-gold-hb', name: 'Mirror Gold', price: 140, stock: 35 },
-      { id: 'v-rosegold-hb', name: 'Mirror Rose Gold', price: 140, stock: 20 },
-      { id: 'v-silver-hb', name: 'Mirror Silver', price: 130, stock: 10 },
-    ],
-    createdAt: '2026-03-11T10:00:00Z',
+    "createdAt": "2026-10-19T18:23:46.987Z"
   },
   {
-    id: 'prod-12',
-    name: 'Boho Dried Palm Spears & Floral Cake Crown Set',
-    slug: 'boho-dried-palm-spears-floral-set',
-    description: 'Natural dried sun palm fans paired with bleached ruscus, bunny tails, and baby breath florals. Safe food-grade stems ready to insert.',
-    price: 360,
-    discountPrice: 299,
-    categoryId: 'cat-cake-toppers',
-    categoryName: 'Cake Toppers & Accents',
-    images: [
-      'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=800&q=80',
+    "id": "jd-prod-08",
+    "name": "Tulsi California Walnuts Premium",
+    "slug": "tulsi-california-walnuts-premium",
+    "description": "Authentic Tulsi California Walnuts Premium sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 580,
+    "discountPrice": 510,
+    "categoryId": "cat-dry-fruits",
+    "categoryName": "Dry Fruits, Nuts & Seeds",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-85hi5gmdrc.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/tulsi-california-walnuts-r1t2z10.jpg"
     ],
-    stock: 14,
-    rating: 4.9,
-    reviewsCount: 18,
-    isFeatured: false,
-    isActive: true,
-    brand: 'FloralArt',
-    unit: 'Bundle of 6',
-    createdAt: '2026-03-12T10:00:00Z',
-  },
-
-  // 6. Baking Tools and Equipment
-  {
-    id: 'prod-13',
-    name: 'Heavy Duty Aluminium Revolving Cake Turntable (12")',
-    slug: 'heavy-duty-revolving-cake-turntable',
-    description: 'Ultra-smooth stainless ball bearings allow whisper-quiet 360 rotation with silicone non-slip base for precision crumb coating and sharp edging.',
-    price: 1850,
-    discountPrice: 1599,
-    categoryId: 'cat-tools-equipment',
-    categoryName: 'Baking Tools & Equipment',
-    images: [
-      'https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-85hi5gmdrc.jpg',
-      'https://images.unsplash.com/photo-1590794056226-79ef3a8147e1?auto=format&fit=crop&w=800&q=80',
+    "stock": 15,
+    "rating": 5,
+    "reviewsCount": 22,
+    "isFeatured": true,
+    "isActive": true,
+    "brand": "Tulsi",
+    "unit": "500g Pack",
+    "tags": [
+      "Walnuts",
+      "Kazhakuttam In Stock"
     ],
-    stock: 12,
-    rating: 5.0,
-    reviewsCount: 112,
-    isFeatured: true,
-    isActive: true,
-    brand: 'ProSpin Pro',
-    unit: '12-inch Unit',
-    tags: ['Baker Must-Have'],
-    createdAt: '2026-03-13T10:00:00Z',
+    "createdAt": "2026-10-18T18:23:46.987Z"
   },
   {
-    id: 'prod-14',
-    name: 'Angled Offset Palette Knife Set (3-Piece)',
-    slug: 'angled-offset-palette-knife-set',
-    description: 'Ergonomic wooden handle with flexible tempered stainless blades (6", 8", 10") keeping fingers elevated above wet frosting.',
-    price: 450,
-    discountPrice: 380,
-    categoryId: 'cat-tools-equipment',
-    categoryName: 'Baking Tools and Equipment',
-    images: [
-      'https://images.unsplash.com/photo-1590794056226-79ef3a8147e1?auto=format&fit=crop&w=800&q=80',
+    "id": "jd-prod-09",
+    "name": "Happilo Premium Salted Roasted Pistachios Snack Pack",
+    "slug": "happilo-premium-salted-roasted-pistachios-snack-pack",
+    "description": "Authentic Happilo Premium Salted Roasted Pistachios Snack Pack sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 490,
+    "discountPrice": 431,
+    "categoryId": "cat-dry-fruits",
+    "categoryName": "Dry Fruits, Nuts & Seeds",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-ahhl2flolc.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/happilo-salted-pistachios-r1t2z11.jpg"
     ],
-    stock: 30,
-    rating: 4.8,
-    reviewsCount: 47,
-    isFeatured: false,
-    isActive: true,
-    brand: 'ChefEdge',
-    unit: 'Set of 3',
-    createdAt: '2026-03-14T10:00:00Z',
+    "stock": 18,
+    "rating": 4.7,
+    "reviewsCount": 23,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "Happilo",
+    "unit": "250g Pack",
+    "tags": [
+      "Pistachios",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-10-17T18:23:46.987Z"
   },
   {
-    id: 'prod-15',
-    name: 'High-Precision Digital Kitchen Scale (0.1g - 3kg)',
-    slug: 'high-precision-digital-kitchen-scale',
-    description: 'Fast response sensor with blue backlit LCD, tare function, and dual grams/ounces modes. Crucial for yeast, salt, and macaron weighing.',
-    price: 680,
-    discountPrice: 549,
-    categoryId: 'cat-tools-equipment',
-    categoryName: 'Baking Tools and Equipment',
-    images: [
-      'https://images.unsplash.com/photo-1590794056226-79ef3a8147e1?auto=format&fit=crop&w=800&q=80',
+    "id": "jd-prod-10",
+    "name": "Happilo Premium Seedless Green Raisins",
+    "slug": "happilo-premium-seedless-green-raisins",
+    "description": "Authentic Happilo Premium Seedless Green Raisins sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 220,
+    "discountPrice": 194,
+    "categoryId": "cat-dry-fruits",
+    "categoryName": "Dry Fruits, Nuts & Seeds",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-96i8b18arz.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/happilo-green-raisins-r1t2z12.jpg"
     ],
-    stock: 25,
-    rating: 4.8,
-    reviewsCount: 68,
-    isFeatured: false,
-    isActive: true,
-    brand: 'AccuBake',
-    unit: 'Unit + Batteries',
-    createdAt: '2026-03-15T10:00:00Z',
-  },
-
-  // 7. Moulds and Cutters
-  {
-    id: 'prod-16',
-    name: 'Geometric 3D Diamond Heart Silicone Mould (Large)',
-    slug: 'geometric-diamond-heart-silicone-mould',
-    description: 'Food grade flexible silicone for smash pinata cakes, mousse domes, and brownie hearts. Temperature resistant from -40°C to 230°C.',
-    price: 380,
-    discountPrice: 299,
-    categoryId: 'cat-moulds-cutters',
-    categoryName: 'Cake Moulds & Bakeware',
-    images: [
-      'https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-gfxnhuf12m.jpg',
-      'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?auto=format&fit=crop&w=800&q=80',
+    "stock": 15,
+    "rating": 4.8,
+    "reviewsCount": 24,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "Happilo",
+    "unit": "250g Pack",
+    "tags": [
+      "Raisins",
+      "Kazhakuttam In Stock"
     ],
-    stock: 28,
-    rating: 4.9,
-    reviewsCount: 57,
-    isFeatured: true,
-    isActive: true,
-    brand: 'SilicoMagic',
-    unit: 'Mould + Mini Wooden Mallet',
-    createdAt: '2026-03-16T10:00:00Z',
+    "createdAt": "2026-10-16T18:23:46.987Z"
   },
   {
-    id: 'prod-17',
-    name: 'Alphabet & Number Plunger Fondant Cutters (64-Piece)',
-    slug: 'alphabet-number-plunger-cutters',
-    description: 'Easy spring-action plunger stamps for neat typography on cake boards, cookies, and cupcake toppers. Upper & lowercase included.',
-    price: 490,
-    discountPrice: 399,
-    categoryId: 'cat-moulds-cutters',
-    categoryName: 'Cake Moulds & Bakeware',
-    images: [
-      'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?auto=format&fit=crop&w=800&q=80',
+    "id": "jd-prod-11",
+    "name": "NayaKart Special Dry Fruit Assortment Gift Box",
+    "slug": "nayakart-special-dry-fruit-assortment-gift-box",
+    "description": "Authentic NayaKart Special Dry Fruit Assortment Gift Box sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 1250,
+    "discountPrice": 1100,
+    "categoryId": "cat-dry-fruits",
+    "categoryName": "Dry Fruits, Nuts & Seeds",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-gfxnhuf12m.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/dry-fruit-gift-box-1.jpg"
     ],
-    stock: 19,
-    rating: 4.6,
-    reviewsCount: 31,
-    isFeatured: false,
-    isActive: true,
-    brand: 'StampCraft',
-    unit: 'Full 64pc Box',
-    createdAt: '2026-03-17T10:00:00Z',
-  },
-
-  // 8. Sprinkles and Edible Decorations
-  {
-    id: 'prod-18',
-    name: 'Rose Gold & Champagne Edible Pearls Medley (150g)',
-    slug: 'rose-gold-champagne-sprinkles-medley',
-    description: 'Luxury blend of chocolate-filled crunchy crispy balls, sugar dragees, mini hearts, and shimmering rods. Non-crunchy tooth-friendly core.',
-    price: 340,
-    discountPrice: 285,
-    categoryId: 'cat-sprinkles-edible',
-    categoryName: 'Sprinkles & Edibles',
-    images: [
-      'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?auto=format&fit=crop&w=800&q=80',
+    "stock": 18,
+    "rating": 4.9,
+    "reviewsCount": 25,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "NayaKart Select",
+    "unit": "Gift Box (1kg)",
+    "tags": [
+      "Gift packs",
+      "Kazhakuttam In Stock"
     ],
-    stock: 40,
-    rating: 4.9,
-    reviewsCount: 62,
-    isFeatured: true,
-    isActive: true,
-    brand: 'SprinklePop Luxe',
-    unit: '150g Jar',
-    tags: ['Party Favorite'],
-    createdAt: '2026-03-18T10:00:00Z',
+    "createdAt": "2026-10-15T18:23:46.987Z"
   },
   {
-    id: 'prod-19',
-    name: '24K Gold Edible Flakes with Bamboo Tweezers',
-    slug: '24k-gold-edible-flakes-tweezers',
-    description: 'Genuine certified food-grade gold leaf flakes. Float on cocktails, chocolates, eclairs, or top wedding cake tiers for timeless splendour.',
-    price: 550,
-    discountPrice: 480,
-    categoryId: 'cat-sprinkles-edible',
-    categoryName: 'Sprinkles & Edibles',
-    images: [
-      'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?auto=format&fit=crop&w=800&q=80',
+    "id": "jd-prod-12",
+    "name": "Premium Cashew Nuts W320",
+    "slug": "premium-cashew-nuts-w320",
+    "description": "Authentic Premium Cashew Nuts W320 sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 520,
+    "discountPrice": 458,
+    "categoryId": "cat-dry-fruits",
+    "categoryName": "Dry Fruits, Nuts & Seeds",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-s550i6yh1y.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/cashew-nuts-w320-1.jpg"
     ],
-    stock: 20,
-    rating: 4.8,
-    reviewsCount: 29,
-    isFeatured: false,
-    isActive: true,
-    brand: 'LuxeGilding',
-    unit: 'Bottle + Tweezers',
-    createdAt: '2026-03-19T10:00:00Z',
-  },
-
-  // 9. Packaging Supplies
-  {
-    id: 'prod-20',
-    name: 'Tall Transparent Window Cake Box with Board (8x8x10")',
-    slug: 'tall-transparent-window-cake-box',
-    description: 'Crystal-clear PET transparent box with sturdy pastel base and pre-cut satin ribbon slot. Ideal for multi-tiered and topper-heavy designs.',
-    price: 240,
-    discountPrice: 195,
-    categoryId: 'cat-packaging-supplies',
-    categoryName: 'Boxes, Boards & Packaging',
-    images: [
-      'https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-96i8b18arz.jpg',
-      'https://images.unsplash.com/photo-1607344645866-009c320c5ab8?auto=format&fit=crop&w=800&q=80',
+    "stock": 15,
+    "rating": 5,
+    "reviewsCount": 26,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "NayaKart Select",
+    "unit": "500g Pack",
+    "tags": [
+      "Cashews",
+      "Kazhakuttam In Stock"
     ],
-    stock: 55,
-    rating: 4.8,
-    reviewsCount: 88,
-    isFeatured: true,
-    isActive: true,
-    brand: 'PackBoutique',
-    unit: 'Piece + Satin Ribbon',
-    variants: [
-      { id: 'v-8inch', name: '8" Box (Holds 1kg tall)', price: 195, stock: 30 },
-      { id: 'v-10inch', name: '10" Box (Holds 2kg tall)', price: 260, discountPrice: 240, stock: 25 },
-    ],
-    createdAt: '2026-03-20T10:00:00Z',
+    "createdAt": "2026-10-14T18:23:46.987Z"
   },
   {
-    id: 'prod-21',
-    name: 'Heavy Duty 1/2-Inch Silver Embossed Cake Drum (10")',
-    slug: 'heavy-duty-silver-embossed-cake-drum',
-    description: 'Rigid corrugated board core wrapped in greaseproof food-grade embossed silver foil. Guarantees zero bending under heavy wedding tiers.',
-    price: 110,
-    discountPrice: 90,
-    categoryId: 'cat-packaging-supplies',
-    categoryName: 'Packaging Supplies',
-    images: [
-      'https://images.unsplash.com/photo-1607344645866-009c320c5ab8?auto=format&fit=crop&w=800&q=80',
+    "id": "jd-prod-13",
+    "name": "Roasted & Salted Cashews",
+    "slug": "roasted-salted-cashews",
+    "description": "Authentic Roasted & Salted Cashews sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 520,
+    "discountPrice": 458,
+    "categoryId": "cat-dry-fruits",
+    "categoryName": "Dry Fruits, Nuts & Seeds",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-xvwotvyf9p.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/roasted-cashews-1.jpg"
     ],
-    stock: 80,
-    rating: 4.9,
-    reviewsCount: 92,
-    isFeatured: false,
-    isActive: true,
-    brand: 'PackBoutique',
-    unit: 'Pack of 3',
-    variants: [
-      { id: 'v-drum-8', name: '8 Inch (Pack of 3)', price: 80, stock: 40 },
-      { id: 'v-drum-10', name: '10 Inch (Pack of 3)', price: 90, stock: 40 },
+    "stock": 32,
+    "rating": 4.7,
+    "reviewsCount": 27,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "NayaKart Select",
+    "unit": "500g Pack",
+    "tags": [
+      "Cashews",
+      "Kazhakuttam In Stock"
     ],
-    createdAt: '2026-03-21T10:00:00Z',
-  },
-
-  // 10. Other Baking Essentials
-  {
-    id: 'prod-22',
-    name: 'Extra Strong Anti-Slip Disposable Piping Bags (100-Pack)',
-    slug: 'extra-strong-disposable-piping-bags',
-    description: 'Thickened textured LDPE pastry bags that never burst under dense choux paste or royal icing. Textured exterior provides superior non-slip grip.',
-    price: 390,
-    discountPrice: 320,
-    categoryId: 'cat-other-essentials',
-    categoryName: 'Other Baking Essentials',
-    images: [
-      'https://images.unsplash.com/photo-1517433670267-08bbd4be890f?auto=format&fit=crop&w=800&q=80',
-    ],
-    stock: 60,
-    rating: 5.0,
-    reviewsCount: 104,
-    isFeatured: true,
-    isActive: true,
-    brand: 'MasterPiping',
-    unit: 'Roll of 100',
-    variants: [
-      { id: 'v-12in', name: '12-inch (Medium)', price: 320, stock: 35 },
-      { id: 'v-16in', name: '16-inch (Large)', price: 420, discountPrice: 375, stock: 25 },
-    ],
-    tags: ['Daily Essential'],
-    createdAt: '2026-03-22T10:00:00Z',
+    "createdAt": "2026-10-13T18:23:46.987Z"
   },
   {
-    id: 'prod-23',
-    name: 'Silicone Fiberglass Baking Mat with Macro Circles (Half Sheet)',
-    slug: 'silicone-fiberglass-macaron-baking-mat',
-    description: 'Even heat distribution without burnt cookie bottoms. Features 30 pre-printed concentric macaron spacing guides. Completely replaces disposable paper.',
-    price: 450,
-    discountPrice: 380,
-    categoryId: 'cat-other-essentials',
-    categoryName: 'Other Baking Essentials',
-    images: [
-      'https://images.unsplash.com/photo-1517433670267-08bbd4be890f?auto=format&fit=crop&w=800&q=80',
+    "id": "jd-prod-14",
+    "name": "Premium Dried Cranberries",
+    "slug": "premium-dried-cranberries",
+    "description": "Authentic Premium Dried Cranberries sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 390,
+    "discountPrice": 343,
+    "categoryId": "cat-dry-fruits",
+    "categoryName": "Dry Fruits, Nuts & Seeds",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-85hi5gmdrc.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/dried-cranberries-1.jpg"
     ],
-    stock: 35,
-    rating: 4.9,
-    reviewsCount: 51,
-    isFeatured: false,
-    isActive: true,
-    brand: 'SilpatStyle',
-    unit: 'Piece (40x30cm)',
-    createdAt: '2026-03-23T10:00:00Z',
+    "stock": 31,
+    "rating": 4.8,
+    "reviewsCount": 28,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "NayaKart Select",
+    "unit": "200g Pack",
+    "tags": [
+      "Berries",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-10-12T18:23:46.987Z"
   },
   {
-    id: 'prod-24',
-    name: 'Instant Read Digital Probe Sugar & Chocolate Thermometer',
-    slug: 'instant-read-digital-probe-thermometer',
-    description: 'Accurate to ±0.5°C within 3 seconds. Indispensable for Italian meringue sugar syrups, caramelization points, and accurate chocolate tempering.',
-    price: 499,
-    discountPrice: 420,
-    categoryId: 'cat-other-essentials',
-    categoryName: 'Other Baking Essentials',
-    images: [
-      'https://images.unsplash.com/photo-1590794056226-79ef3a8147e1?auto=format&fit=crop&w=800&q=80',
+    "id": "jd-prod-15",
+    "name": "Dried Blueberries Imported",
+    "slug": "dried-blueberries-imported",
+    "description": "Authentic Dried Blueberries Imported sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 390,
+    "discountPrice": 343,
+    "categoryId": "cat-dry-fruits",
+    "categoryName": "Dry Fruits, Nuts & Seeds",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-ahhl2flolc.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/dried-blueberries-1.jpg"
     ],
-    stock: 22,
-    rating: 4.8,
-    reviewsCount: 39,
-    isFeatured: false,
-    isActive: true,
-    brand: 'ThermoPro Grade',
-    unit: 'Thermometer + Sheath',
-    createdAt: '2026-03-24T10:00:00Z',
+    "stock": 18,
+    "rating": 4.9,
+    "reviewsCount": 29,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "NayaKart Select",
+    "unit": "200g Pack",
+    "tags": [
+      "Berries",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-10-11T18:23:46.987Z"
   },
+  {
+    "id": "jd-prod-16",
+    "name": "Turkish Apricots Dried",
+    "slug": "turkish-apricots-dried",
+    "description": "Authentic Turkish Apricots Dried sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 360,
+    "discountPrice": 317,
+    "categoryId": "cat-dry-fruits",
+    "categoryName": "Dry Fruits, Nuts & Seeds",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-96i8b18arz.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/turkish-apricots-1.jpg"
+    ],
+    "stock": 22,
+    "rating": 5,
+    "reviewsCount": 30,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "NayaKart Select",
+    "unit": "250g Pack",
+    "tags": [
+      "Apricots",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-10-10T18:23:46.987Z"
+  },
+  {
+    "id": "jd-prod-17",
+    "name": "Pitted Prunes Imported",
+    "slug": "pitted-prunes-imported",
+    "description": "Authentic Pitted Prunes Imported sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 380,
+    "discountPrice": 334,
+    "categoryId": "cat-dry-fruits",
+    "categoryName": "Dry Fruits, Nuts & Seeds",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-gfxnhuf12m.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/pitted-prunes-1.jpg"
+    ],
+    "stock": 23,
+    "rating": 4.7,
+    "reviewsCount": 31,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "NayaKart Select",
+    "unit": "250g Pack",
+    "tags": [
+      "Prunes",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-10-09T18:23:46.987Z"
+  },
+  {
+    "id": "jd-prod-18",
+    "name": "Roasted Pecan Nuts",
+    "slug": "roasted-pecan-nuts",
+    "description": "Authentic Roasted Pecan Nuts sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 650,
+    "discountPrice": 572,
+    "categoryId": "cat-dry-fruits",
+    "categoryName": "Dry Fruits, Nuts & Seeds",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-s550i6yh1y.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/roasted-pecans-1.jpg"
+    ],
+    "stock": 15,
+    "rating": 4.8,
+    "reviewsCount": 32,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "NayaKart Select",
+    "unit": "250g Pack",
+    "tags": [
+      "Nuts",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-10-08T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-19",
+    "name": "Macadamia Nuts Roasted",
+    "slug": "macadamia-nuts-roasted",
+    "description": "Authentic Macadamia Nuts Roasted sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 650,
+    "discountPrice": 572,
+    "categoryId": "cat-dry-fruits",
+    "categoryName": "Dry Fruits, Nuts & Seeds",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-xvwotvyf9p.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/macadamia-nuts-1.jpg"
+    ],
+    "stock": 35,
+    "rating": 4.9,
+    "reviewsCount": 33,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "NayaKart Select",
+    "unit": "250g Pack",
+    "tags": [
+      "Nuts",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-10-07T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-20",
+    "name": "Brazilian Nuts Raw",
+    "slug": "brazilian-nuts-raw",
+    "description": "Authentic Brazilian Nuts Raw sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 650,
+    "discountPrice": 572,
+    "categoryId": "cat-dry-fruits",
+    "categoryName": "Dry Fruits, Nuts & Seeds",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-85hi5gmdrc.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/brazil-nuts-1.jpg"
+    ],
+    "stock": 16,
+    "rating": 5,
+    "reviewsCount": 34,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "NayaKart Select",
+    "unit": "250g Pack",
+    "tags": [
+      "Nuts",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-10-06T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-21",
+    "name": "Pine Nuts (Chilgoza)",
+    "slug": "pine-nuts-chilgoza",
+    "description": "Authentic Pine Nuts (Chilgoza) sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 650,
+    "discountPrice": 572,
+    "categoryId": "cat-dry-fruits",
+    "categoryName": "Dry Fruits, Nuts & Seeds",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-ahhl2flolc.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/pine-nuts-1.jpg"
+    ],
+    "stock": 16,
+    "rating": 4.7,
+    "reviewsCount": 35,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "NayaKart Select",
+    "unit": "250g Pack",
+    "tags": [
+      "Nuts",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-10-05T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-22",
+    "name": "Roasted Hazelnut Kernels",
+    "slug": "roasted-hazelnut-kernels",
+    "description": "Authentic Roasted Hazelnut Kernels sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 650,
+    "discountPrice": 572,
+    "categoryId": "cat-dry-fruits",
+    "categoryName": "Dry Fruits, Nuts & Seeds",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-96i8b18arz.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/hazelnuts-1.jpg"
+    ],
+    "stock": 29,
+    "rating": 4.8,
+    "reviewsCount": 36,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "NayaKart Select",
+    "unit": "250g Pack",
+    "tags": [
+      "Nuts",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-10-04T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-23",
+    "name": "Chia Seeds Organic",
+    "slug": "chia-seeds-organic",
+    "description": "Authentic Chia Seeds Organic sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 240,
+    "discountPrice": 211,
+    "categoryId": "cat-dry-fruits",
+    "categoryName": "Dry Fruits, Nuts & Seeds",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-gfxnhuf12m.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/chia-seeds-1.jpg"
+    ],
+    "stock": 14,
+    "rating": 4.9,
+    "reviewsCount": 37,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "NayaKart Select",
+    "unit": "200g Pack",
+    "tags": [
+      "Seeds",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-10-03T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-24",
+    "name": "Pumpkin Seeds Roasted",
+    "slug": "pumpkin-seeds-roasted",
+    "description": "Authentic Pumpkin Seeds Roasted sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 240,
+    "discountPrice": 211,
+    "categoryId": "cat-dry-fruits",
+    "categoryName": "Dry Fruits, Nuts & Seeds",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-s550i6yh1y.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/pumpkin-seeds-1.jpg"
+    ],
+    "stock": 37,
+    "rating": 5,
+    "reviewsCount": 38,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "NayaKart Select",
+    "unit": "200g Pack",
+    "tags": [
+      "Seeds",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-10-02T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-25",
+    "name": "Sunflower Seeds Roasted",
+    "slug": "sunflower-seeds-roasted",
+    "description": "Authentic Sunflower Seeds Roasted sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 240,
+    "discountPrice": 211,
+    "categoryId": "cat-dry-fruits",
+    "categoryName": "Dry Fruits, Nuts & Seeds",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-xvwotvyf9p.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/sunflower-seeds-1.jpg"
+    ],
+    "stock": 31,
+    "rating": 4.7,
+    "reviewsCount": 39,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "NayaKart Select",
+    "unit": "200g Pack",
+    "tags": [
+      "Seeds",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-10-01T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-26",
+    "name": "Flax Seeds Roasted",
+    "slug": "flax-seeds-roasted",
+    "description": "Authentic Flax Seeds Roasted sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 240,
+    "discountPrice": 211,
+    "categoryId": "cat-dry-fruits",
+    "categoryName": "Dry Fruits, Nuts & Seeds",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-85hi5gmdrc.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/flax-seeds-1.jpg"
+    ],
+    "stock": 16,
+    "rating": 4.8,
+    "reviewsCount": 15,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "NayaKart Select",
+    "unit": "200g Pack",
+    "tags": [
+      "Seeds",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-30T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-27",
+    "name": "Mixed Seeds Superblend",
+    "slug": "mixed-seeds-superblend",
+    "description": "Authentic Mixed Seeds Superblend sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 240,
+    "discountPrice": 211,
+    "categoryId": "cat-dry-fruits",
+    "categoryName": "Dry Fruits, Nuts & Seeds",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-ahhl2flolc.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/mixed-seeds-1.jpg"
+    ],
+    "stock": 33,
+    "rating": 4.9,
+    "reviewsCount": 16,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "NayaKart Select",
+    "unit": "200g Pack",
+    "tags": [
+      "Seeds",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-29T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-28",
+    "name": "Bakery Chocolate Chips Dark",
+    "slug": "bakery-chocolate-chips-dark",
+    "description": "Authentic Bakery Chocolate Chips Dark sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 240,
+    "discountPrice": 211,
+    "categoryId": "cat-baking-ingredients",
+    "categoryName": "Baking Raw Materials & Ingredients",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-96i8b18arz.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/choco-chips-1.jpg"
+    ],
+    "stock": 37,
+    "rating": 5,
+    "reviewsCount": 17,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "Morde",
+    "unit": "400g Slab",
+    "tags": [
+      "Baking",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-28T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-29",
+    "name": "Baking Cocoa Powder Dutch Processed",
+    "slug": "baking-cocoa-powder-dutch-processed",
+    "description": "Authentic Baking Cocoa Powder Dutch Processed sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 280,
+    "discountPrice": 246,
+    "categoryId": "cat-baking-ingredients",
+    "categoryName": "Baking Raw Materials & Ingredients",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-gfxnhuf12m.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/cocoa-powder-1.jpg"
+    ],
+    "stock": 16,
+    "rating": 4.7,
+    "reviewsCount": 18,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "Cadbury Professional",
+    "unit": "250g Jar",
+    "tags": [
+      "Baking",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-27T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-30",
+    "name": "Vanilla Essence Premium",
+    "slug": "vanilla-essence-premium",
+    "description": "Authentic Vanilla Essence Premium sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 140,
+    "discountPrice": 123,
+    "categoryId": "cat-baking-ingredients",
+    "categoryName": "Baking Raw Materials & Ingredients",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-s550i6yh1y.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/vanilla-essence-1.jpg"
+    ],
+    "stock": 30,
+    "rating": 4.8,
+    "reviewsCount": 19,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "Bush",
+    "unit": "100ml Bottle",
+    "tags": [
+      "Baking",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-26T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-31",
+    "name": "Baking Powder Double Acting",
+    "slug": "baking-powder-double-acting",
+    "description": "Authentic Baking Powder Double Acting sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 85,
+    "discountPrice": 75,
+    "categoryId": "cat-baking-ingredients",
+    "categoryName": "Baking Raw Materials & Ingredients",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-xvwotvyf9p.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/baking-powder-1.jpg"
+    ],
+    "stock": 17,
+    "rating": 4.9,
+    "reviewsCount": 20,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "Weikfield",
+    "unit": "100g Box",
+    "tags": [
+      "Baking",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-25T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-32",
+    "name": "Baking Soda Sodium Bicarbonate",
+    "slug": "baking-soda-sodium-bicarbonate",
+    "description": "Authentic Baking Soda Sodium Bicarbonate sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 85,
+    "discountPrice": 75,
+    "categoryId": "cat-baking-ingredients",
+    "categoryName": "Baking Raw Materials & Ingredients",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-85hi5gmdrc.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/baking-soda-1.jpg"
+    ],
+    "stock": 16,
+    "rating": 5,
+    "reviewsCount": 21,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "Weikfield",
+    "unit": "100g Box",
+    "tags": [
+      "Baking",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-24T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-33",
+    "name": "Tutti Frutti Colored Candied Papaya",
+    "slug": "tutti-frutti-colored-candied-papaya",
+    "description": "Authentic Tutti Frutti Colored Candied Papaya sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 160,
+    "discountPrice": 141,
+    "categoryId": "cat-baking-ingredients",
+    "categoryName": "Baking Raw Materials & Ingredients",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-ahhl2flolc.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/tutti-frutti-1.jpg"
+    ],
+    "stock": 28,
+    "rating": 4.7,
+    "reviewsCount": 22,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "NayaKart Select",
+    "unit": "250g Pack",
+    "tags": [
+      "Baking",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-23T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-34",
+    "name": "Glazed Red Cherries",
+    "slug": "glazed-red-cherries",
+    "description": "Authentic Glazed Red Cherries sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 160,
+    "discountPrice": 141,
+    "categoryId": "cat-baking-ingredients",
+    "categoryName": "Baking Raw Materials & Ingredients",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-96i8b18arz.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/glazed-cherries-1.jpg"
+    ],
+    "stock": 21,
+    "rating": 4.8,
+    "reviewsCount": 23,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "NayaKart Select",
+    "unit": "250g Pack",
+    "tags": [
+      "Baking",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-22T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-35",
+    "name": "Cake Gel Emulsifier",
+    "slug": "cake-gel-emulsifier",
+    "description": "Authentic Cake Gel Emulsifier sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 320,
+    "discountPrice": 282,
+    "categoryId": "cat-baking-ingredients",
+    "categoryName": "Baking Raw Materials & Ingredients",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-gfxnhuf12m.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/cake-gel-1.jpg"
+    ],
+    "stock": 39,
+    "rating": 4.9,
+    "reviewsCount": 24,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "Confect",
+    "unit": "500g Tub",
+    "tags": [
+      "Baking",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-21T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-36",
+    "name": "Whipped Cream Powder",
+    "slug": "whipped-cream-powder",
+    "description": "Authentic Whipped Cream Powder sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 85,
+    "discountPrice": 75,
+    "categoryId": "cat-baking-ingredients",
+    "categoryName": "Baking Raw Materials & Ingredients",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-s550i6yh1y.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/whipped-cream-powder-1.jpg"
+    ],
+    "stock": 36,
+    "rating": 5,
+    "reviewsCount": 25,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "Weikfield",
+    "unit": "100g Box",
+    "tags": [
+      "Baking",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-20T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-37",
+    "name": "Fondant White Sugar Paste",
+    "slug": "fondant-white-sugar-paste",
+    "description": "Authentic Fondant White Sugar Paste sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 320,
+    "discountPrice": 282,
+    "categoryId": "cat-baking-ingredients",
+    "categoryName": "Baking Raw Materials & Ingredients",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-xvwotvyf9p.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/fondant-paste-1.jpg"
+    ],
+    "stock": 13,
+    "rating": 4.7,
+    "reviewsCount": 26,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "Confect",
+    "unit": "500g Tub",
+    "tags": [
+      "Baking",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-19T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-38",
+    "name": "Silicone Baking Mat",
+    "slug": "silicone-baking-mat",
+    "description": "Authentic Silicone Baking Mat sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 320,
+    "discountPrice": 282,
+    "categoryId": "cat-tools-equipment",
+    "categoryName": "Baking Tools & Equipment",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-85hi5gmdrc.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/silicone-mat-1.jpg"
+    ],
+    "stock": 14,
+    "rating": 4.8,
+    "reviewsCount": 27,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "MasterBake",
+    "unit": "Piece",
+    "tags": [
+      "Tools",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-18T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-39",
+    "name": "Disposable Piping Bags 100pcs",
+    "slug": "disposable-piping-bags-100pcs",
+    "description": "Authentic Disposable Piping Bags 100pcs sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 290,
+    "discountPrice": 255,
+    "categoryId": "cat-tools-equipment",
+    "categoryName": "Baking Tools & Equipment",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-ahhl2flolc.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/piping-bags-1.jpg"
+    ],
+    "stock": 17,
+    "rating": 4.9,
+    "reviewsCount": 28,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "MasterBake",
+    "unit": "Pack of 100",
+    "tags": [
+      "Tools",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-17T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-40",
+    "name": "Stainless Steel Nozzles Set",
+    "slug": "stainless-steel-nozzles-set",
+    "description": "Authentic Stainless Steel Nozzles Set sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 450,
+    "discountPrice": 396,
+    "categoryId": "cat-tools-equipment",
+    "categoryName": "Baking Tools & Equipment",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-96i8b18arz.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/nozzles-set-1.jpg"
+    ],
+    "stock": 12,
+    "rating": 5,
+    "reviewsCount": 29,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "MasterBake",
+    "unit": "Set of 12",
+    "tags": [
+      "Tools",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-16T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-41",
+    "name": "Cake Turntable Rotating Stand",
+    "slug": "cake-turntable-rotating-stand",
+    "description": "Authentic Cake Turntable Rotating Stand sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 650,
+    "discountPrice": 572,
+    "categoryId": "cat-tools-equipment",
+    "categoryName": "Baking Tools & Equipment",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-gfxnhuf12m.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/turntable-1.jpg"
+    ],
+    "stock": 40,
+    "rating": 4.7,
+    "reviewsCount": 30,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "MasterBake",
+    "unit": "Piece",
+    "tags": [
+      "Tools",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-15T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-42",
+    "name": "Palette Knife Offset Spatula",
+    "slug": "palette-knife-offset-spatula",
+    "description": "Authentic Palette Knife Offset Spatula sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 220,
+    "discountPrice": 194,
+    "categoryId": "cat-tools-equipment",
+    "categoryName": "Baking Tools & Equipment",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-s550i6yh1y.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/palette-knife-1.jpg"
+    ],
+    "stock": 12,
+    "rating": 4.8,
+    "reviewsCount": 31,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "MasterBake",
+    "unit": "Piece",
+    "tags": [
+      "Tools",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-14T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-43",
+    "name": "Digital Kitchen Weighing Scale",
+    "slug": "digital-kitchen-weighing-scale",
+    "description": "Authentic Digital Kitchen Weighing Scale sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 550,
+    "discountPrice": 484,
+    "categoryId": "cat-tools-equipment",
+    "categoryName": "Baking Tools & Equipment",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-xvwotvyf9p.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/kitchen-scale-1.jpg"
+    ],
+    "stock": 37,
+    "rating": 4.9,
+    "reviewsCount": 32,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "MasterBake",
+    "unit": "Piece",
+    "tags": [
+      "Tools",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-13T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-44",
+    "name": "Aluminum Cake Tin Round 8 inch",
+    "slug": "aluminum-cake-tin-round-8-inch",
+    "description": "Authentic Aluminum Cake Tin Round 8 inch sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 380,
+    "discountPrice": 334,
+    "categoryId": "cat-moulds-cutters",
+    "categoryName": "Cake Moulds & Bakeware",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-85hi5gmdrc.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/cake-tin-8-1.jpg"
+    ],
+    "stock": 35,
+    "rating": 5,
+    "reviewsCount": 33,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "Kanchan Udyog",
+    "unit": "Piece",
+    "tags": [
+      "Bakeware",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-12T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-45",
+    "name": "Springform Cake Pan Non-Stick",
+    "slug": "springform-cake-pan-non-stick",
+    "description": "Authentic Springform Cake Pan Non-Stick sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 380,
+    "discountPrice": 334,
+    "categoryId": "cat-moulds-cutters",
+    "categoryName": "Cake Moulds & Bakeware",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-ahhl2flolc.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/springform-pan-1.jpg"
+    ],
+    "stock": 35,
+    "rating": 4.7,
+    "reviewsCount": 34,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "Kanchan Udyog",
+    "unit": "Piece",
+    "tags": [
+      "Bakeware",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-11T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-46",
+    "name": "Loaf Bread Tin Non-Stick",
+    "slug": "loaf-bread-tin-non-stick",
+    "description": "Authentic Loaf Bread Tin Non-Stick sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 380,
+    "discountPrice": 334,
+    "categoryId": "cat-moulds-cutters",
+    "categoryName": "Cake Moulds & Bakeware",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-96i8b18arz.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/loaf-tin-1.jpg"
+    ],
+    "stock": 21,
+    "rating": 4.8,
+    "reviewsCount": 35,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "Kanchan Udyog",
+    "unit": "Piece",
+    "tags": [
+      "Bakeware",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-10T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-47",
+    "name": "Muffin Cupcake Silicon Mould 12 Cup",
+    "slug": "muffin-cupcake-silicon-mould-12-cup",
+    "description": "Authentic Muffin Cupcake Silicon Mould 12 Cup sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 290,
+    "discountPrice": 255,
+    "categoryId": "cat-moulds-cutters",
+    "categoryName": "Cake Moulds & Bakeware",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-gfxnhuf12m.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/muffin-mould-1.jpg"
+    ],
+    "stock": 31,
+    "rating": 4.9,
+    "reviewsCount": 36,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "Kanchan Udyog",
+    "unit": "Piece",
+    "tags": [
+      "Bakeware",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-09T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-48",
+    "name": "Paper Cupcake Liners (Pack of 100)",
+    "slug": "paper-cupcake-liners-pack-of-100",
+    "description": "Authentic Paper Cupcake Liners (Pack of 100) sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 160,
+    "discountPrice": 141,
+    "categoryId": "cat-moulds-cutters",
+    "categoryName": "Cake Moulds & Bakeware",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-s550i6yh1y.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/cupcake-liners-1.jpg"
+    ],
+    "stock": 29,
+    "rating": 5,
+    "reviewsCount": 37,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "Kanchan Udyog",
+    "unit": "Pack of 100",
+    "tags": [
+      "Bakeware",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-08T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-49",
+    "name": "Cake Box with Window 1kg",
+    "slug": "cake-box-with-window-1kg",
+    "description": "Authentic Cake Box with Window 1kg sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 240,
+    "discountPrice": 211,
+    "categoryId": "cat-packaging-supplies",
+    "categoryName": "Boxes, Boards & Packaging",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-xvwotvyf9p.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/cake-box-1kg-1.jpg"
+    ],
+    "stock": 24,
+    "rating": 4.7,
+    "reviewsCount": 38,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "NayaKart Packaging",
+    "unit": "Set of 10",
+    "tags": [
+      "Packaging",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-07T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-50",
+    "name": "Cupcake Box 6 Cavity with Insert",
+    "slug": "cupcake-box-6-cavity-with-insert",
+    "description": "Authentic Cupcake Box 6 Cavity with Insert sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 240,
+    "discountPrice": 211,
+    "categoryId": "cat-packaging-supplies",
+    "categoryName": "Boxes, Boards & Packaging",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-85hi5gmdrc.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/cupcake-box-6-1.jpg"
+    ],
+    "stock": 35,
+    "rating": 4.8,
+    "reviewsCount": 39,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "NayaKart Packaging",
+    "unit": "Set of 10",
+    "tags": [
+      "Packaging",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-06T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-51",
+    "name": "Cake Board Gold Round 8 inch",
+    "slug": "cake-board-gold-round-8-inch",
+    "description": "Authentic Cake Board Gold Round 8 inch sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 180,
+    "discountPrice": 158,
+    "categoryId": "cat-packaging-supplies",
+    "categoryName": "Boxes, Boards & Packaging",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-ahhl2flolc.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/cake-board-1.jpg"
+    ],
+    "stock": 18,
+    "rating": 4.9,
+    "reviewsCount": 15,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "NayaKart Packaging",
+    "unit": "Set of 10",
+    "tags": [
+      "Packaging",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-05T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-52",
+    "name": "Birthday Number Candles Gold",
+    "slug": "birthday-number-candles-gold",
+    "description": "Authentic Birthday Number Candles Gold sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 120,
+    "discountPrice": 106,
+    "categoryId": "cat-cake-toppers",
+    "categoryName": "Cake Toppers & Accents",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-96i8b18arz.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/number-candles-1.jpg"
+    ],
+    "stock": 29,
+    "rating": 5,
+    "reviewsCount": 16,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "PartyCraft",
+    "unit": "Piece",
+    "tags": [
+      "Party",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-04T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-53",
+    "name": "Magic Sparkler Candles",
+    "slug": "magic-sparkler-candles",
+    "description": "Authentic Magic Sparkler Candles sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 120,
+    "discountPrice": 106,
+    "categoryId": "cat-cake-toppers",
+    "categoryName": "Cake Toppers & Accents",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-gfxnhuf12m.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/sparkler-candles-1.jpg"
+    ],
+    "stock": 16,
+    "rating": 4.7,
+    "reviewsCount": 17,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "PartyCraft",
+    "unit": "Piece",
+    "tags": [
+      "Party",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-03T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-54",
+    "name": "Happy Birthday Cake Topper Acrylic",
+    "slug": "happy-birthday-cake-topper-acrylic",
+    "description": "Authentic Happy Birthday Cake Topper Acrylic sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 150,
+    "discountPrice": 132,
+    "categoryId": "cat-cake-toppers",
+    "categoryName": "Cake Toppers & Accents",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-s550i6yh1y.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/cake-topper-1.jpg"
+    ],
+    "stock": 21,
+    "rating": 4.8,
+    "reviewsCount": 18,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "PartyCraft",
+    "unit": "Piece",
+    "tags": [
+      "Party",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-02T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-55",
+    "name": "Edible Silver Dust Sparkle",
+    "slug": "edible-silver-dust-sparkle",
+    "description": "Authentic Edible Silver Dust Sparkle sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 280,
+    "discountPrice": 246,
+    "categoryId": "cat-cake-decoration",
+    "categoryName": "Cake Decoration & Nozzles",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-xvwotvyf9p.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/edible-silver-dust-1.jpg"
+    ],
+    "stock": 27,
+    "rating": 4.9,
+    "reviewsCount": 19,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "Magic Colours",
+    "unit": "Jar (10g)",
+    "tags": [
+      "Decoration",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-09-01T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-56",
+    "name": "Edible Gold Dust Sparkle",
+    "slug": "edible-gold-dust-sparkle",
+    "description": "Authentic Edible Gold Dust Sparkle sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 280,
+    "discountPrice": 246,
+    "categoryId": "cat-cake-decoration",
+    "categoryName": "Cake Decoration & Nozzles",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-85hi5gmdrc.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/edible-gold-dust-1.jpg"
+    ],
+    "stock": 27,
+    "rating": 5,
+    "reviewsCount": 20,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "Magic Colours",
+    "unit": "Jar (10g)",
+    "tags": [
+      "Decoration",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-08-31T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-57",
+    "name": "Gel Food Color Set (Pack of 8)",
+    "slug": "gel-food-color-set-pack-of-8",
+    "description": "Authentic Gel Food Color Set (Pack of 8) sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 480,
+    "discountPrice": 422,
+    "categoryId": "cat-cake-decoration",
+    "categoryName": "Cake Decoration & Nozzles",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-ahhl2flolc.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/gel-colors-1.jpg"
+    ],
+    "stock": 26,
+    "rating": 4.7,
+    "reviewsCount": 21,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "Magic Colours",
+    "unit": "Set of 8",
+    "tags": [
+      "Decoration",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-08-30T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-58",
+    "name": "Rainbow Sprinkles Sugar Pearls",
+    "slug": "rainbow-sprinkles-sugar-pearls",
+    "description": "Authentic Rainbow Sprinkles Sugar Pearls sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 190,
+    "discountPrice": 167,
+    "categoryId": "cat-cake-decoration",
+    "categoryName": "Cake Decoration & Nozzles",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-96i8b18arz.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/sprinkles-1.jpg"
+    ],
+    "stock": 28,
+    "rating": 4.8,
+    "reviewsCount": 22,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "Magic Colours",
+    "unit": "Jar (150g)",
+    "tags": [
+      "Decoration",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-08-29T18:23:46.988Z"
+  },
+  {
+    "id": "jd-prod-59",
+    "name": "Compound Chocolate Slab Dark 400g",
+    "slug": "compound-chocolate-slab-dark-400g",
+    "description": "Authentic Compound Chocolate Slab Dark 400g sourced directly at NayaKart Kazhakuttam showroom. High-grade premium baking and confectionery product for retail and wholesale requirements.",
+    "price": 240,
+    "discountPrice": 211,
+    "categoryId": "cat-baking-ingredients",
+    "categoryName": "Baking Raw Materials & Ingredients",
+    "images": [
+      "https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-gfxnhuf12m.jpg",
+      "https://content.jdmagicbox.com/quickflip/thiruvananthapuram/0471px471.x471.190622133608.y4j6/catalog/dark-chocolate-slab-1.jpg"
+    ],
+    "stock": 38,
+    "rating": 4.9,
+    "reviewsCount": 23,
+    "isFeatured": false,
+    "isActive": true,
+    "brand": "Morde",
+    "unit": "400g Slab",
+    "tags": [
+      "Baking",
+      "Kazhakuttam In Stock"
+    ],
+    "createdAt": "2026-08-28T18:23:46.988Z"
+  }
 ];
 
 export const INITIAL_ORDERS: Order[] = [
