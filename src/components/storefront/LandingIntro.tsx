@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronDown, Sparkles } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 
 interface LandingIntroProps {
   storeName?: string;
@@ -8,12 +8,6 @@ interface LandingIntroProps {
 }
 
 // Halftone math helpers
-function hwfHex(hex: string): [number, number, number] | null {
-  const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec((hex || '').trim());
-  if (!m) return null;
-  const h = m[1].length === 3 ? m[1].split('').map((c) => c + c).join('') : m[1];
-  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
-}
 
 function hwfRadius(coverage: number, gap: number): number {
   const c = coverage < 0 ? 0 : coverage > 1 ? 1 : coverage;
@@ -40,7 +34,7 @@ function hwfStep(
 
 export const LandingIntro: React.FC<LandingIntroProps> = ({
   storeName = 'NayaKart',
-  targetElementId = 'storefront-navbar-logo',
+  targetElementId: _targetElementId = 'storefront-navbar-logo',
   onFinished,
 }) => {
   const [stage, setStage] = useState<'idle' | 'animating' | 'done'>('idle');

@@ -4,14 +4,15 @@ import {
   ShoppingBag, 
   Search, 
   ShieldCheck, 
-  ArrowRight,
-  X
+  ArrowRight
 } from 'lucide-react';
 import { useCartContext } from '../../context/CartContext';
 import type { Category, Product, StoreSettings } from '../../types/ecommerce';
 import { cn } from '@/lib/utils';
 import { MenuToggleIcon } from '@/components/ui/menu-toggle-icon';
 import { useScroll } from '@/components/ui/use-scroll';
+import { Kbd } from '@/components/ui/kbd';
+import { usePlatformModifier } from '@/hooks/usePlatformModifier';
 import { Input } from '../ui/input';
 
 interface StorefrontNavbarProps {
@@ -27,11 +28,12 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
   settings,
   searchQuery = '',
   onSearchChange,
-  onSelectProduct,
-  isIntroActive = false,
+  onSelectProduct: _onSelectProduct,
+  isIntroActive: _isIntroActive = false,
 }) => {
   const { totalItems, setIsCartOpen } = useCartContext();
   const navigate = useNavigate();
+  const { modKey } = usePlatformModifier();
 
   const [localQuery, setLocalQuery] = useState(searchQuery);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -128,6 +130,18 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
           {/* Right Action Icons & Controls */}
           <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
             
+            {/* Quick Command Menu Trigger */}
+            <button
+              onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, ctrlKey: true }))}
+              className="flex items-center gap-1.5 bg-[#4A2818]/60 hover:bg-[#4A2818] text-[#F9F4EE] border border-[#542B16] px-3 py-1.5 sm:py-2 rounded-full text-xs font-medium shadow-xs hover:shadow-sm transition-all duration-200 active:scale-95"
+              title={`Open Command Menu (${modKey}K)`}
+              aria-label="Open Command Menu"
+            >
+              <Search className="w-3.5 h-3.5 text-[#EAD9CF]" />
+              <span className="hidden md:inline text-[#EAD9CF]">Search</span>
+              <Kbd className="bg-white/10 text-white text-[10px] h-4 px-1">{modKey}K</Kbd>
+            </button>
+
             {/* Cart Button Pill in Warm Biscuit Contrast */}
             <button
               onClick={() => setIsCartOpen(true)}

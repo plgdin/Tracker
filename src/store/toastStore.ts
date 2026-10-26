@@ -1,8 +1,14 @@
 import { create } from 'zustand';
 
+export interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
 interface ToastState {
   message: string | null;
-  showToast: (message: string) => void;
+  action: ToastAction | null;
+  showToast: (message: string, action?: ToastAction | null, durationMs?: number) => void;
   hideToast: () => void;
 }
 
@@ -11,26 +17,27 @@ export const useToastStore = create<ToastState>((set) => {
 
   return {
     message: null,
-    showToast: (message) => {
+    action: null,
+    showToast: (message, action = null, durationMs = 3500) => {
       // Clear any existing timeouts to prevent overlapping hides
       if (activeTimeout) {
         clearTimeout(activeTimeout);
       }
 
-      set({ message });
+      set({ message, action });
 
-      // Auto-hide after 3 seconds
+      // Auto-hide after specified duration (5-10s for undo toasts)
       activeTimeout = setTimeout(() => {
-        set({ message: null });
+        set({ message: null, action: null });
         activeTimeout = null;
-      }, 3000);
+      }, durationMs);
     },
     hideToast: () => {
       if (activeTimeout) {
         clearTimeout(activeTimeout);
         activeTimeout = null;
       }
-      set({ message: null });
-    }
+      set({ message: null, action: null });
+    },
   };
 });

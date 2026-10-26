@@ -14,15 +14,17 @@ import {
   Store, 
   ExternalLink, 
   Bell, 
-  Clock,
   CheckCircle2,
-  PackageCheck
+  Search
 } from 'lucide-react';
+import { Kbd } from '@/components/ui/kbd';
+import { usePlatformModifier } from '@/hooks/usePlatformModifier';
 import { orderService } from '../../services/orderService';
 import type { Order } from '../../types/ecommerce';
 
 export const AdminLayout: React.FC = () => {
   const location = useLocation();
+  const { modKey } = usePlatformModifier();
   const [pendingOrders, setPendingOrders] = useState<Order[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -84,6 +86,19 @@ export const AdminLayout: React.FC = () => {
               </span>
               <span>Kazhakuttam Counter Active</span>
             </div>
+
+            {/* Command Palette Trigger */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, ctrlKey: true }))}
+              className="h-8 rounded-full text-xs font-medium border-[#E8D8CC] hover:bg-[#F2E7DC] text-[#4A2818] gap-1.5 hidden md:flex shadow-2xs"
+              title={`Command Menu (${modKey}K)`}
+            >
+              <Search className="size-3.5 text-[#7A6153]" />
+              <span className="hidden lg:inline text-[#7A6153]">Commands</span>
+              <Kbd className="bg-white text-[#4A2818] text-[10px] h-4.5 px-1">{modKey}K</Kbd>
+            </Button>
 
             {/* Quick View Storefront Button */}
             <Button

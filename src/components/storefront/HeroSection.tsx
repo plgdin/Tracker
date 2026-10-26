@@ -15,7 +15,7 @@ const BAKERY_ITEM_TILES = INITIAL_PRODUCTS.map((prod) => ({
   alt: prod.name,
 }));
 
-export const HeroSection: React.FC<HeroSectionProps> = ({ settings }) => {
+export const HeroSection: React.FC<HeroSectionProps> = ({ settings: _settings }) => {
   return (
     <section className="relative w-full overflow-hidden bg-[#F9F4EE]">
       <TiltedGridHero

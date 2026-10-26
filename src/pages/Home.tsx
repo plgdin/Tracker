@@ -2,14 +2,13 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   ArrowRight, 
-  Sparkles,
-  ShoppingBag
+  Sparkles
 } from 'lucide-react';
 
 import { StorefrontNavbar } from '../components/storefront/StorefrontNavbar';
 import { HeroSection } from '../components/storefront/HeroSection';
 import { CategoryCards } from '../components/storefront/CategoryCards';
-import { ProductCard } from '../components/storefront/ProductCard';
+import { ProductCard, ProductCardSkeleton } from '../components/storefront/ProductCard';
 import { ProductDetailModal } from '../components/storefront/ProductDetailModal';
 import { CartDrawer } from '../components/storefront/CartDrawer';
 import { CheckoutModal } from '../components/storefront/CheckoutModal';
@@ -17,6 +16,7 @@ import { OrderConfirmationModal } from '../components/storefront/OrderConfirmati
 import { StoreInfoSection } from '../components/storefront/StoreInfoSection';
 import { StorefrontFooter } from '../components/storefront/StorefrontFooter';
 import { LandingIntro } from '../components/storefront/LandingIntro';
+import { useDeferredLoading } from '../hooks/useDeferredLoading';
 
 import { productService } from '../services/productService';
 import { categoryService } from '../services/categoryService';
@@ -31,6 +31,8 @@ export default function Home() {
   const [popularProducts, setPopularProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isIntroActive, setIsIntroActive] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const showSkeleton = useDeferredLoading(isLoading, 300);
 
   // Completed order state for confirmation modal
   const [confirmedOrder, setConfirmedOrder] = useState<Order | null>(null);
@@ -38,16 +40,21 @@ export default function Home() {
 
   useEffect(() => {
     const loadData = async () => {
-      const [s, cats, products] = await Promise.all([
-        settingsService.getSettings(),
-        categoryService.getAll(),
-        productService.getActive(),
-      ]);
+      setIsLoading(true);
+      try {
+        const [s, cats, products] = await Promise.all([
+          settingsService.getSettings(),
+          categoryService.getAll(),
+          productService.getActive(),
+        ]);
 
-      setSettings(s);
-      setCategories(cats);
-      setFeaturedProducts(products.filter((p) => p.isFeatured));
-      setPopularProducts(products.slice(0, 8));
+        setSettings(s);
+        setCategories(cats);
+        setFeaturedProducts(products.filter((p) => p.isFeatured));
+        setPopularProducts(products.slice(0, 8));
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     loadData();
@@ -111,15 +118,23 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
-            {featuredProducts.slice(0, 8).map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onOpenDetails={(p) => setSelectedProduct(p)}
-              />
-            ))}
-          </div>
+          {showSkeleton ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6" aria-busy="true" aria-label="Loading featured products">
+              {Array.from({ length: 4 }).map((_, idx) => (
+                <ProductCardSkeleton key={`feat-skel-${idx}`} />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
+              {featuredProducts.slice(0, 8).map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onOpenDetails={(p) => setSelectedProduct(p)}
+                />
+              ))}
+            </div>
+          )}
 
         </div>
       </section>
@@ -195,15 +210,23 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
-            {popularProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onOpenDetails={(p) => setSelectedProduct(p)}
-              />
-            ))}
-          </div>
+          {showSkeleton ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6" aria-busy="true" aria-label="Loading customer favorites">
+              {Array.from({ length: 8 }).map((_, idx) => (
+                <ProductCardSkeleton key={`home-skel-${idx}`} />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
+              {popularProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onOpenDetails={(p) => setSelectedProduct(p)}
+                />
+              ))}
+            </div>
+          )}
 
         </div>
       </section>

@@ -5,7 +5,6 @@ import {
   Phone, 
   MessageCircle, 
   Award, 
-  Sparkles, 
   Navigation,
   HeartHandshake
 } from 'lucide-react';

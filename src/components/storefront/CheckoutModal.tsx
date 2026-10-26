@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   X, 
   MapPin, 
@@ -26,6 +26,11 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ settings, onOrderS
   const [notes, setNotes] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Generate an idempotency key when checkout session initiates; retained across retries
+  const idempotencyKeyRef = useRef<string>(
+    typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `order_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+  );
 
   if (!isCheckoutOpen) return null;
 
@@ -57,31 +62,31 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ settings, onOrderS
 
     setIsSubmitting(true);
     try {
-      // 1. Create order in decoupled service layer
-      const order = await orderService.createOrder({
+      // 1. Create order in decoupled service layer with Idempotency-Key
+      const { order, whatsappUrl } = await orderService.create({
         customerName: customerName.trim(),
         customerPhone: customerPhone.trim(),
         customerWhatsapp: customerWhatsapp.trim() || customerPhone.trim(),
         items: items.map((it) => ({
           productId: it.productId,
-          name: it.name,
-          price: it.price,
+          productName: it.name,
+          unitPrice: it.price,
           quantity: it.quantity,
-          selectedVariant: it.selectedVariant,
-          categoryName: it.categoryName,
+          variantName: it.selectedVariant,
+          image: it.image,
         })),
-        totalAmount,
         pickupPreference,
         notes: notes.trim(),
+        idempotencyKey: idempotencyKeyRef.current,
       });
 
-      // 2. Generate WhatsApp Click-to-Chat URL
-      const whatsappUrl = orderService.generateWhatsAppUrl(order, settings);
+      // Regenerate idempotency key for future distinct orders
+      idempotencyKeyRef.current = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `order_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
-      // 3. Clear cart
+      // 2. Clear cart
       clearCart();
 
-      // 4. Close checkout and show confirmation
+      // 3. Close checkout and show confirmation
       setIsCheckoutOpen(false);
       onOrderSuccess(order, whatsappUrl);
     } catch (err) {

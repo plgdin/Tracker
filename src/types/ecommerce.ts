@@ -89,6 +89,7 @@ export interface Order {
   total: number;
   orderStatus: OrderStatus;
   paymentStatus: PaymentStatus;
+  idempotencyKey?: string;
   createdAt: string;
 }
 

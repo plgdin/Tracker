@@ -9,12 +9,14 @@ import {
 } from 'lucide-react';
 
 import { StorefrontNavbar } from '../components/storefront/StorefrontNavbar';
-import { ProductCard } from '../components/storefront/ProductCard';
+import { ProductCard, ProductCardSkeleton } from '../components/storefront/ProductCard';
 import { ProductDetailModal } from '../components/storefront/ProductDetailModal';
 import { CartDrawer } from '../components/storefront/CartDrawer';
 import { CheckoutModal } from '../components/storefront/CheckoutModal';
 import { OrderConfirmationModal } from '../components/storefront/OrderConfirmationModal';
 import { StorefrontFooter } from '../components/storefront/StorefrontFooter';
+import { useDeferredLoading } from '../hooks/useDeferredLoading';
+import { useSWR } from '../hooks/useSWR';
 
 import { productService } from '../services/productService';
 import { categoryService } from '../services/categoryService';
@@ -29,6 +31,34 @@ export default function Products() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const showSkeleton = useDeferredLoading(isLoading, 300);
+
+  // Stale-While-Revalidate: instant cache display + background refetch on focus / reconnect
+  const { data: swrProducts } = useSWR<Product[]>(
+    'nayakart_active_products',
+    () => productService.getActive(),
+    { revalidateOnFocus: true, revalidateOnReconnect: true }
+  );
+
+  const { data: swrCategories } = useSWR<Category[]>(
+    'nayakart_categories',
+    () => categoryService.getAll(),
+    { revalidateOnFocus: true, revalidateOnReconnect: true }
+  );
+
+  useEffect(() => {
+    if (swrProducts) {
+      setAllProducts(swrProducts);
+      setIsLoading(false);
+    }
+  }, [swrProducts]);
+
+  useEffect(() => {
+    if (swrCategories) {
+      setCategories(swrCategories);
+    }
+  }, [swrCategories]);
 
   // Filters State
   const initialCategory = searchParams.get('category') || 'all';
@@ -45,19 +75,9 @@ export default function Products() {
   const [confirmedOrder, setConfirmedOrder] = useState<Order | null>(null);
   const [confirmedWhatsappUrl, setConfirmedWhatsappUrl] = useState<string>('');
 
-  // Load initial catalog
+  // Initial settings load
   useEffect(() => {
-    const init = async () => {
-      const [s, cats, prods] = await Promise.all([
-        settingsService.getSettings(),
-        categoryService.getAll(),
-        productService.getActive(),
-      ]);
-      setSettings(s);
-      setCategories(cats);
-      setAllProducts(prods);
-    };
-    init();
+    settingsService.getSettings().then(setSettings);
   }, []);
 
   // Sync state if URL changes
@@ -396,8 +416,14 @@ export default function Products() {
 
             </div>
 
-            {/* Product Grid or Empty State */}
-            {filteredProducts.length === 0 ? (
+            {/* Product Grid or Skeleton or Empty State */}
+            {showSkeleton ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5" aria-busy="true" aria-label="Loading products">
+                {Array.from({ length: 6 }).map((_, idx) => (
+                  <ProductCardSkeleton key={`skeleton-${idx}`} />
+                ))}
+              </div>
+            ) : filteredProducts.length === 0 ? (
               <div className="bg-white rounded-[2rem] p-10 sm:p-14 border border-[#E8D8CC] text-center space-y-4">
                 <div className="w-16 h-16 rounded-2xl bg-[#F2E7DC] mx-auto flex items-center justify-center text-[#4A2818]">
                   <PackageOpen className="w-8 h-8 stroke-[1.8]" />

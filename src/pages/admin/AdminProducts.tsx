@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Plus, 
   Search, 
@@ -11,6 +11,7 @@ import {
 import { productService } from '../../services/productService';
 import { categoryService } from '../../services/categoryService';
 import { storageService } from '../../services/storageService';
+import { useToastStore } from '../../store/toastStore';
 import type { Product, Category } from '../../types/ecommerce';
 
 export default function AdminProducts() {
@@ -22,7 +23,6 @@ export default function AdminProducts() {
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   // Form Fields
   const [name, setName] = useState('');
@@ -137,10 +137,75 @@ export default function AdminProducts() {
     loadData();
   };
 
-  const handleDeleteProduct = async (id: string) => {
-    await productService.delete(id);
-    setDeleteConfirmId(null);
-    loadData();
+  const handleToggleActive = async (product: Product) => {
+    const previousProducts = products;
+    const newActive = !product.isActive;
+
+    // 1. Optimistically update local UI state immediately
+    setProducts((prev) =>
+      prev.map((p) => (p.id === product.id ? { ...p, isActive: newActive } : p))
+    );
+
+    try {
+      // 2. Persist to storage/service
+      await productService.update(product.id, { isActive: newActive });
+    } catch (err) {
+      // 3. Roll back on failure with notification
+      setProducts(previousProducts);
+      console.error('Failed to update product status, rolled back:', err);
+    }
+  };
+
+  const { showToast } = useToastStore();
+  const pendingDeletionsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+
+  // Cleanup pending delete timers on unmount
+  useEffect(() => {
+    return () => {
+      pendingDeletionsRef.current.forEach((timer) => clearTimeout(timer));
+    };
+  }, []);
+
+  const handleDeleteProduct = (product: Product) => {
+    // 1. Drop confirm dialog: soft-delete immediately from UI
+    const originalIndex = products.findIndex((p) => p.id === product.id);
+    setProducts((prev) => prev.filter((p) => p.id !== product.id));
+
+    // 2. Schedule delayed permanent backend delete
+    const timer = setTimeout(async () => {
+      pendingDeletionsRef.current.delete(product.id);
+      try {
+        await productService.delete(product.id);
+      } catch (err) {
+        console.error('Failed to execute permanent delete:', err);
+      }
+    }, 7000);
+
+    pendingDeletionsRef.current.set(product.id, timer);
+
+    // 3. Show Gmail-style Undo toast for 7 seconds
+    showToast(
+      `Deleted "${product.name}"`,
+      {
+        label: 'Undo',
+        onClick: () => {
+          // Cancel scheduled deletion
+          const pendingTimer = pendingDeletionsRef.current.get(product.id);
+          if (pendingTimer) {
+            clearTimeout(pendingTimer);
+            pendingDeletionsRef.current.delete(product.id);
+          }
+          // Restore product to list
+          setProducts((prev) => {
+            const nextList = [...prev];
+            nextList.splice(originalIndex > -1 ? originalIndex : 0, 0, product);
+            return nextList;
+          });
+          showToast(`Restored "${product.name}"`);
+        },
+      },
+      7000
+    );
   };
 
   const filteredProducts = products.filter((p) => {
@@ -278,14 +343,23 @@ export default function AdminProducts() {
                     </span>
                   </td>
 
-                  {/* Status Toggle */}
+                  {/* Status Toggle (Optimistic Update) */}
                   <td className="py-3.5 px-4">
-                    <span className={`inline-block w-2 h-2 rounded-full mr-2 ${
-                      p.isActive ? 'bg-emerald-500' : 'bg-stone-300'
-                    }`} />
-                    <span className="font-medium text-[11px] text-[#7A6153]">
-                      {p.isActive ? 'Active' : 'Inactive'}
-                    </span>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={p.isActive}
+                      onClick={() => handleToggleActive(p)}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all active:scale-95 ${
+                        p.isActive
+                          ? 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200'
+                          : 'bg-stone-100 text-stone-600 hover:bg-stone-200 border border-stone-200'
+                      }`}
+                      title={p.isActive ? 'Click to deactivate' : 'Click to activate'}
+                    >
+                      <span className={`w-2 h-2 rounded-full ${p.isActive ? 'bg-emerald-500' : 'bg-stone-400'}`} />
+                      <span>{p.isActive ? 'Active' : 'Inactive'}</span>
+                    </button>
                   </td>
 
                   {/* Action Buttons */}
@@ -299,9 +373,9 @@ export default function AdminProducts() {
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
                       <button
-                        onClick={() => setDeleteConfirmId(p.id)}
+                        onClick={() => handleDeleteProduct(p)}
                         className="p-2 rounded-full text-red-600 hover:bg-red-50 transition-colors"
-                        title="Delete product"
+                        title="Delete product (Undo available)"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -524,34 +598,6 @@ export default function AdminProducts() {
               </div>
 
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Confirmation Dialog */}
-      {deleteConfirmId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#361B0E]/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-[#FCFAF7] rounded-[2rem] border border-[#E8D8CC] p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
-            <h3 className="font-serif font-bold text-lg text-[#4A2818]">
-              Confirm Product Deletion
-            </h3>
-            <p className="text-xs text-[#7A6153] leading-relaxed">
-              Are you sure you want to remove this product from the mock store database?
-            </p>
-            <div className="flex gap-2 justify-center">
-              <button
-                onClick={() => setDeleteConfirmId(null)}
-                className="px-4 py-2 rounded-full border border-[#E8D8CC] text-xs font-serif font-semibold text-[#7A6153]"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleDeleteProduct(deleteConfirmId)}
-                className="px-5 py-2 rounded-full bg-red-600 hover:bg-red-700 text-white text-xs font-serif font-bold shadow-md"
-              >
-                Delete Product
-              </button>
-            </div>
           </div>
         </div>
       )}

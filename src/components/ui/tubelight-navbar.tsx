@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { Link } from "react-router-dom"
 import type { LucideIcon } from "lucide-react"
@@ -62,7 +62,7 @@ export function NavBar({ items, className, activeItem, onItemClick }: NavBarProp
                 }
               }}
               className={cn(
-                "relative cursor-pointer text-xs sm:text-sm font-semibold px-4 sm:px-5 py-2 rounded-full transition-all duration-300 select-none flex items-center gap-2",
+                "relative cursor-pointer text-xs sm:text-sm font-semibold px-4 sm:px-5 py-2.5 min-h-[44px] min-w-[44px] justify-center rounded-full transition-all duration-300 select-none flex items-center gap-2",
                 "text-[#7A6153] hover:text-[#4A2818]",
                 isActive && "text-[#4A2818]",
               )}

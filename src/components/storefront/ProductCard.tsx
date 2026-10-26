@@ -107,11 +107,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onOpenDetails
         <div className="pt-2 border-t border-[#E8D8CC]/60 flex items-center justify-between gap-2 mt-auto">
           <div>
             <div className="flex items-baseline gap-1.5">
-              <span className="font-serif font-bold text-base sm:text-lg text-[#4A2818]">
+              <span className="font-serif font-bold text-base sm:text-lg text-[#4A2818] tabular-nums">
                 ₹{price}
               </span>
               {originalPrice && (
-                <span className="text-xs text-[#7A6153]/60 line-through font-semibold">
+                <span className="text-xs text-[#7A6153]/60 line-through font-semibold tabular-nums">
                   ₹{originalPrice}
                 </span>
               )}
@@ -155,3 +155,35 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onOpenDetails
     </div>
   );
 };
+
+export const ProductCardSkeleton: React.FC = () => {
+  return (
+    <div
+      aria-hidden="true"
+      className="relative flex flex-col justify-between bg-white rounded-[2rem] p-4 border border-[#E8D8CC] animate-pulse motion-reduce:animate-none pointer-events-none select-none"
+    >
+      {/* Top Media Container skeleton */}
+      <div className="relative w-full aspect-square rounded-[1.5rem] overflow-hidden bg-[#F2E7DC] mb-3.5 border border-[#E8D8CC]/40" />
+
+      {/* Content skeleton */}
+      <div className="flex flex-col flex-1 justify-between gap-3">
+        <div className="space-y-2">
+          {/* Category tag */}
+          <div className="h-3.5 w-16 bg-[#E8D8CC]/70 rounded-full" />
+          {/* Title lines */}
+          <div className="h-4.5 w-5/6 bg-[#E8D8CC] rounded-md" />
+          <div className="h-3 w-1/2 bg-[#E8D8CC]/50 rounded-md" />
+          {/* Star rating */}
+          <div className="h-3 w-20 bg-[#E8D8CC]/50 rounded-full pt-0.5" />
+        </div>
+
+        {/* Price & action button */}
+        <div className="pt-2 border-t border-[#E8D8CC]/40 flex items-center justify-between">
+          <div className="h-5 w-16 bg-[#E8D8CC] rounded-md" />
+          <div className="h-8 w-16 bg-[#E8D8CC]/80 rounded-full" />
+        </div>
+      </div>
+    </div>
+  );
+};
+

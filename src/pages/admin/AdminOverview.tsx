@@ -15,8 +15,6 @@ import {
   Package,
   AlertTriangle,
   CheckCircle2,
-  Clock,
-  ArrowUpRight,
   Search,
   Download,
   Plus,
@@ -25,18 +23,12 @@ import {
   Eye,
   X,
   Sparkles,
-  Layers,
-  Store,
-  Phone,
   PackageCheck,
   TrendingUp,
-  Percent,
   Check,
-  Calendar,
   ChevronRight
 } from 'lucide-react';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -50,12 +42,12 @@ import { Progress } from '@/components/ui/progress';
 
 import { productService } from '../../services/productService';
 import { orderService } from '../../services/orderService';
-import type { Product, Order, OrderStatus, PaymentStatus } from '../../types/ecommerce';
+import type { Product, Order, OrderStatus } from '../../types/ecommerce';
 
 export default function AdminOverview() {
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
   const [chartMetric, setChartMetric] = useState<'revenue' | 'orders'>('revenue');
   const [orderFilter, setOrderFilter] = useState<string>('all');
   const [orderSearch, setOrderSearch] = useState<string>('');

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Header } from "@/components/ui/header-2";
 
 export default function Demo() {

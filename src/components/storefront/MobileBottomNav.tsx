@@ -36,7 +36,7 @@ export function MobileBottomNav() {
       <NavBar 
         items={items} 
         activeItem={activeItem} 
-        className="bottom-2 mb-2 z-40" 
+        className="bottom-[max(0.75rem,env(safe-area-inset-bottom))] mb-1 z-40" 
       />
     </div>
   );

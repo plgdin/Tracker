@@ -26,6 +26,7 @@ export interface CreateOrderInput {
   customerWhatsapp?: string;
   pickupPreference: string;
   notes?: string;
+  idempotencyKey?: string;
   items: Array<{
     productId: string;
     productName: string;
@@ -57,12 +58,22 @@ export const orderService = {
 
   /**
    * Create a new order from checkout.
-   * Supabase Integration Point:
-   * const { data: order, error } = await supabase.from('orders').insert([orderPayload]).select().single();
-   * await supabase.from('order_items').insert(itemsPayload);
+   * Stripe-style Idempotency Key protection: if a retry is sent with the same key, return the existing order.
    */
   async create(input: CreateOrderInput): Promise<{ order: Order; whatsappUrl: string }> {
     const orders = getStoredOrders();
+
+    // 1. Idempotency Key Check
+    if (input.idempotencyKey) {
+      const existing = orders.find((o) => o.idempotencyKey === input.idempotencyKey);
+      if (existing) {
+        return {
+          order: existing,
+          whatsappUrl: this.generateWhatsAppUrl(existing),
+        };
+      }
+    }
+
     const orderNumber = `BNJ-${Math.floor(1000 + Math.random() * 9000)}`;
     const orderId = `ord-${Date.now()}`;
 
@@ -96,6 +107,7 @@ export const orderService = {
       total,
       orderStatus: 'new',
       paymentStatus: 'pending',
+      idempotencyKey: input.idempotencyKey,
       createdAt: new Date().toISOString(),
     };
 
