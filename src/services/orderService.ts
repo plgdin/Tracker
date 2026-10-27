@@ -1,5 +1,6 @@
 import type { Order, OrderItem, OrderStatus, PaymentStatus } from '../types/ecommerce';
 import { INITIAL_ORDERS } from './mockData';
+import { db } from '../lib/db';
 
 const STORAGE_KEY = 'bnj_orders';
 
@@ -39,31 +40,70 @@ export interface CreateOrderInput {
 
 export const orderService = {
   /**
-   * Fetch all orders (Admin)
-   * Supabase Integration Point:
-   * const { data, error } = await supabase.from('orders').select('*, items:order_items(*)').order('created_at', { ascending: false });
+   * Fetch all orders from stanes db backend ('online' store)
    */
   async getAll(): Promise<Order[]> {
-    const orders = getStoredOrders();
-    return orders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    try {
+      const orders = await db.getOnlineOrders();
+      if (orders && orders.length > 0) {
+        const mapped: Order[] = orders.map((o) => {
+          let orderItems: OrderItem[] = [];
+          if (Array.isArray(o.items)) {
+            orderItems = o.items.map((it: any, idx: number) => ({
+              id: it.id || `item-${o.id}-${idx}`,
+              orderId: String(o.id),
+              productId: it.productId || it.id || '',
+              productName: it.productName || it.name || '',
+              variantName: it.variantName || it.selectedVariant,
+              unitPrice: Number(it.unitPrice ?? it.price ?? 0),
+              quantity: Number(it.quantity ?? 1),
+              lineTotal: Number(it.lineTotal ?? ((it.unitPrice ?? it.price ?? 0) * (it.quantity ?? 1))),
+              image: it.image || it.image_url,
+            }));
+          }
+
+          return {
+            id: String(o.id),
+            orderNumber: String(o.id).startsWith('BNJ-') || String(o.id).startsWith('ORD-') ? String(o.id) : `ORD-${String(o.id).substring(0, 5).toUpperCase()}`,
+            customerName: o.customer_name || 'Customer',
+            customerPhone: o.customer_phone || '',
+            customerWhatsapp: o.customer_phone || '',
+            pickupPreference: o.delivery_type || 'Store Pickup',
+            notes: o.notes || '',
+            items: orderItems,
+            subtotal: Number(o.total_amount) || 0,
+            discount: 0,
+            total: Number(o.total_amount) || 0,
+            orderStatus: (o.status as OrderStatus) || 'new',
+            paymentStatus: o.transaction_id ? 'paid' : 'pending',
+            idempotencyKey: o.offer_code || undefined,
+            createdAt: o.created_at || new Date().toISOString(),
+          };
+        });
+
+        saveOrders(mapped);
+        return mapped;
+      }
+    } catch (e) {
+      console.warn('Backend orders fetch failed, using stored:', e);
+    }
+
+    const stored = getStoredOrders();
+    return stored.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   },
 
-  /**
-   * Fetch single order by ID or orderNumber
-   */
   async getById(idOrNumber: string): Promise<Order | undefined> {
-    const orders = getStoredOrders();
+    const orders = await this.getAll();
     return orders.find((o) => o.id === idOrNumber || o.orderNumber === idOrNumber);
   },
 
   /**
-   * Create a new order from checkout.
-   * Stripe-style Idempotency Key protection: if a retry is sent with the same key, return the existing order.
+   * Create a new order connected to stanes db backend
    */
   async create(input: CreateOrderInput): Promise<{ order: Order; whatsappUrl: string }> {
     const orders = getStoredOrders();
 
-    // 1. Idempotency Key Check
+    // Idempotency Key Check
     if (input.idempotencyKey) {
       const existing = orders.find((o) => o.idempotencyKey === input.idempotencyKey);
       if (existing) {
@@ -74,8 +114,14 @@ export const orderService = {
       }
     }
 
-    const orderNumber = `BNJ-${Math.floor(1000 + Math.random() * 9000)}`;
-    const orderId = `ord-${Date.now()}`;
+    // Atomic order ID via stanes db RPC or fallback
+    let orderNumber = `ORD-${Date.now().toString(36).toUpperCase()}`;
+    try {
+      orderNumber = await db.generateOrderId();
+    } catch {
+      orderNumber = `BNJ-${Math.floor(1000 + Math.random() * 9000)}`;
+    }
+    const orderId = orderNumber;
 
     const items: OrderItem[] = input.items.map((it, idx) => ({
       id: `item-${Date.now()}-${idx}`,
@@ -111,6 +157,30 @@ export const orderService = {
       createdAt: new Date().toISOString(),
     };
 
+    // Save directly into stanes online_orders backend
+    try {
+      await db.addOnlineOrder({
+        id: orderId,
+        store_type: 'online',
+        customer_name: newOrder.customerName,
+        customer_phone: newOrder.customerPhone,
+        customer_email: '',
+        delivery_type: newOrder.pickupPreference,
+        address: '',
+        notes: newOrder.notes,
+        offer_code: input.idempotencyKey || '',
+        total_amount: total,
+        items: items.map((it) => ({
+          id: it.productId,
+          name: it.productName,
+          price: it.unitPrice.toString(),
+          quantity: it.quantity,
+        })),
+      });
+    } catch (e) {
+      console.warn('Backend db.addOnlineOrder failed, saving locally:', e);
+    }
+
     orders.unshift(newOrder);
     saveOrders(orders);
 
@@ -118,17 +188,12 @@ export const orderService = {
     return { order: newOrder, whatsappUrl };
   },
 
-  /**
-   * Formats a clean, readable message and generates WhatsApp click-to-chat URL.
-   * NOTE: Store phone number is configurable via import.meta.env.VITE_WHATSAPP_NUMBER or store settings.
-   */
   generateWhatsAppUrl(order: Order, targetPhoneNumber?: string): string {
     const storeNumber = 
       targetPhoneNumber || 
       import.meta.env.VITE_WHATSAPP_NUMBER || 
-      '919999999999';
+      '919778052356';
 
-    // Sanitize phone number (strip spaces, +, -, etc.)
     const cleanNumber = storeNumber.replace(/\D/g, '');
 
     const lines: string[] = [
@@ -162,11 +227,14 @@ export const orderService = {
     return `https://wa.me/${cleanNumber}?text=${encodedMessage}`;
   },
 
-  /**
-   * Update order workflow status (Admin)
-   * Statuses: 'new' | 'pending' | 'confirmed' | 'ready_for_pickup' | 'completed' | 'cancelled'
-   */
   async updateStatus(orderId: string, status: OrderStatus): Promise<Order> {
+    try {
+      const dbStatus = status === 'completed' ? 'completed' : status === 'cancelled' ? 'cancelled' : 'pending';
+      await db.updateOrderStatus(orderId, dbStatus);
+    } catch (e) {
+      console.warn('Backend updateOrderStatus failed:', e);
+    }
+
     const orders = getStoredOrders();
     const idx = orders.findIndex((o) => o.id === orderId || o.orderNumber === orderId);
     if (idx === -1) throw new Error('Order not found');
@@ -175,11 +243,15 @@ export const orderService = {
     return orders[idx];
   },
 
-  /**
-   * Update payment status (Admin)
-   * Statuses: 'pending' | 'paid' | 'refunded'
-   */
   async updatePaymentStatus(orderId: string, paymentStatus: PaymentStatus): Promise<Order> {
+    try {
+      if (paymentStatus === 'paid') {
+        await db.updateOrderTransactionId(orderId, `UTR-${Date.now()}`);
+      }
+    } catch (e) {
+      console.warn('Backend updateOrderTransactionId failed:', e);
+    }
+
     const orders = getStoredOrders();
     const idx = orders.findIndex((o) => o.id === orderId || o.orderNumber === orderId);
     if (idx === -1) throw new Error('Order not found');
@@ -188,9 +260,6 @@ export const orderService = {
     return orders[idx];
   },
 
-  /**
-   * Reset orders to demo initial records
-   */
   async resetToDefaults(): Promise<void> {
     saveOrders(INITIAL_ORDERS);
   },

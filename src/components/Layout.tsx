@@ -64,7 +64,7 @@ export default function Layout() {
 
       <nav className="bottom-nav">
         <NavLink 
-          to="/admin" 
+          to="." 
           className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
           end
         >
@@ -73,14 +73,14 @@ export default function Layout() {
         </NavLink>
 
         <NavLink 
-          to="/admin/inventory" 
+          to="inventory" 
           className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
         >
           <List size={24} />
           <span>Inventory</span>
         </NavLink>
         <NavLink 
-          to="/admin/settings" 
+          to="settings" 
           className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
         >
           <Settings size={24} />
@@ -88,7 +88,7 @@ export default function Layout() {
         </NavLink>
         {profile?.role === 'admin' && (
           <NavLink 
-            to="/admin/dashboard" 
+            to="dashboard" 
             className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
           >
             <Shield size={24} />
@@ -97,7 +97,7 @@ export default function Layout() {
         )}
         {profile?.role === 'admin' && (
           <NavLink 
-            to="/admin/ledger" 
+            to="ledger" 
             className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
           >
             <BookOpen size={24} />

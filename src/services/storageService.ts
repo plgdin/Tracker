@@ -1,23 +1,39 @@
-/**
- * Storage Service for handling image selection, local base64 previews in demo mode,
- * with documented integration points for Supabase Storage.
- */
+import { db } from '../lib/db';
+
 export const storageService = {
   /**
-   * Convert an image File to a base64 Data URL for local demo previews and testing.
-   * 
-   * Supabase Storage Integration Point:
-   * const fileExt = file.name.split('.').pop();
-   * const fileName = `${Math.random()}.${fileExt}`;
-   * const filePath = `products/${fileName}`;
-   * 
-   * const { error: uploadError } = await supabase.storage.from('product-images').upload(filePath, file);
-   * if (uploadError) throw uploadError;
-   * 
-   * const { data } = supabase.storage.from('product-images').getPublicUrl(filePath);
-   * return data.publicUrl;
+   * Upload an image to Supabase Storage ('product-images' bucket) via stanes db backend
+   */
+  async uploadFile(file: File): Promise<string> {
+    if (!file.type.startsWith('image/')) {
+      throw new Error('Please select a valid image file.');
+    }
+
+    try {
+      const res = await db.uploadProductImage(file);
+      if (res.success && res.url) {
+        return res.url;
+      }
+    } catch (e) {
+      console.warn('Backend product image upload failed, falling back to base64:', e);
+    }
+
+    return this.previewFile(file);
+  },
+
+  /**
+   * Convert an image File to a base64 Data URL for local previews and fallback.
    */
   async previewFile(file: File): Promise<string> {
+    try {
+      const uploadedUrl = await this.uploadFile(file);
+      if (uploadedUrl && !uploadedUrl.startsWith('data:')) {
+        return uploadedUrl;
+      }
+    } catch {
+      // Fallback to data URL
+    }
+
     return new Promise((resolve, reject) => {
       if (!file.type.startsWith('image/')) {
         reject(new Error('Please select a valid image file.'));

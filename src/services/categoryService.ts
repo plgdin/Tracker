@@ -1,13 +1,11 @@
 import type { Category } from '../types/ecommerce';
 import { INITIAL_CATEGORIES } from './mockData';
+import { db } from '../lib/db';
 
 const STORAGE_KEY = 'nayakart_categories_v5';
 
 const getStoredCategories = (): Category[] => {
   try {
-    localStorage.removeItem('bnj_categories_v3');
-    localStorage.removeItem('bnj_categories_v2');
-    localStorage.removeItem('bnj_categories_v1');
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_CATEGORIES));
@@ -25,69 +23,99 @@ const saveCategories = (categories: Category[]): void => {
 
 export const categoryService = {
   /**
-   * Fetch all categories
-   * Supabase Integration Point:
-   * const { data, error } = await supabase.from('categories').select('*').order('display_order', { ascending: true });
+   * Fetch all categories connected to stanes db backend ('online' store)
    */
   async getAll(): Promise<Category[]> {
-    const cats = getStoredCategories();
-    return cats.sort((a, b) => a.displayOrder - b.displayOrder);
+    try {
+      const cats = await db.getCategoriesByStore('online');
+      if (cats && cats.length > 0) {
+        const mapped: Category[] = cats.map((cat, idx) => ({
+          id: String(cat.id),
+          name: cat.name || 'Category',
+          slug: (cat.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+          description: `Explore quality ${cat.name} supplies`,
+          imageUrl: cat.image_url || '',
+          color: cat.color || '#EAF05C',
+          iconName: cat.icon || 'Tag',
+          displayOrder: idx + 1,
+        }));
+
+        saveCategories(mapped);
+        return mapped;
+      }
+    } catch (e) {
+      console.warn('Backend categories fetch failed, using stored:', e);
+    }
+
+    const stored = getStoredCategories();
+    return stored.sort((a, b) => a.displayOrder - b.displayOrder);
   },
 
-  /**
-   * Get category by slug or ID
-   */
   async getBySlugOrId(identifier: string): Promise<Category | undefined> {
     const all = await this.getAll();
     return all.find((c) => c.slug === identifier || c.id === identifier);
   },
 
-  /**
-   * Create category (Admin)
-   * Supabase Integration Point:
-   * const { data, error } = await supabase.from('categories').insert([cat]).select().single();
-   */
   async create(category: Omit<Category, 'id'>): Promise<Category> {
-    const list = getStoredCategories();
+    let createdId = `cat-${Date.now()}`;
+    try {
+      const added = await db.addCategory({
+        name: category.name,
+        color: category.color || '#EAF05C',
+        icon: category.iconName || 'Tag',
+        image_url: category.imageUrl || '',
+      });
+      if (added?.id) createdId = String(added.id);
+    } catch (e) {
+      console.warn('Backend addCategory failed:', e);
+    }
+
     const newCat: Category = {
       ...category,
-      id: `cat-${Date.now()}`,
+      id: createdId,
       slug: category.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
     };
+
+    const list = getStoredCategories();
     list.push(newCat);
     saveCategories(list);
     return newCat;
   },
 
-  /**
-   * Update category (Admin)
-   * Supabase Integration Point:
-   * const { data, error } = await supabase.from('categories').update(updates).eq('id', id).select().single();
-   */
   async update(id: string, updates: Partial<Category>): Promise<Category> {
+    try {
+      await db.updateCategory(id, {
+        ...(updates.name ? { name: updates.name } : {}),
+        ...(updates.color ? { color: updates.color } : {}),
+        ...(updates.iconName ? { icon: updates.iconName } : {}),
+        ...(updates.imageUrl !== undefined ? { image_url: updates.imageUrl } : {}),
+      });
+    } catch (e) {
+      console.warn('Backend updateCategory failed:', e);
+    }
+
     const list = getStoredCategories();
     const idx = list.findIndex((c) => c.id === id);
-    if (idx === -1) throw new Error('Category not found');
-    list[idx] = { ...list[idx], ...updates };
-    saveCategories(list);
-    return list[idx];
+    if (idx !== -1) {
+      list[idx] = { ...list[idx], ...updates };
+      saveCategories(list);
+      return list[idx];
+    }
+    return updates as Category;
   },
 
-  /**
-   * Delete category (Admin)
-   * Supabase Integration Point:
-   * const { error } = await supabase.from('categories').delete().eq('id', id);
-   */
   async delete(id: string): Promise<boolean> {
+    try {
+      await db.deleteCategory(id);
+    } catch (e) {
+      console.warn('Backend deleteCategory failed:', e);
+    }
+
     const list = getStoredCategories();
-    const filtered = list.filter((c) => c.id !== id);
-    saveCategories(filtered);
+    saveCategories(list.filter((c) => c.id !== id));
     return true;
   },
 
-  /**
-   * Reset categories to defaults
-   */
   async resetToDefaults(): Promise<void> {
     saveCategories(INITIAL_CATEGORIES);
   },

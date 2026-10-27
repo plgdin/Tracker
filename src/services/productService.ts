@@ -1,13 +1,12 @@
 import type { Product } from '../types/ecommerce';
 import { INITIAL_PRODUCTS } from './mockData';
+import { db } from '../lib/db';
+import type { Item } from '../lib/db';
 
 const STORAGE_KEY = 'nayakart_products_v5';
 
 const getStoredProducts = (): Product[] => {
   try {
-    localStorage.removeItem('bnj_products_v3');
-    localStorage.removeItem('bnj_products_v2');
-    localStorage.removeItem('bnj_products_v1');
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_PRODUCTS));
@@ -25,33 +24,63 @@ const saveProducts = (products: Product[]): void => {
 
 export const productService = {
   /**
-   * Fetch all products.
-   * Supabase Integration Point:
-   * const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+   * Fetch all products from stanes db backend
    */
   async getAll(): Promise<Product[]> {
+    try {
+      const items: Item[] = await db.getItems();
+      if (items && items.length > 0) {
+        const mapped: Product[] = items.map((item: Item) => {
+          let extra: Record<string, any> = {};
+          try {
+            if (item.notes && item.notes.startsWith('{')) {
+              extra = JSON.parse(item.notes);
+            }
+          } catch {
+            // Not JSON
+          }
+
+          return {
+            id: String(item.id),
+            name: item.name || 'Product',
+            slug: (item.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+            description: extra.description || item.notes || item.name || '',
+            price: Number(item.price) || 0,
+            discountPrice: extra.discountPrice !== undefined ? Number(extra.discountPrice) : undefined,
+            categoryId: item.category || 'all',
+            categoryName: item.category || 'Uncategorized',
+            images: item.image_url ? [item.image_url] : (extra.images || []),
+            stock: Number(item.quantity) || 0,
+            brand: extra.brand || 'Bake & Joy',
+            rating: extra.rating || 4.8,
+            reviewsCount: extra.reviewsCount || 12,
+            isFeatured: extra.isFeatured ?? true,
+            isActive: extra.isActive ?? true,
+            unit: extra.unit || 'Piece',
+            createdAt: item.created_at || new Date().toISOString(),
+          };
+        });
+
+        saveProducts(mapped);
+        return mapped;
+      }
+    } catch (e) {
+      console.warn('Backend items fetch failed, using stored products:', e);
+    }
+
     return getStoredProducts();
   },
 
-  /**
-   * Fetch active products for customer storefront
-   */
   async getActive(): Promise<Product[]> {
     const all = await this.getAll();
     return all.filter((p) => p.isActive);
   },
 
-  /**
-   * Fetch product by ID
-   */
   async getById(id: string): Promise<Product | undefined> {
     const all = await this.getAll();
     return all.find((p) => p.id === id);
   },
 
-  /**
-   * Search and filter products
-   */
   async search(params: {
     query?: string;
     categoryId?: string;
@@ -75,7 +104,7 @@ export const productService = {
     }
 
     if (params.categoryId && params.categoryId !== 'all') {
-      list = list.filter((p) => p.categoryId === params.categoryId);
+      list = list.filter((p) => p.categoryId === params.categoryId || p.categoryName === params.categoryId);
     }
 
     if (params.minPrice !== undefined) {
@@ -113,53 +142,100 @@ export const productService = {
     return list;
   },
 
-  /**
-   * Create a new product (Admin)
-   * Supabase Integration Point:
-   * const { data, error } = await supabase.from('products').insert([productData]).select().single();
-   */
   async create(product: Omit<Product, 'id' | 'createdAt'>): Promise<Product> {
-    const list = getStoredProducts();
+    const extra = {
+      description: product.description,
+      discountPrice: product.discountPrice,
+      isFeatured: product.isFeatured,
+      isActive: product.isActive,
+      unit: product.unit,
+      rating: product.rating,
+      reviewsCount: product.reviewsCount,
+      images: product.images,
+      brand: product.brand,
+    };
+
+    let createdId = `prod-${Date.now()}`;
+    try {
+      const added = await db.addItem({
+        name: product.name,
+        price: product.price.toString(),
+        quantity: product.stock,
+        category: product.categoryName || product.categoryId,
+        notes: JSON.stringify(extra),
+        image_url: product.images?.[0] || '',
+        store_segment: 'bakery',
+        expiration_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      });
+      if (added?.id) createdId = String(added.id);
+    } catch (e) {
+      console.warn('Backend db.addItem failed:', e);
+    }
+
     const newProduct: Product = {
       ...product,
-      id: `prod-${Date.now()}`,
+      id: createdId,
       slug: product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
       createdAt: new Date().toISOString(),
     };
+
+    const list = getStoredProducts();
     list.unshift(newProduct);
     saveProducts(list);
     return newProduct;
   },
 
-  /**
-   * Update an existing product (Admin)
-   * Supabase Integration Point:
-   * const { data, error } = await supabase.from('products').update(updates).eq('id', id).select().single();
-   */
   async update(id: string, updates: Partial<Product>): Promise<Product> {
     const list = getStoredProducts();
     const idx = list.findIndex((p) => p.id === id);
-    if (idx === -1) throw new Error('Product not found');
-    list[idx] = { ...list[idx], ...updates };
-    saveProducts(list);
-    return list[idx];
+    const existing = idx !== -1 ? list[idx] : null;
+    const merged = { ...(existing || {}), ...updates } as Product;
+
+    try {
+      const extra = {
+        description: merged.description,
+        discountPrice: merged.discountPrice,
+        isFeatured: merged.isFeatured,
+        isActive: merged.isActive,
+        unit: merged.unit,
+        rating: merged.rating,
+        reviewsCount: merged.reviewsCount,
+        images: merged.images,
+        brand: merged.brand,
+      };
+
+      await db.updateItem(id, {
+        ...(updates.name ? { name: updates.name } : {}),
+        ...(updates.price !== undefined ? { price: updates.price.toString() } : {}),
+        ...(updates.stock !== undefined ? { quantity: updates.stock } : {}),
+        ...(updates.categoryName || updates.categoryId ? { category: updates.categoryName || updates.categoryId } : {}),
+        ...(updates.images?.[0] ? { image_url: updates.images[0] } : {}),
+        notes: JSON.stringify(extra),
+      });
+    } catch (e) {
+      console.warn('Backend db.updateItem failed:', e);
+    }
+
+    if (idx !== -1) {
+      list[idx] = merged;
+      saveProducts(list);
+      return list[idx];
+    }
+    return merged;
   },
 
-  /**
-   * Delete a product (Admin)
-   * Supabase Integration Point:
-   * const { error } = await supabase.from('products').delete().eq('id', id);
-   */
   async delete(id: string): Promise<boolean> {
+    try {
+      await db.deleteItem(id);
+    } catch (e) {
+      console.warn('Backend db.deleteItem failed:', e);
+    }
+
     const list = getStoredProducts();
-    const filtered = list.filter((p) => p.id !== id);
-    saveProducts(filtered);
+    saveProducts(list.filter((p) => p.id !== id));
     return true;
   },
 
-  /**
-   * Reset to initial mock catalog
-   */
   async resetToDefaults(): Promise<void> {
     saveProducts(INITIAL_PRODUCTS);
   },
