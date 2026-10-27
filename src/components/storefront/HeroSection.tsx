@@ -6,13 +6,9 @@ import {
   ShoppingBag, 
   Tag, 
   ArrowRight, 
-  CheckCircle2, 
-  Layers, 
   Sparkles, 
-  Package, 
   PhoneCall 
 } from 'lucide-react';
-import { InfiniteSlider } from '@/components/ui/infinite-slider';
 import type { StoreSettings } from '../../types/ecommerce';
 
 interface HeroSectionProps {
@@ -107,44 +103,6 @@ const HERO_SLIDES: PromoSlide[] = [
   },
 ];
 
-const BENEFIT_ITEMS = [
-  {
-    icon: Tag,
-    title: 'Wholesale & Retail',
-    subtitle: 'Special pricing for home bakers',
-  },
-  {
-    icon: Layers,
-    title: '1,000+ Baking Items',
-    subtitle: 'Tools, moulds & raw materials',
-  },
-  {
-    icon: Package,
-    title: 'Cake Boxes & Boards',
-    subtitle: 'Transparent window boxes & bases',
-  },
-  {
-    icon: CheckCircle2,
-    title: 'Kazhakuttam Showroom',
-    subtitle: 'Quick pickup & local dispatch',
-  },
-  {
-    icon: Sparkles,
-    title: 'Couverture & Compounds',
-    subtitle: 'Morde, Van Houten & 2M slabs',
-  },
-  {
-    icon: ShoppingBag,
-    title: '100% Food-Grade Bakeware',
-    subtitle: 'Certified silicone & heavy pans',
-  },
-  {
-    icon: PhoneCall,
-    title: 'WhatsApp Fast Orders',
-    subtitle: 'Instant counter order desk',
-  },
-];
-
 export const HeroSection: React.FC<HeroSectionProps> = ({ settings }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -202,8 +160,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ settings }) => {
       aria-roledescription="carousel"
       aria-label="Promotions and Baking Supplies Offers"
     >
-      {/* 1. Amazon-style Full-Width Slideshow Container */}
-      <div className="relative w-full h-[520px] sm:h-[560px] md:h-[600px] lg:h-[640px] overflow-hidden select-none">
+      {/* 1. Full-Width Amazon-style Slideshow Container */}
+      <div className="relative w-full h-[500px] sm:h-[540px] md:h-[580px] lg:h-[620px] overflow-hidden select-none">
         {HERO_SLIDES.map((slide, index) => {
           const isActive = index === currentSlide;
 
@@ -215,7 +173,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ settings }) => {
               }`}
               aria-hidden={!isActive}
             >
-              {/* Background Photo with Dark Gradient Wash for High Readability */}
+              {/* Background Photo with Clear Dark Contrast Overlays (NO washed-out bottom gradient) */}
               <div className="absolute inset-0 overflow-hidden">
                 <img
                   src={slide.image}
@@ -231,19 +189,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ settings }) => {
                   }`}
                 />
 
-                {/* Multi-layered Amazon-style Contrast Overlays */}
                 {/* 1. Deep cocoa tint from left to right for text clarity */}
                 <div className="absolute inset-0 bg-gradient-to-r from-[#221008]/95 via-[#2E150B]/85 sm:via-[#2E150B]/70 to-[#221008]/40" />
 
-                {/* 2. Top-to-bottom gentle gradient */}
-                <div className="absolute inset-0 bg-gradient-to-b from-[#221008]/70 via-transparent to-[#221008]/90" />
-
-                {/* 3. Amazon Signature Bottom Gradient Blend into Store Background */}
-                <div className="absolute bottom-0 left-0 right-0 h-32 sm:h-44 bg-gradient-to-t from-[#F9F4EE] via-[#F9F4EE]/60 to-transparent pointer-events-none" />
+                {/* 2. Top-to-bottom gentle dark vignette */}
+                <div className="absolute inset-0 bg-gradient-to-b from-[#221008]/60 via-transparent to-[#221008]/75" />
               </div>
 
               {/* Slide Content Box */}
-              <div className="relative z-20 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center pb-20 sm:pb-24">
+              <div className="relative z-20 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center pb-12 sm:pb-16">
                 <div className="max-w-2xl sm:max-w-3xl space-y-3 sm:space-y-4 text-left">
                   
                   {/* Offer Pill Badge */}
@@ -252,7 +206,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ settings }) => {
                       {slide.badge}
                     </span>
                     <span className="hidden sm:inline-flex items-center gap-1 text-[#EAD9CF] font-medium text-xs">
-                      <Tag className="w-3.5 h-3.5 text-[#E39829]" />
+                      <Tag className="w-3.5 h-3.5 text-[#EAD9CF]" />
                       Limited Period Offer
                     </span>
                   </div>
@@ -335,7 +289,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ settings }) => {
         </button>
 
         {/* 3. Amazon-style Slide Indicators & Counter */}
-        <div className="absolute bottom-6 sm:bottom-10 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15">
+        <div className="absolute bottom-5 sm:bottom-7 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-black/45 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15">
           {HERO_SLIDES.map((slide, index) => (
             <button
               key={slide.id}
@@ -351,36 +305,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ settings }) => {
           <span className="text-[10px] font-mono text-white/70 ml-1.5 border-l border-white/20 pl-2">
             {currentSlide + 1}/{totalSlides}
           </span>
-        </div>
-      </div>
-
-      {/* 4. Infinite Slider Benefit Ribbon (Sticky to the original warm cocoa & cream theme!) */}
-      <div className="relative z-20 -mt-8 sm:-mt-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4">
-        <div className="relative bg-[#FCFAF7] border border-[#E8D8CC] rounded-2xl p-2.5 sm:p-3.5 shadow-xl overflow-hidden">
-          {/* Subtle gradient edge masks for seamless entry & exit */}
-          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-10 sm:w-16 bg-gradient-to-r from-[#FCFAF7] via-[#FCFAF7]/80 to-transparent z-10" />
-          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-10 sm:w-16 bg-gradient-to-l from-[#FCFAF7] via-[#FCFAF7]/80 to-transparent z-10" />
-
-          <InfiniteSlider gap={16} duration={28} durationOnHover={55} className="w-full py-1">
-            {BENEFIT_ITEMS.map((item, idx) => (
-              <div
-                key={idx}
-                className="flex items-center gap-3 px-4 py-2 bg-[#F9F4EE]/80 hover:bg-[#F2E7DC] transition-colors rounded-xl border border-[#E8D8CC]/80 shrink-0 select-none cursor-default"
-              >
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#F5EBE1] text-[#4A2818] flex items-center justify-center shrink-0 border border-[#E8D8CC]">
-                  <item.icon className="w-4 h-4 sm:w-5 sm:h-5 text-[#4A2818]" />
-                </div>
-                <div className="min-w-0 pr-2">
-                  <h3 className="text-xs sm:text-sm font-bold text-[#4A2818] leading-tight whitespace-nowrap">
-                    {item.title}
-                  </h3>
-                  <p className="text-[10px] sm:text-xs text-[#7A6153] leading-tight mt-0.5 whitespace-nowrap">
-                    {item.subtitle}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </InfiniteSlider>
         </div>
       </div>
     </section>
