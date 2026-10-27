@@ -12,6 +12,7 @@ import {
   Package, 
   PhoneCall 
 } from 'lucide-react';
+import { InfiniteSlider } from '@/components/ui/infinite-slider';
 import type { StoreSettings } from '../../types/ecommerce';
 
 interface HeroSectionProps {
@@ -103,6 +104,44 @@ const HERO_SLIDES: PromoSlide[] = [
     secondaryCtaLink: '/products',
     image: 'https://content.jdmagicbox.com/v2/comp/thiruvananthapuram/j6/0471px471.x471.190622133608.y4j6/catalogue/bake-n-joy-kazhakuttam-thiruvananthapuram-baking-tool-dealers-xvwotvyf9p.jpg',
     fallbackImage: '/cat-baking-materials.jpg',
+  },
+];
+
+const BENEFIT_ITEMS = [
+  {
+    icon: Tag,
+    title: 'Wholesale & Retail',
+    subtitle: 'Special pricing for home bakers',
+  },
+  {
+    icon: Layers,
+    title: '1,000+ Baking Items',
+    subtitle: 'Tools, moulds & raw materials',
+  },
+  {
+    icon: Package,
+    title: 'Cake Boxes & Boards',
+    subtitle: 'Transparent window boxes & bases',
+  },
+  {
+    icon: CheckCircle2,
+    title: 'Kazhakuttam Showroom',
+    subtitle: 'Quick pickup & local dispatch',
+  },
+  {
+    icon: Sparkles,
+    title: 'Couverture & Compounds',
+    subtitle: 'Morde, Van Houten & 2M slabs',
+  },
+  {
+    icon: ShoppingBag,
+    title: '100% Food-Grade Bakeware',
+    subtitle: 'Certified silicone & heavy pans',
+  },
+  {
+    icon: PhoneCall,
+    title: 'WhatsApp Fast Orders',
+    subtitle: 'Instant counter order desk',
   },
 ];
 
@@ -315,50 +354,33 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ settings }) => {
         </div>
       </div>
 
-      {/* 4. Amazon-style Quick Benefit Ribbon (Highlighting store essentials for home & pro bakers) */}
+      {/* 4. Infinite Slider Benefit Ribbon (Sticky to the original warm cocoa & cream theme!) */}
       <div className="relative z-20 -mt-8 sm:-mt-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 bg-[#FCFAF7] border border-[#E8D8CC] rounded-2xl p-3 sm:p-5 shadow-xl">
-          
-          <div className="flex items-center gap-2.5 sm:gap-3 p-1.5 sm:p-2">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#F5EBE1] text-[#4A2818] flex items-center justify-center shrink-0 border border-[#E8D8CC]">
-              <Tag className="w-4 h-4 sm:w-5 sm:h-5 text-[#4A2818]" />
-            </div>
-            <div>
-              <h2 className="text-xs sm:text-sm font-bold text-[#4A2818] leading-tight">Wholesale &amp; Retail</h2>
-              <p className="text-[10px] sm:text-xs text-[#7A6153] leading-tight mt-0.5">Special pricing for home bakers</p>
-            </div>
-          </div>
+        <div className="relative bg-[#FCFAF7] border border-[#E8D8CC] rounded-2xl p-2.5 sm:p-3.5 shadow-xl overflow-hidden">
+          {/* Subtle gradient edge masks for seamless entry & exit */}
+          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-10 sm:w-16 bg-gradient-to-r from-[#FCFAF7] via-[#FCFAF7]/80 to-transparent z-10" />
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-10 sm:w-16 bg-gradient-to-l from-[#FCFAF7] via-[#FCFAF7]/80 to-transparent z-10" />
 
-          <div className="flex items-center gap-2.5 sm:gap-3 p-1.5 sm:p-2">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#F5EBE1] text-[#4A2818] flex items-center justify-center shrink-0 border border-[#E8D8CC]">
-              <Layers className="w-4 h-4 sm:w-5 sm:h-5 text-[#4A2818]" />
-            </div>
-            <div>
-              <h2 className="text-xs sm:text-sm font-bold text-[#4A2818] leading-tight">1,000+ Baking Items</h2>
-              <p className="text-[10px] sm:text-xs text-[#7A6153] leading-tight mt-0.5">Tools, moulds &amp; raw materials</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2.5 sm:gap-3 p-1.5 sm:p-2">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#F5EBE1] text-[#4A2818] flex items-center justify-center shrink-0 border border-[#E8D8CC]">
-              <Package className="w-4 h-4 sm:w-5 sm:h-5 text-[#4A2818]" />
-            </div>
-            <div>
-              <h2 className="text-xs sm:text-sm font-bold text-[#4A2818] leading-tight">Cake Boxes &amp; Boards</h2>
-              <p className="text-[10px] sm:text-xs text-[#7A6153] leading-tight mt-0.5">Transparent window boxes &amp; bases</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2.5 sm:gap-3 p-1.5 sm:p-2">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#F5EBE1] text-[#4A2818] flex items-center justify-center shrink-0 border border-[#E8D8CC]">
-              <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-[#4A2818]" />
-            </div>
-            <div>
-              <h2 className="text-xs sm:text-sm font-bold text-[#4A2818] leading-tight">Kazhakuttam Showroom</h2>
-              <p className="text-[10px] sm:text-xs text-[#7A6153] leading-tight mt-0.5">Quick pickup &amp; local dispatch</p>
-            </div>
-          </div>
-
+          <InfiniteSlider gap={16} duration={28} durationOnHover={55} className="w-full py-1">
+            {BENEFIT_ITEMS.map((item, idx) => (
+              <div
+                key={idx}
+                className="flex items-center gap-3 px-4 py-2 bg-[#F9F4EE]/80 hover:bg-[#F2E7DC] transition-colors rounded-xl border border-[#E8D8CC]/80 shrink-0 select-none cursor-default"
+              >
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#F5EBE1] text-[#4A2818] flex items-center justify-center shrink-0 border border-[#E8D8CC]">
+                  <item.icon className="w-4 h-4 sm:w-5 sm:h-5 text-[#4A2818]" />
+                </div>
+                <div className="min-w-0 pr-2">
+                  <h3 className="text-xs sm:text-sm font-bold text-[#4A2818] leading-tight whitespace-nowrap">
+                    {item.title}
+                  </h3>
+                  <p className="text-[10px] sm:text-xs text-[#7A6153] leading-tight mt-0.5 whitespace-nowrap">
+                    {item.subtitle}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </InfiniteSlider>
         </div>
       </div>
     </section>
