@@ -15,7 +15,6 @@ import { CheckoutModal } from '../components/storefront/CheckoutModal';
 import { OrderConfirmationModal } from '../components/storefront/OrderConfirmationModal';
 import { StoreInfoSection } from '../components/storefront/StoreInfoSection';
 import { StorefrontFooter } from '../components/storefront/StorefrontFooter';
-import { LandingIntro } from '../components/storefront/LandingIntro';
 import { useDeferredLoading } from '../hooks/useDeferredLoading';
 
 import { productService } from '../services/productService';
@@ -30,7 +29,6 @@ export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [popularProducts, setPopularProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [isIntroActive, setIsIntroActive] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const showSkeleton = useDeferredLoading(isLoading, 300);
 
@@ -66,26 +64,11 @@ export default function Home() {
   };
 
   return (
-    <div className={`min-h-screen bg-[#F9F4EE] text-[#4A2818] flex flex-col font-sans selection:bg-[#EAD9CF] selection:text-[#4A2818] ${
-      isIntroActive ? 'overflow-hidden' : ''
-    }`}>
-      
-      {/* 0. Fullscreen Landing Intro with Centered Logo */}
-      {isIntroActive && (
-        <LandingIntro
-          storeName={settings.storeName || 'NayaKart'}
-          targetElementId="storefront-navbar-logo"
-          onFinished={() => setIsIntroActive(false)}
-        />
-      )}
-
-
-
-      {/* 2. Main Artisan Storefront Navigation */}
+    <div className="min-h-screen bg-[#F9F4EE] text-[#4A2818] flex flex-col font-sans selection:bg-[#EAD9CF] selection:text-[#4A2818]">
+      {/* 1. Main Artisan Storefront Navigation */}
       <StorefrontNavbar
         settings={settings}
         categories={categories}
-        isIntroActive={isIntroActive}
         onSelectProduct={(p) => setSelectedProduct(p)}
       />
 
@@ -144,13 +127,13 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
             
-            {/* Left: Fresh Artisan Strawberry Cupcake on Plate */}
+            {/* Left: Professional Baking Supplies & Tools Showcase */}
             <div className="lg:col-span-5 flex justify-center">
               <div className="relative max-w-xs sm:max-w-sm w-full">
                 <div className="relative rounded-[2.5rem] overflow-hidden aspect-square bg-[#FCFAF7] border-2 border-white/80 shadow-2xl p-3">
                   <img
-                    src="https://images.unsplash.com/photo-1587668178277-295251f900ce?auto=format&fit=crop&w=800&q=85"
-                    alt="Artisan dessert and strawberry cupcake"
+                    src="/cat-baking-materials.jpg"
+                    alt="Baking supplies, moulds, and tools showroom"
                     className="w-full h-full object-cover rounded-[2rem] transform hover:scale-105 transition-transform duration-700"
                   />
                 </div>
@@ -160,23 +143,23 @@ export default function Home() {
             {/* Right: Editorial Narrative & Circular Arrow Button */}
             <div className="lg:col-span-7 space-y-5 text-left">
               <div className="text-xs font-semibold uppercase tracking-wider text-[#7A6153]">
-                Artisan Standard
+                Supplies &amp; Raw Materials Hub
               </div>
 
               <h3 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-medium text-[#4A2818] tracking-tight leading-[1.12]">
-                Service &amp; Studio Supplies
+                Tools &amp; Ingredients for Every Baker
               </h3>
 
               <p className="text-sm sm:text-base text-[#7A6153] leading-relaxed max-w-xl font-normal">
-                Calibrated Belgian chocolate callets, Tropelite whipping creams, fine piping nozzles, and concentrated oil colours formulated for flawless patisserie finishes. Handcrafted for professional dessert studios and passionate home bakers across Trivandrum.
+                High-grade silicone moulds, Belgian chocolate callets, Tropelite whipping creams, stainless steel piping nozzles, concentrated gel colours, and heavy-duty cake packaging boxes. Handpicked for home bakers, cake artists, and culinary businesses across Trivandrum.
               </p>
 
-              {/* Circular Dark Cocoa Button (from reference mockup) */}
+              {/* Circular Dark Cocoa Button */}
               <div className="pt-2">
                 <Link
                   to="/products"
                   className="w-12 h-12 rounded-full bg-[#4A2818] hover:bg-[#361B0E] text-[#F9F4EE] flex items-center justify-center shadow-lg hover:scale-105 transition-all"
-                  title="Explore all bakery studio supplies"
+                  title="Explore all baking supplies and tools"
                 >
                   <ArrowRight className="w-5 h-5 stroke-[2.2]" />
                 </Link>

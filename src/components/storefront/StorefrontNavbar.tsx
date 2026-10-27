@@ -21,7 +21,6 @@ interface StorefrontNavbarProps {
   searchQuery?: string;
   onSearchChange?: (q: string) => void;
   onSelectProduct?: (product: Product) => void;
-  isIntroActive?: boolean;
 }
 
 export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
@@ -29,7 +28,6 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
   searchQuery = '',
   onSearchChange,
   onSelectProduct: _onSelectProduct,
-  isIntroActive: _isIntroActive = false,
 }) => {
   const { totalItems, setIsCartOpen } = useCartContext();
   const navigate = useNavigate();

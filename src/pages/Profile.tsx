@@ -23,7 +23,7 @@ export default function Profile() {
   if (isLoading || !user) {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-burnt-orange" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#4A2818]" />
       </div>
     );
   }
@@ -34,7 +34,7 @@ export default function Profile() {
         {/* Back navigation */}
         <button
           onClick={() => navigate("/")}
-          className="flex items-center gap-2 text-taupe hover:text-burnt-orange transition-colors font-medium mb-4"
+          className="flex items-center gap-2 text-taupe hover:text-[#4A2818] transition-colors font-medium mb-4"
         >
           <ArrowLeft className="w-5 h-5" />
           Back to Home

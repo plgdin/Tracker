@@ -126,7 +126,7 @@ export default function Login() {
       <BakeryPattern dense />
       <div className="relative z-10 w-full max-w-lg space-y-8">
         <div className="text-center">
-          <div className="w-20 h-20 bg-burnt-orange rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-burnt-orange/20">
+          <div className="w-20 h-20 bg-[#4A2818] rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-[#4A2818]/20">
             <ChefHat className="w-10 h-10 text-white" />
           </div>
           <h1 className="font-heading text-4xl font-bold text-espresso">NayaKart</h1>
@@ -164,7 +164,7 @@ export default function Login() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="rounded-xl border-espresso/15 focus-visible:ring-burnt-orange text-lg"
+                      className="rounded-xl border-espresso/15 focus-visible:ring-[#4A2818] text-lg"
                     />
                   </div>
                   <div className="space-y-2">
@@ -176,13 +176,13 @@ export default function Login() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      className="rounded-xl border-espresso/15 focus-visible:ring-burnt-orange text-lg"
+                      className="rounded-xl border-espresso/15 focus-visible:ring-[#4A2818] text-lg"
                     />
                   </div>
                   <Button
                     type="submit"
                     disabled={loading}
-                    className="auth-btn w-full mt-4 py-7 bg-burnt-orange hover:bg-[#C44D2A] text-white font-bold rounded-full transition-all shadow-md shadow-burnt-orange/20 text-lg uppercase tracking-wider"
+                    className="auth-btn w-full mt-4 py-7 bg-[#4A2818] hover:bg-[#361B0E] text-white font-bold rounded-full transition-all shadow-md shadow-[#4A2818]/20 text-lg uppercase tracking-wider"
                   >
                     {loading ? "Signing in..." : "Sign In"}
                   </Button>
@@ -200,7 +200,7 @@ export default function Login() {
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       required
-                      className="rounded-xl border-espresso/15 focus-visible:ring-burnt-orange text-lg"
+                      className="rounded-xl border-espresso/15 focus-visible:ring-[#4A2818] text-lg"
                     />
                   </div>
                   <div className="space-y-2">
@@ -212,7 +212,7 @@ export default function Login() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="rounded-xl border-espresso/15 focus-visible:ring-burnt-orange text-lg"
+                      className="rounded-xl border-espresso/15 focus-visible:ring-[#4A2818] text-lg"
                     />
                   </div>
                   <div className="space-y-2">
@@ -224,13 +224,13 @@ export default function Login() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      className="rounded-xl border-espresso/15 focus-visible:ring-burnt-orange text-lg"
+                      className="rounded-xl border-espresso/15 focus-visible:ring-[#4A2818] text-lg"
                     />
                   </div>
                   <Button
                     type="submit"
                     disabled={loading}
-                    className="auth-btn w-full mt-4 py-7 bg-burnt-orange hover:bg-[#C44D2A] text-white font-bold rounded-full transition-all shadow-md shadow-burnt-orange/20 text-lg uppercase tracking-wider"
+                    className="auth-btn w-full mt-4 py-7 bg-[#4A2818] hover:bg-[#361B0E] text-white font-bold rounded-full transition-all shadow-md shadow-[#4A2818]/20 text-lg uppercase tracking-wider"
                   >
                     {loading ? "Creating Account..." : "Create Account"}
                   </Button>
@@ -243,17 +243,17 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => setActiveTab("signup")}
-                  className="text-base text-taupe hover:text-burnt-orange transition-colors cursor-pointer"
+                  className="text-base text-taupe hover:text-[#4A2818] transition-colors cursor-pointer"
                 >
-                  Don't have an account? <span className="font-semibold text-burnt-orange hover:opacity-80 transition-opacity">Sign Up</span>
+                  Don't have an account? <span className="font-semibold text-[#4A2818] hover:opacity-80 transition-opacity">Sign Up</span>
                 </button>
               ) : (
                 <button
                   type="button"
                   onClick={() => setActiveTab("signin")}
-                  className="text-base text-taupe hover:text-burnt-orange transition-colors cursor-pointer"
+                  className="text-base text-taupe hover:text-[#4A2818] transition-colors cursor-pointer"
                 >
-                  Already have an account? <span className="font-semibold text-burnt-orange hover:opacity-80 transition-opacity">Sign In</span>
+                  Already have an account? <span className="font-semibold text-[#4A2818] hover:opacity-80 transition-opacity">Sign In</span>
                 </button>
               )}
             </CardFooter>

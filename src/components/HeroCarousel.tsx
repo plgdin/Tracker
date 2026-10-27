@@ -3,24 +3,24 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const heroSlides = [
   {
-    image: "/hero-1.jpg",
-    title: "Happiness Baked Fresh",
-    subtitle: "Handcrafted pastries, artisan breads, and custom cakes delivered to your door.",
+    image: "/cat-baking-materials.jpg",
+    title: "Baking Tools & Cake Bakeware",
+    subtitle: "Silicone moulds, rotating turntables, spatulas, and nozzles for home bakers.",
   },
   {
-    image: "/hero-2.jpg",
-    title: "Premium Baking Supplies",
-    subtitle: "Everything you need to create bakery-quality treats at home.",
+    image: "/cat-chocolate.jpg",
+    title: "Couverture & Raw Materials",
+    subtitle: "Premium chocolate slabs, Dutch cocoa powder, and whipping creams.",
   },
   {
-    image: "/hero-3.jpg",
-    title: "From Our Oven to You",
-    subtitle: "Quality ingredients and professional tools for every baker.",
+    image: "/cat-packaging.jpg",
+    title: "Cake Boxes & Packaging",
+    subtitle: "Tall transparent window cake boxes and heavy-duty gold base boards.",
   },
   {
-    image: "/hero-4.jpg",
-    title: "Sweet Moments Start Here",
-    subtitle: "Decorate, create, and celebrate with our cake decoration collection.",
+    image: "/cat-cake-decorations.jpg",
+    title: "Cake Decorations & Colours",
+    subtitle: "Concentrated gel colours, edible luster dust, and acrylic cake toppers.",
   },
 ];
 
