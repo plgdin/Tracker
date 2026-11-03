@@ -107,32 +107,22 @@ export interface OnlineOrder {
 }
 
 
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://jwcwvodcltzuobxtbyuv.supabase.co";
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp3Y3d2b2RjbHR6dW9ieHRieXV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTY3ODIsImV4cCI6MjA5NTg3Mjc4Mn0.3i57KgG8U8TXGfTJqR1qQfgfi0doVSH6nolgGbhXBhE";
+
 const isSupabaseConfigured = 
-  import.meta.env.VITE_SUPABASE_URL && 
-  import.meta.env.VITE_SUPABASE_URL !== 'https://placeholder.supabase.co' && 
-  import.meta.env.VITE_SUPABASE_ANON_KEY && 
-  import.meta.env.VITE_SUPABASE_ANON_KEY !== 'placeholder-key';
+  supabaseUrl !== 'https://placeholder.supabase.co' && 
+  supabaseAnonKey !== 'placeholder-key';
 
 export const dbSupabase = isSupabaseConfigured ? supabaseClient : null;
 export const supabase = dbSupabase;
 
-// Synchronously/asynchronously verify if we have a valid authenticated user session with Supabase
+// Verify if we have access to Supabase (enabled for both public storefront reads and authenticated operations)
 export const getUseSupabase = async (): Promise<boolean> => {
   if (!dbSupabase) return false;
-  // 1. Instantly check memory state first for peak performance
   const user = useAuthStore.getState().user;
   if (user && user.id === 'mock-admin-id') return false;
-  if (user) return true;
-  try {
-    // 2. Fall back to getSession but wrap in a 2-second timeout to prevent any hangs
-    const sessionPromise = dbSupabase.auth.getSession().then(({ data }) => !!data.session);
-    return await Promise.race([
-      sessionPromise,
-      new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 2000))
-    ]);
-  } catch {
-    return false;
-  }
+  return true;
 };
 
 // Race promise helper to prevent infinite loading screens on database hang/timeout
