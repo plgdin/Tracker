@@ -1,15 +1,34 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { useToastStore } from '../../store/toastStore';
 import { db } from '../../lib/db';
 import { supabase } from '../../lib/supabase';
 import { supabaseEphemeral } from '../../lib/supabaseEphemeral';
-import type { Item, AuditLog, Category, OnlineOrder, HeroSlide } from '../../lib/db';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { ShieldCheck, Trash2, Lock, Activity, Key, Plus, Users, AlertTriangle, Tag, Package, ToggleLeft, ToggleRight, Eye, EyeOff, ShoppingCart, Image as ImageIcon, Edit2 } from 'lucide-react';
-import { useAppStore } from '../../store/appStore';
+import type { AuditLog, Category, OnlineOrder, HeroSlide } from '../../lib/db';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { 
+  Trash2, 
+  Activity, 
+  Plus, 
+  Users, 
+  AlertTriangle, 
+  Tag, 
+  Eye, 
+  EyeOff, 
+  ShoppingCart, 
+  Image as ImageIcon, 
+  Edit2, 
+  RefreshCw, 
+  Phone, 
+  MessageSquare, 
+  Sliders, 
+  Receipt,
+  Search,
+  Check,
+  X
+} from 'lucide-react';
 
-type TabKey = 'logs' | 'workers' | 'categories' | 'items' | 'settings' | 'orders' | 'hero' | 'receipt';
+type TabKey = 'orders' | 'workers' | 'categories' | 'hero' | 'settings' | 'logs';
 
 interface WorkerData {
   id: string;
@@ -24,106 +43,154 @@ export default function AdminDashboard() {
   const showToast = useToastStore(s => s.showToast);
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const isOnline = location.pathname.includes('online');
+
+  // URL query parameter support for tab selection (e.g. ?tab=orders)
+  const initialTab = (searchParams.get('tab') as TabKey) || (isOnline ? 'orders' : 'workers');
+  const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
+
   const [showAccessDenied, setShowAccessDenied] = useState(false);
   const [showWorkerPassword, setShowWorkerPassword] = useState(false);
-  const [showAdminPassword, setShowAdminPassword] = useState(false);
-  const [activeTab, setActiveTab] = useState<TabKey>('workers');
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Core Data Lists
   const [logs, setLogs] = useState<AuditLog[]>([]);
-  const [items, setItems] = useState<Item[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
   const [onlineOrders, setOnlineOrders] = useState<OnlineOrder[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [newAdminUser, setNewAdminUser] = useState('');
-  const [newAdminPass, setNewAdminPass] = useState('');
-  const [isSavingSecurity, setIsSavingSecurity] = useState(false);
+  const [workers, setWorkers] = useState<WorkerData[]>(() => {
+    return JSON.parse(localStorage.getItem('worker_accounts') || '[]');
+  });
+  const [pendingWorkers, setPendingWorkers] = useState<{id: string, name: string, email: string, created_at: string}[]>([]);
+
+  // Filter States
+  const [orderStatusFilter, setOrderStatusFilter] = useState<'all' | 'pending' | 'completed' | 'cancelled'>('all');
+  const [orderSearchQuery, setOrderSearchQuery] = useState('');
+  const [logSearchQuery, setLogSearchQuery] = useState('');
+
+  // Store & Receipt Settings
   const [storeUpiId, setStoreUpiId] = useState('anshajshaji3-2@okicici');
   const [storePhoneNumber, setStorePhoneNumber] = useState('919778052356');
   const [storeBankDetails, setStoreBankDetails] = useState('');
-  const [isSavingStoreSettings, setIsSavingStoreSettings] = useState(false);
   const [footerDescription, setFooterDescription] = useState('Your premier source for premium cooking and baking ingredients, raw materials, professional utensils, and chef supplies.');
   const [footerPhone, setFooterPhone] = useState('+91-9876543210');
   const [footerHours, setFooterHours] = useState('9 AM - 8 PM');
   const [footerDays, setFooterDays] = useState('Monday - Saturday');
-  const [footerCopyright, setFooterCopyright] = useState('© ' + new Date().getFullYear() + ' Template Store. All rights reserved.');
-  
-  // Receipt State
-  const [receiptH1, setReceiptH1] = useState('TEMPLATE STORE');
+  const [footerCopyright, setFooterCopyright] = useState('© ' + new Date().getFullYear() + ' NayaKart. All rights reserved.');
+  const [isSavingStoreSettings, setIsSavingStoreSettings] = useState(false);
+
+  // POS Thermal Receipt Settings
+  const [receiptH1, setReceiptH1] = useState('NAYAKART');
   const [receiptH2, setReceiptH2] = useState('KAZHAKUTTOM,TRIVANDRUM');
   const [receiptH3, setReceiptH3] = useState('PH:+91-999507648');
   const [receiptH4, setReceiptH4] = useState('GSTIN:32AKIPA6398K2ZW');
-  const [receiptF1, setReceiptF1] = useState('For :  TEMPLATE STORE');
+  const [receiptF1, setReceiptF1] = useState('For :  NAYAKART');
   const [receiptF2, setReceiptF2] = useState('Thank you . . .      Visit Again . . .');
-
   const [orderIdPrefix, setOrderIdPrefix] = useState('ORD-');
   const [orderIdSequence, setOrderIdSequence] = useState(1000);
 
+  // Category Form State
   const [newCatName, setNewCatName] = useState('');
-  const [newCatColor, setNewCatColor] = useState('#E63946');
+  const [newCatColor, setNewCatColor] = useState('#8B4513');
   const [newCatImageUrl, setNewCatImageUrl] = useState('');
   const [isUploadingCatImage, setIsUploadingCatImage] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
-  const [newCatStoreType, setNewCatStoreType] = useState<'online' | 'offline'>(() => useAppStore.getState().storeType);
-  
+  const [newCatStoreType, setNewCatStoreType] = useState<'online' | 'offline'>(() => isOnline ? 'online' : 'offline');
+
   // Hero Slide Form State
   const [newSlideTitle, setNewSlideTitle] = useState('');
   const [newSlideSubtitle, setNewSlideSubtitle] = useState('');
   const [newSlideImageUrl, setNewSlideImageUrl] = useState('');
   const [isUploadingSlide, setIsUploadingSlide] = useState(false);
-  const [workers, setWorkers] = useState<WorkerData[]>(() => {
-    return JSON.parse(localStorage.getItem('worker_accounts') || '[]');
-  });
-  const [pendingWorkers, setPendingWorkers] = useState<{id: string, name: string, email: string, created_at: string}[]>([]);
+
+  // Worker Form State
   const [workerEmail, setWorkerEmail] = useState('');
   const [workerPassword, setWorkerPassword] = useState('');
 
+  // Synchronize activeTab when URL param changes
+  useEffect(() => {
+    const tabParam = searchParams.get('tab') as TabKey;
+    if (tabParam && tabParam !== activeTab) {
+      setActiveTab(tabParam);
+    }
+  }, [searchParams]);
+
+  const handleTabChange = (tab: TabKey) => {
+    setActiveTab(tab);
+    setSearchParams({ tab });
+  };
+
+  const refreshData = async () => {
+    setRefreshing(true);
+    try {
+      const [l, c, pw, wList, oList, hSlides, settings] = await Promise.all([
+        db.getAuditLogs(),
+        db.getCategories(),
+        db.getPendingWorkers(),
+        db.getWorkers(),
+        db.getOnlineOrders(),
+        db.getHeroSlides(),
+        db.getStoreSettings()
+      ]);
+
+      const localWorkers: WorkerData[] = JSON.parse(localStorage.getItem('worker_accounts') || '[]');
+      const mergedWorkers = wList.map(fw => {
+        const localMatch = localWorkers.find(lw => lw.email === fw.email);
+        return { 
+          ...fw, 
+          ...localMatch, 
+          id: fw.id, 
+          email: fw.email || localMatch?.email || '', 
+          name: fw.name || localMatch?.name, 
+          password: localMatch?.password || 'User Managed' 
+        };
+      });
+
+      setLogs(l || []);
+            setCategories(c || []);
+      setPendingWorkers(pw || []);
+      setOnlineOrders(oList || []);
+      setHeroSlides(hSlides || []);
+
+      if (settings) {
+        if (settings.upi_id) setStoreUpiId(settings.upi_id);
+        if (settings.phone_number) setStorePhoneNumber(settings.phone_number);
+        if (settings.bank_details) setStoreBankDetails(settings.bank_details);
+        if (settings.footer_description) setFooterDescription(settings.footer_description);
+        if (settings.footer_phone) setFooterPhone(settings.footer_phone);
+        if (settings.footer_hours) setFooterHours(settings.footer_hours);
+        if (settings.footer_days) setFooterDays(settings.footer_days);
+        if (settings.footer_copyright) setFooterCopyright(settings.footer_copyright);
+        if (settings.receipt_header_1) setReceiptH1(settings.receipt_header_1);
+        if (settings.receipt_header_2) setReceiptH2(settings.receipt_header_2);
+        if (settings.receipt_header_3) setReceiptH3(settings.receipt_header_3);
+        if (settings.receipt_header_4) setReceiptH4(settings.receipt_header_4);
+        if (settings.receipt_footer_1) setReceiptF1(settings.receipt_footer_1);
+        if (settings.receipt_footer_2) setReceiptF2(settings.receipt_footer_2);
+        if (settings.order_id_prefix) setOrderIdPrefix(settings.order_id_prefix);
+        if (settings.order_id_sequence) setOrderIdSequence(settings.order_id_sequence);
+      }
+      setWorkers(mergedWorkers);
+      localStorage.setItem('worker_accounts', JSON.stringify(mergedWorkers));
+    } catch (e) {
+      console.error('Error refreshing admin data:', e);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
   useEffect(() => {
     if (profile?.role !== 'admin') return;
-    (async () => {
-      setLoading(true);
-      try {
-        const [l, i, c, pw, wList, oList, hSlides, settings] = await Promise.all([
-          db.getAuditLogs(), db.getItems(), db.getCategories(), db.getPendingWorkers(), db.getWorkers(), db.getOnlineOrders(), db.getHeroSlides(), db.getStoreSettings()
-        ]);
-        
-        // Merge Supabase workers with local storage (to preserve passwords of admin-created ones)
-        const localWorkers: WorkerData[] = JSON.parse(localStorage.getItem('worker_accounts') || '[]');
-        const mergedWorkers = wList.map(fw => {
-          const localMatch = localWorkers.find(lw => lw.email === fw.email);
-          return { ...fw, ...localMatch, id: fw.id, email: fw.email || localMatch?.email || '', name: fw.name || localMatch?.name, password: localMatch?.password || 'User Managed' };
-        });
-
-        setLogs(l); setItems(i); setCategories(c); setPendingWorkers(pw); setOnlineOrders(oList); setHeroSlides(hSlides);
-        if (settings) {
-          setStoreUpiId(settings.upi_id);
-          setStorePhoneNumber(settings.phone_number);
-          setStoreBankDetails(settings.bank_details || '');
-          if (settings.footer_description) setFooterDescription(settings.footer_description);
-          if (settings.footer_phone) setFooterPhone(settings.footer_phone);
-          if (settings.footer_hours) setFooterHours(settings.footer_hours);
-          if (settings.footer_days) setFooterDays(settings.footer_days);
-          if (settings.footer_copyright) setFooterCopyright(settings.footer_copyright);
-          if (settings.receipt_header_1) setReceiptH1(settings.receipt_header_1);
-          if (settings.receipt_header_2) setReceiptH2(settings.receipt_header_2);
-          if (settings.receipt_header_3) setReceiptH3(settings.receipt_header_3);
-          if (settings.receipt_header_4) setReceiptH4(settings.receipt_header_4);
-          if (settings.receipt_footer_1) setReceiptF1(settings.receipt_footer_1);
-          if (settings.receipt_footer_2) setReceiptF2(settings.receipt_footer_2);
-          if (settings.order_id_prefix) setOrderIdPrefix(settings.order_id_prefix);
-          if (settings.order_id_sequence) setOrderIdSequence(settings.order_id_sequence);
-        }
-        setWorkers(mergedWorkers);
-        localStorage.setItem('worker_accounts', JSON.stringify(mergedWorkers));
-
-      } catch(e) { console.error(e); }
-      finally { setLoading(false); }
-    })();
-  }, [profile]);
+    refreshData();
+  }, [profile, isOnline]);
 
   useEffect(() => {
     if (profile && profile.role !== 'admin') {
       if (location.key !== 'default') {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setShowAccessDenied(true);
       } else {
         signOut().then(() => navigate('/?error=access_denied', { replace: true }));
@@ -131,102 +198,52 @@ export default function AdminDashboard() {
     }
   }, [profile, location.key, navigate, signOut]);
 
-  if (showAccessDenied) {
-    return (
-      <div className="container" style={{ paddingBottom: '5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-        <div className="panel" style={{ padding: '2rem', textAlign: 'center', maxWidth: '400px', width: '100%' }}>
-          <AlertTriangle size={48} color="var(--color-primary)" style={{ margin: '0 auto 1rem auto', display: 'block' }} />
-          <h2 style={{ fontSize: '1.25rem', margin: '0 0 0.5rem 0' }}>Access Denied</h2>
-          <p style={{ color: 'var(--color-text-secondary)', margin: '0 0 1.5rem 0', fontSize: '0.9rem' }}>
-            You do not have permission to view the admin dashboard.
-          </p>
-          <button onClick={() => navigate(-1)} className="btn btn-primary" style={{ width: '100%' }}>
-            Go Back
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (profile?.role !== 'admin') return null;
-
-  const refreshData = async () => {
-    const [l, i, c, pw, wList, oList] = await Promise.all([db.getAuditLogs(), db.getItems(), db.getCategories(), db.getPendingWorkers(), db.getWorkers(), db.getOnlineOrders()]);
-    
-    const localWorkers: WorkerData[] = JSON.parse(localStorage.getItem('worker_accounts') || '[]');
-    const mergedWorkers = wList.map(fw => {
-      const localMatch = localWorkers.find(lw => lw.email === fw.email);
-      return { ...fw, ...localMatch, id: fw.id, email: fw.email || localMatch?.email || '', name: fw.name || localMatch?.name, password: localMatch?.password || 'User Managed' };
-    });
-
-    setLogs(l); setItems(i); setCategories(c); setPendingWorkers(pw); setOnlineOrders(oList);
-    if (mergedWorkers.length > 0 || wList.length === 0) setWorkers(mergedWorkers);
-
-  };
-
-  // Access
+  // Worker Actions
   const handleAddWorker = async (e: React.FormEvent) => {
     e.preventDefault();
-    const em = workerEmail.trim().toLowerCase(), pw = workerPassword.trim();
-    if (!em.includes('@')) { alert('Enter a valid email!'); return; }
-    if (pw.length < 4) { alert('Password must be ≥4 chars!'); return; }
-    if (workers.some((w) => w.email === em)) { alert('Already exists!'); return; }
+    const em = workerEmail.trim().toLowerCase();
+    const pw = workerPassword.trim();
+    if (!em || !pw) return;
 
-    // Create a real Supabase Auth user so the worker can log in from any device.
-    // Ephemeral client avoids overwriting the admin's current session.
     try {
-      const { data: signUpData, error } = await supabaseEphemeral.auth.signUp({ 
-        email: em, 
+      const { error } = await supabaseEphemeral.auth.signUp({
+        email: em,
         password: pw,
-        options: { data: { full_name: em.split('@')[0], is_admin_created: true } }
+        options: { data: { name: em.split('@')[0], role: 'worker' } }
       });
       if (error) {
-        const msg = String(error.message || '').toLowerCase();
-        if (!msg.includes('already registered')) {
-          alert(error.message);
-          return;
-        }
-      }
-
-      // If the user was newly created, immediately approve them (bypass pending state)
-      // so they can log in right away without waiting for admin approval
-      if (signUpData?.user?.id) {
-        await db.approveWorker(signUpData.user.id);
-      } else {
-        // User already exists — look them up and approve
-        const { data: existingProfile } = await import('../../lib/supabase').then(m =>
-          m.supabase.from('profiles').select('id').eq('email', em).maybeSingle()
-        );
+        if (!error.message.includes('already registered')) throw error;
+        const { data: existingProfile } = await supabase.from('profiles').select('id').eq('email', em).maybeSingle();
         if (existingProfile?.id) await db.approveWorker(existingProfile.id);
       }
     } catch (err: unknown) {
       alert((err as Error)?.message || 'Failed to create worker account.');
       return;
     }
-    const w = { id: 'w-'+Math.random().toString(36).substr(2,9), email: em, password: pw, permissions: {}, created_at: new Date().toISOString() };
-    const up = [...workers, w]; setWorkers(up);
+
+    const w = { id: 'w-' + Math.random().toString(36).substr(2, 9), email: em, password: pw, permissions: {}, created_at: new Date().toISOString() };
+    const up = [...workers, w];
+    setWorkers(up);
     localStorage.setItem('worker_accounts', JSON.stringify(up));
     await db.addAuditLog('Added Worker', em);
-    setWorkerEmail(''); setWorkerPassword('');
-    showToast('Worker added! 👥');
+    setWorkerEmail('');
+    setWorkerPassword('');
+    showToast('Staff worker account added! 👥');
     refreshData();
   };
 
   const handleRemoveWorker = async (id: string, email: string) => {
     if (!confirm(`Delete worker ${email}?`)) return;
-    
-    // Attempt to delete from Supabase profiles
     const success = await db.rejectWorker(id);
     if (!success) {
-      alert("Failed to delete worker. Make sure you are logged into Supabase as an admin. Check the browser console for details.");
+      alert("Failed to delete worker. Check your admin permissions.");
       return;
     }
-    
-    const up = workers.filter((w) => w.id !== id); setWorkers(up);
+    const up = workers.filter((w) => w.id !== id);
+    setWorkers(up);
     localStorage.setItem('worker_accounts', JSON.stringify(up));
     db.addAuditLog('Removed Worker', email);
     showToast('Worker removed! 🗑️');
-    
     refreshData();
   };
 
@@ -251,24 +268,130 @@ export default function AdminDashboard() {
     }
   };
 
-  const togglePermission = (workerId: string, perm: string) => {
-    const up = workers.map((w) => {
-      if (w.id === workerId) {
-        const perms = w.permissions || {};
-        return { ...w, permissions: { ...perms, [perm]: !perms[perm] } };
+  // Category Actions
+  const handleCatImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    setIsUploadingCatImage(true);
+    try {
+      const result = await db.uploadProductImage(file);
+      if (result.success && result.url) {
+        setNewCatImageUrl(result.url);
+        showToast('Category image uploaded! ✅');
+      } else {
+        showToast(`Failed to upload: ${result.error?.message || 'Error'} ❌`);
       }
-      return w;
-    });
-    setWorkers(up);
-    localStorage.setItem('worker_accounts', JSON.stringify(up));
-    
-    const workerEmail = workers.find(w => w.id === workerId)?.email || 'Unknown';
-    db.addAuditLog('Updated Worker Permission', workerEmail, { permission: perm, new_value: up.find(w => w.id === workerId)?.permissions?.[perm] });
-    
-    showToast('Permission updated! ✅');
+    } catch (err) {
+      showToast('Error uploading image ❌');
+    } finally {
+      setIsUploadingCatImage(false);
+    }
   };
 
-  // Security
+  const handleAddCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCatName.trim()) return;
+
+    if (editingCategoryId) {
+      await db.updateCategory(editingCategoryId, { 
+        name: newCatName.trim(), 
+        color: newCatColor, 
+        image_url: newCatImageUrl || undefined, 
+        store_type: newCatStoreType 
+      } as any);
+      await db.addAuditLog('Updated Category', newCatName.trim());
+      showToast('Category updated! 🎨');
+    } else {
+      await db.addCategory({ 
+        name: newCatName.trim(), 
+        color: newCatColor, 
+        icon: 'Tag', 
+        image_url: newCatImageUrl || undefined, 
+        store_type: newCatStoreType 
+      } as any);
+      await db.addAuditLog('Added Category', newCatName.trim());
+      showToast('Category added! 🎨');
+    }
+
+    setNewCatName('');
+    setNewCatImageUrl('');
+    setNewCatStoreType(isOnline ? 'online' : 'offline');
+    setEditingCategoryId(null);
+    await refreshData();
+  };
+
+  const handleEditCategoryClick = (cat: Category) => {
+    setEditingCategoryId(cat.id);
+    setNewCatName(cat.name);
+    setNewCatColor(cat.color);
+    setNewCatImageUrl(cat.image_url || '');
+    setNewCatStoreType((cat as any).store_type || 'offline');
+  };
+
+  const handleDeleteCategory = async (id: string, name: string) => {
+    if (!confirm(`Delete category "${name}"?`)) return;
+    const deleted = await db.deleteCategory(id);
+    if (!deleted) {
+      showToast('Category could not be deleted.');
+      return;
+    }
+    await db.addAuditLog('Deleted Category', name);
+    await refreshData();
+    showToast('Category deleted! 🗑️');
+  };
+
+  // Hero Slide Actions
+  const handleHeroImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    setIsUploadingSlide(true);
+    try {
+      const result = await db.uploadProductImage(file);
+      if (result.success && result.url) {
+        setNewSlideImageUrl(result.url);
+        showToast('Banner image uploaded! ✅');
+      } else {
+        showToast(`Failed: ${result.error?.message || 'Error'} ❌`);
+      }
+    } catch (err) {
+      showToast('Error uploading slide image ❌');
+    } finally {
+      setIsUploadingSlide(false);
+    }
+  };
+
+  const handleAddSlide = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSlideTitle.trim() || !newSlideSubtitle.trim() || !newSlideImageUrl) {
+      showToast('Please provide a title, subtitle, and banner image.');
+      return;
+    }
+    const maxOrder = heroSlides.reduce((max, s) => Math.max(max, s.order_index), 0);
+    const newSlide = await db.saveHeroSlide({
+      title: newSlideTitle,
+      subtitle: newSlideSubtitle,
+      image_url: newSlideImageUrl,
+      order_index: maxOrder + 1
+    });
+    if (newSlide) {
+      setHeroSlides([...heroSlides, newSlide]);
+      setNewSlideTitle('');
+      setNewSlideSubtitle('');
+      setNewSlideImageUrl('');
+      showToast('Hero banner added! ✅');
+      db.addAuditLog('Added Hero Slide', newSlide.title);
+    }
+  };
+
+  const handleDeleteSlide = async (id: string, title: string) => {
+    if (!confirm(`Delete banner slide "${title}"?`)) return;
+    await db.deleteHeroSlide(id);
+    setHeroSlides(heroSlides.filter(s => s.id !== id));
+    showToast('Slide deleted! 🗑️');
+    db.addAuditLog('Deleted Hero Slide', title);
+  };
+
+  // Store & Receipt Settings
   const handleSaveStoreSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSavingStoreSettings(true);
@@ -291,828 +414,1012 @@ export default function AdminDashboard() {
         order_id_prefix: orderIdPrefix,
         order_id_sequence: orderIdSequence
       });
-      showToast('Store settings updated! ⚙️');
+      showToast('Store & POS settings saved! ⚙️');
       await db.addAuditLog('Updated Store Settings', `UPI: ${storeUpiId}`);
     } catch (err) {
-      showToast('Failed to update settings');
+      showToast('Failed to update settings ❌');
     } finally {
       setIsSavingStoreSettings(false);
     }
   };
 
-  const handleCustomizeAdmin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!profile) return;
-    
-    const u = newAdminUser.trim();
-    const p = newAdminPass.trim();
-    
-    if (!u && !p) return;
-    
-    if (u && u.length < 3) { alert('Username must be at least 3 characters!'); return; }
-    if (p && p.length < 6) { alert('Password must be at least 6 characters!'); return; }
-    
-    if (!confirm('You are about to change the admin credentials in the database. Proceed?')) return;
-    
-    setIsSavingSecurity(true);
-    
-    const withTimeout = <T,>(p: PromiseLike<T>, ms: number, msg: string): Promise<T> =>
-      Promise.race([Promise.resolve(p), new Promise<T>((_, rej) => setTimeout(() => rej(new Error(msg)), ms))]);
-
-    try {
-      if (u) {
-        // Check uniqueness
-        const { data: existing } = await withTimeout(
-          supabase.from('profiles').select('id').eq('name', u).maybeSingle(),
-          8000, 'Username check timed out. Please try again.'
-        );
-        if (existing && existing.id !== profile.id) {
-          showToast('⚠️ Username already taken! Choose a different one.');
-          setIsSavingSecurity(false);
-          return;
-        }
-        const { error: usernameErr } = await withTimeout(
-          supabase.from('profiles').update({ name: u }).eq('id', profile.id),
-          8000, 'Username update timed out. Please try again.'
-        );
-        if (usernameErr) throw usernameErr;
-        useAuthStore.getState().setProfile({ ...profile, name: u });
-        await db.addAuditLog('Changed Admin Username', u, { previous_username: profile.name });
-      }
-
-      if (p) {
-        const { error: passErr } = await withTimeout(
-          supabase.auth.updateUser({ password: p }),
-          45000, 'Password update timed out. Check your connection and try again.'
-        );
-        if (passErr) {
-          // Surface a friendly message for auth errors (e.g. session expired)
-          if (passErr.message.toLowerCase().includes('session') || passErr.message.toLowerCase().includes('auth')) {
-            throw new Error('Session expired. Please log out and log back in, then try again.');
-          }
-          throw passErr;
-        }
-        await db.addAuditLog('Changed Admin Password', profile.email || profile.name);
-      }
-
-      showToast('Credentials updated! Re-login required... 🔑');
-      setNewAdminUser('');
-      setNewAdminPass('');
-      setTimeout(() => {
-        signOut().then(() => {
-          window.location.href = '/';
-        });
-      }, 1500);
-    } catch (err: unknown) {
-      const msg = (err as Error).message || 'Something went wrong. Please try again.';
-      console.error('Admin update failed:', err);
-      showToast(`❌ ${msg}`);
-    } finally {
-      setIsSavingSecurity(false);
-    }
+  // Order Actions
+  const handleUpdateOrderStatus = async (orderId: string, newStatus: 'pending' | 'completed' | 'cancelled') => {
+    await db.updateOrderStatus(orderId, newStatus);
+    await refreshData();
+    showToast(`Order marked as ${newStatus}!`);
   };
 
-  const handleHeroImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    const file = e.target.files[0];
-    setIsUploadingSlide(true);
-    
-    try {
-      const result = await db.uploadProductImage(file);
-      if (result.success && result.url) {
-        setNewSlideImageUrl(result.url);
-        showToast('Image uploaded! ✅');
-      } else {
-        showToast(`Failed to upload image: ${result.error?.message || 'Unknown error'} ❌`);
-      }
-    } catch (err) {
-      console.error(err);
-      showToast('Error uploading image ❌');
-    } finally {
-      setIsUploadingSlide(false);
-    }
+  const handleSendWhatsApp = (order: OnlineOrder) => {
+    const cleanPhone = order.customer_phone.replace(/\D/g, '');
+    const phoneWithCountry = cleanPhone.startsWith('91') ? cleanPhone : `91${cleanPhone}`;
+    const text = `Hi ${order.customer_name}, this is NayaKart regarding your order ${order.id}. Current status: ${order.status.toUpperCase()}. Total amount: ₹${order.total_amount}. Let us know if you need any assistance!`;
+    window.open(`https://wa.me/${phoneWithCountry}?text=${encodeURIComponent(text)}`, '_blank');
   };
 
-  const handleAddSlide = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newSlideTitle.trim() || !newSlideSubtitle.trim() || !newSlideImageUrl) {
-      showToast('Please fill all fields and upload an image.');
-      return;
-    }
-    const maxOrder = heroSlides.reduce((max, s) => Math.max(max, s.order_index), 0);
-    const newSlide = await db.saveHeroSlide({
-      title: newSlideTitle,
-      subtitle: newSlideSubtitle,
-      image_url: newSlideImageUrl,
-      order_index: maxOrder + 1
+  // Filtered Lists
+  const filteredOrders = useMemo(() => {
+    return onlineOrders.filter(order => {
+      const matchesStatus = orderStatusFilter === 'all' || order.status === orderStatusFilter;
+      const q = orderSearchQuery.toLowerCase();
+      const matchesSearch = !q || 
+        order.id.toLowerCase().includes(q) || 
+        order.customer_name.toLowerCase().includes(q) || 
+        order.customer_phone.includes(q);
+      return matchesStatus && matchesSearch;
     });
-    if (newSlide) {
-      setHeroSlides([...heroSlides, newSlide]);
-      setNewSlideTitle('');
-      setNewSlideSubtitle('');
-      setNewSlideImageUrl('');
-      showToast('Slide added successfully! ✅');
-      db.addAuditLog('Added Hero Slide', newSlide.title);
-    }
-  };
+  }, [onlineOrders, orderStatusFilter, orderSearchQuery]);
 
-  const handleDeleteSlide = async (id: string, title: string) => {
-    if (!confirm(`Delete slide "${title}"?`)) return;
-    await db.deleteHeroSlide(id);
-    setHeroSlides(heroSlides.filter(s => s.id !== id));
-    showToast('Slide deleted! 🗑️');
-    db.addAuditLog('Deleted Hero Slide', title);
-  };
+  const filteredLogs = useMemo(() => {
+    if (!logSearchQuery) return logs;
+    const q = logSearchQuery.toLowerCase();
+    return logs.filter(l => 
+      l.action.toLowerCase().includes(q) || 
+      l.worker_email.toLowerCase().includes(q) ||
+      (l.details?.item_name && String(l.details.item_name).toLowerCase().includes(q))
+    );
+  }, [logs, logSearchQuery]);
 
+  const pendingOrdersCount = onlineOrders.filter(o => o.status === 'pending').length;
 
-  const handleDeleteItem = async (id: string, name: string) => {
-    if (!confirm(`Delete "${name}"? Cannot undo.`)) return;
-    await db.deleteItem(id);
-    await db.addAuditLog('Deleted Product', name);
-    await refreshData();
-    showToast('Item deleted! 🗑️');
-  };
+  // Swatch colors
+  const colorPalette = ['#8B4513', '#C87D55', '#E07A5F', '#D4A373', '#81B29A', '#3D5A80', '#98C1D9', '#EE6C4D'];
 
-  // Categories
-  const handleCatImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    const file = e.target.files[0];
-    setIsUploadingCatImage(true);
-    
-    try {
-      const result = await db.uploadProductImage(file);
-      if (result.success && result.url) {
-        setNewCatImageUrl(result.url);
-        showToast('Category Image uploaded! ✅');
-      } else {
-        showToast(`Failed to upload image: ${result.error?.message || 'Unknown error'} ❌`);
-      }
-    } catch (err) {
-      console.error(err);
-      showToast('Error uploading image ❌');
-    } finally {
-      setIsUploadingCatImage(false);
-    }
-  };
-
-  const handleAddCategory = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newCatName.trim()) return;
-    
-    if (editingCategoryId) {
-      await db.updateCategory(editingCategoryId, { name: newCatName.trim(), color: newCatColor, image_url: newCatImageUrl || undefined, store_type: newCatStoreType } as any);
-      await db.addAuditLog('Updated Category', newCatName.trim());
-      showToast('Category updated! 🎨');
-    } else {
-      await db.addCategory({ name: newCatName.trim(), color: newCatColor, icon: 'Tag', image_url: newCatImageUrl || undefined, store_type: newCatStoreType } as any);
-      await db.addAuditLog('Added Category', newCatName.trim());
-      showToast('Category added! 🎨');
-    }
-    
-    setNewCatName('');
-    setNewCatImageUrl('');
-    setNewCatStoreType(useAppStore.getState().storeType);
-    setEditingCategoryId(null);
-    await refreshData();
-  };
-
-  const handleEditCategoryClick = (cat: Category) => {
-    setEditingCategoryId(cat.id);
-    setNewCatName(cat.name);
-    setNewCatColor(cat.color);
-    setNewCatImageUrl(cat.image_url || '');
-    setNewCatStoreType((cat as any).store_type || 'offline');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleDeleteCategory = async (id: string, name: string) => {
-    if (!confirm(`Delete category "${name}"?`)) return;
-    const deleted = await db.deleteCategory(id);
-    if (!deleted) {
-      showToast('Category could not be deleted. Check Supabase category permissions.');
-      return;
-    }
-    await db.addAuditLog('Deleted Category', name);
-    await refreshData();
-    showToast('Category deleted! 🗑️');
-  };
-
-  const tabs: { key: TabKey; icon: React.ElementType; label: string }[] = [
-    ...(useAppStore.getState().storeType === 'online' ? [{ key: 'orders' as TabKey, icon: ShoppingCart, label: 'Orders' }] : []),
-    { key: 'workers', icon: Users, label: 'Workers' },
-    { key: 'items', icon: Package, label: 'Items' },
-    { key: 'categories', icon: Tag, label: 'Categories' },
-    { key: 'hero', icon: ImageIcon, label: 'Hero Slides' },
-    { key: 'logs', icon: Activity, label: 'Logs' },
-    { key: 'settings', icon: Key, label: 'Settings' },
-    { key: 'receipt', icon: Package, label: 'Receipt' },
-  ];
-
-  const colors = ['#E63946','#E07A5F','#F2CC8F','#81B29A','#3D5A80','#98C1D9','#EE6C4D','#6366F1'];
+  if (showAccessDenied) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center p-6">
+        <div className="bg-white rounded-3xl p-8 border border-[#EADBCE] shadow-sm text-center max-w-md w-full">
+          <div className="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle size={32} />
+          </div>
+          <h2 className="text-xl font-bold text-[#361B0E] mb-2">Access Denied</h2>
+          <p className="text-sm text-[#7C6053] mb-6">
+            You need Super Admin privileges to view the Management Desk.
+          </p>
+          <button 
+            onClick={() => navigate(-1)} 
+            className="w-full py-2.5 px-4 bg-[#8B4513] hover:bg-[#63300C] text-white text-sm font-semibold rounded-xl transition-all shadow-xs cursor-pointer"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ paddingBottom: '5rem', width: '100%', minWidth: 0 }}>
-      <header style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'center' }}>
-        <div style={{ backgroundColor: 'var(--color-primary)', color: 'white', padding: '0.5rem', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(230,57,70,0.2)' }}>
-          <ShieldCheck size={26} />
-        </div>
+    <div className="w-full pb-16">
+      {/* Top Header & Overview */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-4 border-b border-[#EADBCE]">
         <div>
-          <h1 style={{ margin: 0, fontSize: '1.5rem' }}>Admin Panel</h1>
-          <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', margin: 0 }}>Manage workers, items, categories & settings</p>
+          <div className="flex items-center gap-2">
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#361B0E] tracking-tight">
+              Admin Management Desk
+            </h1>
+            <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+              isOnline ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'
+            }`}>
+              {isOnline ? '🌐 Online Hub' : '🏪 Counter Hub'}
+            </span>
+          </div>
+          <p className="text-sm text-[#7C6053] mt-1">
+            {isOnline 
+              ? 'Manage online customer orders, staff permissions, categories & storefront media.' 
+              : 'Configure showroom counter staff, in-store categories, thermal POS receipts & audit trail.'}
+          </p>
         </div>
-      </header>
 
-      {/* Tabs */}
-      <div className="panel" style={{ padding: '0.4rem', marginBottom: '1.5rem', display: 'flex', gap: '0.2rem', overflowX: 'auto', borderRadius: '16px' }}>
-        {tabs.map(t => (
-          <button key={t.key} onClick={() => setActiveTab(t.key)}
-            className={`btn ${activeTab === t.key ? 'btn-primary' : 'btn-outline'}`}
-            style={{ flex: 1, padding: '0.45rem 0.5rem', fontSize: '0.7rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', border: 'none', borderRadius: '12px', whiteSpace: 'nowrap' }}>
-            <t.icon size={13} /> {t.label}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={refreshData}
+            disabled={refreshing}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#63300C] bg-[#FAF2EB] hover:bg-[#F3E3D3] border border-[#EADBCE] rounded-xl transition-all cursor-pointer disabled:opacity-50"
+            title="Refresh database records"
+          >
+            <RefreshCw size={13} className={refreshing ? 'animate-spin' : ''} />
+            <span>Refresh</span>
           </button>
-        ))}
+        </div>
+      </div>
+
+      {/* High-Level Executive Overview Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
+        {isOnline ? (
+          <div 
+            onClick={() => handleTabChange('orders')}
+            className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+              activeTab === 'orders' 
+                ? 'bg-[#FAF2EB] border-[#8B4513] shadow-xs' 
+                : 'bg-white border-[#EADBCE] hover:border-[#8B4513]/40 shadow-xs'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-[#7C6053]">Online Orders</span>
+              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                <ShoppingCart size={16} />
+              </div>
+            </div>
+            <p className="text-2xl font-bold text-[#361B0E] mt-2">{onlineOrders.length}</p>
+            <p className="text-[11px] font-semibold text-emerald-700 mt-1">
+              {pendingOrdersCount > 0 ? `${pendingOrdersCount} pending fulfillment` : 'All caught up'}
+            </p>
+          </div>
+        ) : (
+          <div 
+            onClick={() => navigate('/adminoffline/ledger')}
+            className="p-4 rounded-2xl bg-white border border-[#EADBCE] hover:border-[#8B4513]/40 shadow-xs transition-all cursor-pointer"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-[#7C6053]">POS Ledger</span>
+              <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center">
+                <Receipt size={16} />
+              </div>
+            </div>
+            <p className="text-lg font-bold text-[#361B0E] mt-2">Active</p>
+            <p className="text-[11px] font-semibold text-amber-800 mt-1">Sales & Purchasing</p>
+          </div>
+        )}
+
+        <div 
+          onClick={() => handleTabChange('workers')}
+          className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+            activeTab === 'workers' 
+              ? 'bg-[#FAF2EB] border-[#8B4513] shadow-xs' 
+              : 'bg-white border-[#EADBCE] hover:border-[#8B4513]/40 shadow-xs'
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-[#7C6053]">Staff Workers</span>
+            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center">
+              <Users size={16} />
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-[#361B0E] mt-2">{workers.length}</p>
+          <p className="text-[11px] font-semibold text-amber-700 mt-1">
+            {pendingWorkers.length > 0 ? `${pendingWorkers.length} pending approval` : 'Fully approved'}
+          </p>
+        </div>
+
+        <div 
+          onClick={() => handleTabChange('categories')}
+          className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+            activeTab === 'categories' 
+              ? 'bg-[#FAF2EB] border-[#8B4513] shadow-xs' 
+              : 'bg-white border-[#EADBCE] hover:border-[#8B4513]/40 shadow-xs'
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-[#7C6053]">Categories</span>
+            <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center">
+              <Tag size={16} />
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-[#361B0E] mt-2">{categories.length}</p>
+          <p className="text-[11px] font-semibold text-purple-700 mt-1">Active categories</p>
+        </div>
+
+        <div 
+          onClick={() => handleTabChange('settings')}
+          className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+            activeTab === 'settings' 
+              ? 'bg-[#FAF2EB] border-[#8B4513] shadow-xs' 
+              : 'bg-white border-[#EADBCE] hover:border-[#8B4513]/40 shadow-xs'
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-[#7C6053]">Store Config</span>
+            <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center">
+              <Sliders size={16} />
+            </div>
+          </div>
+          <p className="text-lg font-bold text-[#361B0E] mt-2">Ready</p>
+          <p className="text-[11px] font-semibold text-[#8B4513] mt-1">UPI & POS Receipts</p>
+        </div>
+      </div>
+
+      {/* Clean Uncluttered Tab Bar */}
+      <div className="flex items-center gap-1.5 p-1.5 bg-[#F5ECE3] rounded-2xl border border-[#EADBCE] mb-6 overflow-x-auto">
+        {isOnline && (
+          <button
+            onClick={() => handleTabChange('orders')}
+            className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+              activeTab === 'orders'
+                ? 'bg-[#8B4513] text-white shadow-xs'
+                : 'text-[#7C6053] hover:text-[#361B0E] hover:bg-white/50'
+            }`}
+          >
+            <ShoppingCart size={15} />
+            <span>Online Orders</span>
+            {pendingOrdersCount > 0 && (
+              <span className="px-1.5 py-0.2 bg-amber-400 text-black text-[10px] font-black rounded-full">
+                {pendingOrdersCount}
+              </span>
+            )}
+          </button>
+        )}
+
+        <button
+          onClick={() => handleTabChange('workers')}
+          className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+            activeTab === 'workers'
+              ? 'bg-[#8B4513] text-white shadow-xs'
+              : 'text-[#7C6053] hover:text-[#361B0E] hover:bg-white/50'
+          }`}
+        >
+          <Users size={15} />
+          <span>Staff & Access</span>
+          {pendingWorkers.length > 0 && (
+            <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+          )}
+        </button>
+
+        <button
+          onClick={() => handleTabChange('categories')}
+          className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+            activeTab === 'categories'
+              ? 'bg-[#8B4513] text-white shadow-xs'
+              : 'text-[#7C6053] hover:text-[#361B0E] hover:bg-white/50'
+          }`}
+        >
+          <Tag size={15} />
+          <span>Categories</span>
+        </button>
+
+        {isOnline && (
+          <button
+            onClick={() => handleTabChange('hero')}
+            className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+              activeTab === 'hero'
+                ? 'bg-[#8B4513] text-white shadow-xs'
+                : 'text-[#7C6053] hover:text-[#361B0E] hover:bg-white/50'
+            }`}
+          >
+            <ImageIcon size={15} />
+            <span>Hero Banners</span>
+          </button>
+        )}
+
+        <button
+          onClick={() => handleTabChange('settings')}
+          className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+            activeTab === 'settings'
+              ? 'bg-[#8B4513] text-white shadow-xs'
+              : 'text-[#7C6053] hover:text-[#361B0E] hover:bg-white/50'
+          }`}
+        >
+          <Sliders size={15} />
+          <span>Store & POS Config</span>
+        </button>
+
+        <button
+          onClick={() => handleTabChange('logs')}
+          className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+            activeTab === 'logs'
+              ? 'bg-[#8B4513] text-white shadow-xs'
+              : 'text-[#7C6053] hover:text-[#361B0E] hover:bg-white/50'
+          }`}
+        >
+          <Activity size={15} />
+          <span>Audit Trail</span>
+        </button>
       </div>
 
       {loading ? (
-        <div className="panel" style={{ textAlign: 'center', padding: '3rem' }}>
-          <p style={{ color: 'var(--color-text-secondary)' }}>Loading...</p>
+        <div className="bg-white rounded-3xl p-12 text-center border border-[#EADBCE]">
+          <RefreshCw size={28} className="animate-spin text-[#8B4513] mx-auto mb-3" />
+          <p className="text-sm font-semibold text-[#7C6053]">Loading administrative records...</p>
         </div>
-      ) : (<>
-
-        {/* WORKERS TAB */}
-        {activeTab === 'workers' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div className="panel" style={{ padding: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Plus size={18} color="var(--color-primary)" /> Add Worker Account
-              </h2>
-              <form onSubmit={handleAddWorker} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <div className="input-group"><label className="input-label">Email</label>
-                  <input type="email" className="input-field" placeholder="worker@gmail.com" value={workerEmail} onChange={e => setWorkerEmail(e.target.value)} required />
-                </div>
-                <div className="input-group"><label className="input-label">Password</label>
-                  <div style={{ position: 'relative' }}>
-                    <input type={showWorkerPassword ? "text" : "password"} className="input-field" placeholder="Set password..." value={workerPassword} onChange={e => setWorkerPassword(e.target.value)} required style={{ paddingRight: '2.5rem' }} />
-                    <button type="button" onClick={() => setShowWorkerPassword(!showWorkerPassword)} style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', padding: 0 }}>
-                      {showWorkerPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+      ) : (
+        <>
+          {/* ========================================================================= */}
+          {/* 1. ORDERS TAB */}
+          {/* ========================================================================= */}
+          {activeTab === 'orders' && isOnline && (
+            <div className="space-y-4">
+              {/* Filter and Search Bar */}
+              <div className="bg-white p-4 rounded-2xl border border-[#EADBCE] shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="flex items-center gap-1.5 w-full sm:w-auto">
+                  {(['all', 'pending', 'completed', 'cancelled'] as const).map(st => (
+                    <button
+                      key={st}
+                      onClick={() => setOrderStatusFilter(st)}
+                      className={`px-3 py-1.5 text-xs font-semibold rounded-xl capitalize transition-all cursor-pointer ${
+                        orderStatusFilter === st
+                          ? 'bg-[#8B4513] text-white shadow-xs'
+                          : 'bg-[#FAF2EB] text-[#7C6053] hover:bg-[#F3E3D3]'
+                      }`}
+                    >
+                      {st} {st === 'pending' && pendingOrdersCount > 0 ? `(${pendingOrdersCount})` : ''}
                     </button>
-                  </div>
+                  ))}
                 </div>
-                <button type="submit" className="btn btn-primary" style={{ width: '100%' }}><Plus size={16} /> Add Worker</button>
-              </form>
-            </div>
 
+                <div className="relative w-full sm:w-64">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7C6053]" />
+                  <input
+                    type="text"
+                    placeholder="Search by ID, name or phone..."
+                    value={orderSearchQuery}
+                    onChange={e => setOrderSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-[#EADBCE] bg-[#FDFBF7] focus:bg-white focus:outline-none focus:border-[#8B4513]"
+                  />
+                </div>
+              </div>
 
-            <div className="panel" style={{ padding: '1.5rem', border: '1px solid var(--color-primary)', backgroundColor: 'rgba(230,57,70,0.03)' }}>
-              <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-primary)' }}>
-                <AlertTriangle size={18} /> Pending Access Requests ({pendingWorkers.length})
-              </h2>
-              {pendingWorkers.length === 0 ? (
-                <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', textAlign: 'center', padding: '1rem 0', margin: 0 }}>
-                  ✅ No pending signup requests right now.
-                </p>
+              {filteredOrders.length === 0 ? (
+                <div className="bg-white rounded-3xl p-12 text-center border border-[#EADBCE] shadow-xs">
+                  <div className="w-16 h-16 rounded-2xl bg-[#FAF2EB] text-[#8B4513] flex items-center justify-center mx-auto mb-3">
+                    <ShoppingCart size={28} />
+                  </div>
+                  <h3 className="text-base font-bold text-[#361B0E]">No orders found</h3>
+                  <p className="text-xs text-[#7C6053] mt-1 max-w-sm mx-auto">
+                    {orderSearchQuery ? 'No customer orders match your search criteria.' : 'Customer orders placed through your online storefront will appear here.'}
+                  </p>
+                </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  {pendingWorkers.map((pw) => (
-                    <div key={pw.id} style={{ padding: '1rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ minWidth: 0, flex: 1, wordBreak: 'break-word' }}>
-                        <p style={{ margin: 0, fontWeight: 700, fontSize: '0.85rem' }}>👤 {pw.name || '(no username)'}</p>
-                        <p style={{ margin: '0.15rem 0 0', fontSize: '0.7rem', color: 'var(--color-text-secondary)' }}>📧 {pw.email}</p>
-                        <p style={{ margin: '0.15rem 0 0', fontSize: '0.65rem', color: 'var(--color-text-secondary)' }}>Requested: {new Date(pw.created_at).toLocaleDateString()}</p>
-                      </div>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <button onClick={() => handleApprovePending(pw.id, pw.email)} style={{ padding: '0.4rem 0.75rem', borderRadius: '8px', border: 'none', backgroundColor: 'var(--color-primary)', color: 'white', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
-                          ✓ Accept
-                        </button>
-                        <button onClick={() => handleRejectPending(pw.id, pw.email)} style={{ padding: '0.4rem 0.75rem', borderRadius: '8px', border: '1px solid var(--color-primary)', backgroundColor: 'transparent', color: 'var(--color-primary)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
-                          ✕ Reject
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-
-
-            <div className="panel" style={{ padding: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Users size={18} color="var(--color-primary)" /> Workers ({workers.length})
-              </h2>
-              {workers.length === 0 ? <p style={{ color: 'var(--color-text-secondary)', textAlign: 'center', padding: '1.5rem' }}>No workers yet.</p> : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  {workers.map((w) => (
-                    <div key={w.id} style={{ padding: '1rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', border: '1px solid rgba(230,57,70,0.05)' }}>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                        <div style={{ minWidth: 0, flex: 1, wordBreak: 'break-word' }}>
-                          <p style={{ margin: 0, fontWeight: 700, fontSize: '0.85rem' }}>{w.name ? `👤 ${w.name}` : `📧 ${w.email}`}</p>
-                          <p style={{ margin: '0.15rem 0 0', fontSize: '0.7rem', color: 'var(--color-text-secondary)' }}>{w.name ? `📧 ${w.email}` : ''}</p>
-                          <p style={{ margin: '0.15rem 0 0', fontSize: '0.7rem', color: 'var(--color-text-secondary)' }}>Pass: <strong>{w.password}</strong></p>
-                        </div>
-                        <button onClick={() => handleRemoveWorker(w.id, w.email)} style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer', padding: '0.5rem' }}>
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                      {/* Permissions toggles */}
-                      <div style={{ borderTop: '1px solid rgba(230,57,70,0.06)', paddingTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                        <p style={{ margin: 0, fontSize: '0.7rem', fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Permissions</p>
-                        {[
-                          { key: 'canAddItems', label: '📦 Add Items' },
-                          { key: 'canEditItems', label: '✏️ Edit Items' },
-                        ].map(p => {
-                          const on = w.permissions?.[p.key] ?? false;
-                          return (
-                            <div key={p.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <span style={{ fontSize: '0.8rem' }}>{p.label}</span>
-                              <button onClick={() => togglePermission(w.id, p.key)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: on ? 'rgb(46,204,113)' : 'var(--color-text-secondary)', padding: '0.15rem' }}>
-                                {on ? <ToggleRight size={22} /> : <ToggleLeft size={22} />}
-                              </button>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {filteredOrders.map(order => (
+                    <div 
+                      key={order.id} 
+                      className="bg-white rounded-2xl border border-[#EADBCE] shadow-xs p-5 flex flex-col justify-between hover:border-[#8B4513]/40 transition-all"
+                    >
+                      <div>
+                        {/* Header: ID, Date, Amount */}
+                        <div className="flex items-start justify-between gap-2 pb-3 border-b border-[#F2E7DC]">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-xs font-bold text-[#8B4513] bg-[#FAF2EB] px-2 py-0.5 rounded-md">
+                                {order.id}
+                              </span>
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                                order.status === 'completed'
+                                  ? 'bg-emerald-100 text-emerald-800'
+                                  : order.status === 'cancelled'
+                                  ? 'bg-rose-100 text-rose-800'
+                                  : 'bg-amber-100 text-amber-900'
+                              }`}>
+                                {order.status}
+                              </span>
                             </div>
-                          );
-                        })}
+                            <p className="text-[11px] text-[#7C6053] mt-1">
+                              {order.created_at ? new Date(order.created_at).toLocaleString() : 'Recent'}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-xl font-bold text-[#361B0E]">₹{order.total_amount}</span>
+                            <p className="text-[10px] text-[#7C6053] capitalize">
+                              {order.delivery_type === 'delivery' ? '🚚 Delivery' : '🏪 Counter Pickup'}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Customer Information */}
+                        <div className="py-3 text-xs space-y-1 text-[#361B0E]">
+                          <p className="font-semibold">{order.customer_name}</p>
+                          <p className="text-[#7C6053] flex items-center gap-1.5">
+                            <Phone size={11} /> {order.customer_phone}
+                          </p>
+                          {order.address && (
+                            <p className="text-[#7C6053] text-[11px]">📍 {order.address}</p>
+                          )}
+                          {order.transaction_id && (
+                            <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded text-[10px] font-semibold mt-1">
+                              <span>UTR/Txn: {order.transaction_id}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Items Breakdown */}
+                        <div className="py-2 border-t border-[#F2E7DC]">
+                          <p className="text-[11px] font-bold text-[#7C6053] mb-1.5">Ordered Items:</p>
+                          <div className="space-y-1">
+                            {order.items.map((item, idx) => (
+                              <div key={idx} className="flex items-center justify-between text-xs text-[#361B0E] bg-[#FAF2EB] px-2.5 py-1 rounded-lg">
+                                <span>{item.name} <strong className="text-[#8B4513]">×{item.quantity}</strong></span>
+                                <span className="font-semibold">₹{item.price}</span>
+                              </div>
+                            ))}
+                          </div>
+                          {order.notes && (
+                            <p className="text-[11px] text-[#7C6053] italic mt-2 bg-amber-50 p-2 rounded-lg border border-amber-200">
+                              Note: {order.notes}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Footer Actions */}
+                      <div className="pt-3 border-t border-[#F2E7DC] flex items-center justify-between gap-2 mt-3">
+                        <button
+                          onClick={() => handleSendWhatsApp(order)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-xl transition-all cursor-pointer"
+                        >
+                          <MessageSquare size={13} />
+                          <span>WhatsApp</span>
+                        </button>
+
+                        <div className="flex items-center gap-1.5">
+                          {order.status !== 'completed' && (
+                            <button
+                              onClick={() => handleUpdateOrderStatus(order.id, 'completed')}
+                              className="px-3 py-1.5 text-xs font-semibold text-white bg-emerald-700 hover:bg-emerald-800 rounded-xl transition-all shadow-xs cursor-pointer"
+                            >
+                              Complete
+                            </button>
+                          )}
+                          {order.status !== 'cancelled' && (
+                            <button
+                              onClick={() => handleUpdateOrderStatus(order.id, 'cancelled')}
+                              className="px-2.5 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-50 border border-rose-200 rounded-xl transition-all cursor-pointer"
+                            >
+                              Cancel
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
             </div>
-          </div>
-        )}
+          )}
 
-        {/* ITEMS TAB */}
-        {activeTab === 'items' && (
-          <div className="panel" style={{ padding: '1.5rem' }}>
-            <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Package size={18} color="var(--color-primary)" /> All Products ({items.length})
-            </h2>
-            <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginBottom: '1rem' }}>Admin can delete any product here. Workers cannot delete items.</p>
-            {items.length === 0 ? <p style={{ color: 'var(--color-text-secondary)', textAlign: 'center', padding: '2rem' }}>No products yet.</p> : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {items.map(item => (
-                  <div key={item.id} style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', border: '1px solid rgba(230,57,70,0.05)' }}>
-                    <div style={{ minWidth: 0, flex: 1, wordBreak: 'break-word' }}>
-                      <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>📦 {item.name}</span>
-                      <span style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', display: 'block' }}>{item.category} · Qty: {item.quantity} {useAppStore.getState().storeType === 'online' && `· Segment: ${(item as any).store_segment === 'hotel' ? 'Hotel Only' : (item as any).store_segment === 'bakery' ? 'Bakery Only' : 'Both'}`}</span>
-                    </div>
-                    <button onClick={() => handleDeleteItem(item.id, item.name)} style={{ border: 'none', background: 'rgba(230,57,70,0.08)', color: 'var(--color-primary)', cursor: 'pointer', padding: '0.4rem 0.75rem', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.75rem', fontWeight: 600 }}>
-                      <Trash2 size={14} /> Delete
-                    </button>
+          {/* ========================================================================= */}
+          {/* 2. STAFF & ACCESS TAB */}
+          {/* ========================================================================= */}
+          {activeTab === 'workers' && (
+            <div className="space-y-6">
+              {/* Pending Signup Approvals Banner */}
+              {pendingWorkers.length > 0 && (
+                <div className="bg-amber-50 border border-amber-300 rounded-2xl p-4 shadow-xs">
+                  <div className="flex items-center gap-2 mb-3">
+                    <AlertTriangle size={18} className="text-amber-700" />
+                    <h3 className="text-sm font-bold text-amber-900">
+                      Pending Staff Signup Requests ({pendingWorkers.length})
+                    </h3>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* CATEGORIES TAB */}
-        {activeTab === 'categories' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div className="panel" style={{ padding: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.05rem', margin: '0 0 1rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Tag size={18} color="var(--color-primary)" /> Categories ({categories.length})
-              </h2>
-
-              <form onSubmit={handleAddCategory} style={{ borderBottom: '1px solid rgba(230,57,70,0.08)', paddingBottom: '1.5rem', marginBottom: '1.5rem' }}>
-                <h3 style={{ fontSize: '0.9rem', margin: '0 0 0.75rem 0', fontWeight: 700 }}>
-                  {editingCategoryId ? '✏️ Edit Category' : '➕ Add New Category'}
-                </h3>
-                <div className="input-group"><label className="input-label">Name</label>
-                  <input type="text" className="input-field" placeholder="e.g., Snacks" value={newCatName} onChange={e => setNewCatName(e.target.value)} required />
-                </div>
-                <div className="input-group" style={{ marginTop: '0.75rem' }}><label className="input-label">Department / Store</label>
-                  <select
-                    className="input-field"
-                    value={newCatStoreType}
-                    onChange={e => setNewCatStoreType(e.target.value as 'online' | 'offline')}
-                  >
-                    <option value="online">Online Store</option>
-                    <option value="offline">Offline Store</option>
-                  </select>
-                </div>
-                <div className="input-group" style={{ marginTop: '0.75rem' }}><label className="input-label" style={{ marginBottom: '0.5rem' }}>Color</label>
-                  <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                    {colors.map(c => (
-                      <button key={c} type="button" onClick={() => setNewCatColor(c)} style={{ width: '26px', height: '26px', borderRadius: '50%', background: c, border: newCatColor === c ? '2px solid white' : 'none', boxShadow: newCatColor === c ? `0 0 0 2px ${c}` : 'none', cursor: 'pointer' }} />
+                  <div className="space-y-2">
+                    {pendingWorkers.map(pw => (
+                      <div key={pw.id} className="bg-white p-3 rounded-xl border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                          <p className="text-xs font-bold text-[#361B0E]">{pw.name || 'New Staff'}</p>
+                          <p className="text-[11px] text-[#7C6053]">{pw.email}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleApprovePending(pw.id, pw.email)}
+                            className="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all cursor-pointer"
+                          >
+                            <Check size={12} /> Approve
+                          </button>
+                          <button
+                            onClick={() => handleRejectPending(pw.id, pw.email)}
+                            className="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold text-rose-700 hover:bg-rose-50 border border-rose-200 rounded-lg transition-all cursor-pointer"
+                          >
+                            <X size={12} /> Decline
+                          </button>
+                        </div>
+                      </div>
                     ))}
-                    <input type="color" value={newCatColor} onChange={e => setNewCatColor(e.target.value)} style={{ width: '30px', height: '30px', border: 'none', background: 'transparent', cursor: 'pointer' }} />
                   </div>
                 </div>
-                <div className="input-group" style={{ marginTop: '0.75rem' }}>
-                  <label className="input-label">Category Image (Optional)</label>
-                  <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleCatImageUpload}
-                      disabled={isUploadingCatImage}
-                      style={{ fontSize: '0.8rem' }}
-                    />
-                    {isUploadingCatImage && <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>Uploading...</span>}
-                  </div>
-                  {newCatImageUrl && (
-                    <div style={{ marginTop: '0.5rem' }}>
-                      <img src={newCatImageUrl} alt="Preview" style={{ height: '40px', borderRadius: '6px', objectFit: 'cover' }} />
+              )}
+
+              {/* Two Column Layout: Add Staff Form + Active Staff List */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Left: Add Worker Form */}
+                <div className="bg-white p-5 rounded-2xl border border-[#EADBCE] shadow-xs h-fit">
+                  <h3 className="text-sm font-bold text-[#361B0E] mb-3 flex items-center gap-2">
+                    <Plus size={16} className="text-[#8B4513]" /> Add Staff Member
+                  </h3>
+                  <form onSubmit={handleAddWorker} className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-medium text-[#7C6053] mb-1">Email Address</label>
+                      <input
+                        type="email"
+                        placeholder="worker@nayakart.in"
+                        value={workerEmail}
+                        onChange={e => setWorkerEmail(e.target.value)}
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-[#EADBCE] bg-[#FDFBF7] focus:bg-white focus:outline-none focus:border-[#8B4513]"
+                        required
+                      />
                     </div>
-                  )}
-                </div>
-                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
-                  <button type="submit" className="btn btn-primary" disabled={isUploadingCatImage} style={{ flex: 1 }}>
-                    {editingCategoryId ? (
-                      <><Edit2 size={16} /> Update Category</>
-                    ) : (
-                      <><Plus size={16} /> Add Category</>
-                    )}
-                  </button>
-                  {editingCategoryId && (
-                    <button type="button" className="btn btn-outline" onClick={() => {
-                      setEditingCategoryId(null);
-                      setNewCatName('');
-                      setNewCatColor('#E63946');
-                      setNewCatImageUrl('');
-                      setNewCatStoreType(useAppStore.getState().storeType);
-                    }} style={{ flex: 1 }}>
-                      Cancel
-                    </button>
-                  )}
-                </div>
-              </form>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.25rem' }}>
-                {categories.map(cat => (
-                  <div key={cat.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.6rem 1rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', border: `1.5px solid ${cat.color}20` }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      {cat.image_url ? (
-                        <img src={cat.image_url} alt={cat.name} style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }} />
-                      ) : (
-                        <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: cat.color, flexShrink: 0 }}></span>
-                      )}
-                      <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>{cat.name}</span>
+                    <div>
+                      <label className="block text-xs font-medium text-[#7C6053] mb-1">Set Password</label>
+                      <div className="relative">
+                        <input
+                          type={showWorkerPassword ? "text" : "password"}
+                          placeholder="Temporary password..."
+                          value={workerPassword}
+                          onChange={e => setWorkerPassword(e.target.value)}
+                          className="w-full px-3 py-2 text-xs rounded-xl border border-[#EADBCE] bg-[#FDFBF7] focus:bg-white focus:outline-none focus:border-[#8B4513] pr-9"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowWorkerPassword(!showWorkerPassword)}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7C6053] hover:text-[#361B0E]"
+                        >
+                          {showWorkerPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                        </button>
+                      </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                      <button onClick={() => handleEditCategoryClick(cat)} style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer', padding: '0.3rem' }}>
-                        <Edit2 size={15} />
-                      </button>
-                      <button onClick={() => handleDeleteCategory(cat.id, cat.name)} style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer', padding: '0.3rem' }}>
-                        <Trash2 size={15} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-
-            </div>
-          </div>
-        )}
-
-
-        {activeTab === 'logs' && (
-          <div className="panel" style={{ padding: '1.5rem' }}>
-            <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Activity size={18} color="var(--color-primary)" /> Activity Logs
-            </h2>
-            {logs.length === 0 ? <p style={{ color: 'var(--color-text-secondary)', textAlign: 'center', padding: '2rem' }}>No activity yet.</p> : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                {logs.map(log => (
-                  <div key={log.id} style={{ padding: '0.75rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', borderLeft: '3px solid var(--color-primary)', fontSize: '0.8rem', wordBreak: 'break-word' }}>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                      <strong>👤 {log.worker_email}</strong>
-                      <span style={{ fontSize: '0.65rem', color: 'var(--color-text-secondary)' }}>{new Date(log.created_at).toLocaleString()}</span>
-                    </div>
-                    <div><span style={{ color: 'var(--color-primary)', fontWeight: 600 }}>{log.action}</span>
-                      {log.action === 'Updated Worker Permission' ? (
-                        ` — 🛡️ ${log.details?.permission} turned ${log.details?.new_value ? 'ON' : 'OFF'} for ${log.details?.item_name}`
-                      ) : (
-                        <>
-                          {log.details?.item_name && ` — 📦 ${log.details.item_name}`}
-                        </>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* SETTINGS TAB */}
-        {activeTab === 'settings' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {useAppStore.getState().storeType === 'online' && (
-              <div className="panel" style={{ padding: '1.5rem' }}>
-                <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <ShoppingCart size={18} color="var(--color-primary)" /> Store Configuration
-                </h2>
-                <form onSubmit={handleSaveStoreSettings} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  <div className="input-group">
-                    <label className="input-label">UPI ID for Payments</label>
-                    <input type="text" className="input-field" placeholder="e.g., yourname@bank" value={storeUpiId} onChange={e => setStoreUpiId(e.target.value)} required />
-                  </div>
-                  <div className="input-group">
-                    <label className="input-label">WhatsApp Number (include country code)</label>
-                    <input type="text" className="input-field" placeholder="e.g., 919876543210" value={storePhoneNumber} onChange={e => setStorePhoneNumber(e.target.value)} required />
-                  </div>
-                  <div className="input-group">
-                    <label className="input-label">Bank Details (Optional)</label>
-                    <textarea className="input-field" placeholder="Account Number, IFSC Code, Bank Name, etc." value={storeBankDetails} onChange={e => setStoreBankDetails(e.target.value)} rows={3} />
-                  </div>
-                  
-                  <h3 style={{ fontSize: '0.95rem', margin: '1rem 0 0.5rem 0', color: 'var(--color-primary)' }}>Footer Configuration</h3>
-                  
-                  <div className="input-group">
-                    <label className="input-label">Footer Brand Description</label>
-                    <textarea className="input-field" placeholder="Your premier source for premium cooking and baking ingredients..." value={footerDescription} onChange={e => setFooterDescription(e.target.value)} rows={2} required />
-                  </div>
-                  <div className="input-group">
-                    <label className="input-label">Footer Phone/WhatsApp</label>
-                    <input type="text" className="input-field" placeholder="+91-9876543210" value={footerPhone} onChange={e => setFooterPhone(e.target.value)} required />
-                  </div>
-                  <div className="input-group">
-                    <label className="input-label">Store Hours</label>
-                    <input type="text" className="input-field" placeholder="9 AM - 8 PM" value={footerHours} onChange={e => setFooterHours(e.target.value)} required />
-                  </div>
-                  <div className="input-group">
-                    <label className="input-label">Operating Days</label>
-                    <input type="text" className="input-field" placeholder="Monday - Saturday" value={footerDays} onChange={e => setFooterDays(e.target.value)} required />
-                  </div>
-                  <div className="input-group">
-                    <label className="input-label">Copyright Text</label>
-                    <input type="text" className="input-field" placeholder="© 2026 Template Store. All rights reserved." value={footerCopyright} onChange={e => setFooterCopyright(e.target.value)} required />
-                  </div>
-
-                  <h3 style={{ fontSize: '0.95rem', margin: '1rem 0 0.5rem 0', color: 'var(--color-primary)' }}>Order ID Configuration</h3>
-                  <div className="input-group">
-                    <label className="input-label">Order ID Prefix</label>
-                    <input type="text" className="input-field" placeholder="ORD-" value={orderIdPrefix} onChange={e => setOrderIdPrefix(e.target.value)} required />
-                  </div>
-                  <div className="input-group">
-                    <label className="input-label">Next Order Sequence Number</label>
-                    <input type="number" className="input-field" placeholder="1000" value={orderIdSequence} onChange={e => setOrderIdSequence(parseInt(e.target.value) || 1000)} required />
-                    <p style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', marginTop: '0.2rem' }}>This number will increase by 1 for every new online order.</p>
-                  </div>
-                  
-                  <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }} disabled={isSavingStoreSettings}>
-                    {isSavingStoreSettings ? 'Saving...' : 'Save Configuration'}
-                  </button>
-                </form>
-              </div>
-            )}
-
-            <div className="panel" style={{ padding: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Key size={18} color="var(--color-primary)" /> Admin Credentials
-              </h2>
-
-            
-            <form onSubmit={handleCustomizeAdmin} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <div style={{ padding: '0.75rem', backgroundColor: 'rgba(230,57,70,0.05)', border: '1px solid var(--color-primary)', borderRadius: '12px', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                <AlertTriangle size={20} color="var(--color-primary)" style={{ flexShrink: 0 }} />
-                <p style={{ margin: 0, fontSize: '0.7rem', fontWeight: 600 }}>Save your new credentials safely in the database.</p>
-              </div>
-              <div className="input-group"><label className="input-label">New Username</label>
-                <input type="text" className="input-field" placeholder="e.g., superadmin" value={newAdminUser} onChange={e => setNewAdminUser(e.target.value)} />
-              </div>
-              <div className="input-group"><label className="input-label">New Password</label>
-                <div style={{ position: 'relative' }}>
-                  <input type={showAdminPassword ? "text" : "password"} className="input-field" placeholder="e.g., myPass123" value={newAdminPass} onChange={e => setNewAdminPass(e.target.value)} style={{ paddingRight: '2.5rem' }} />
-                  <button type="button" onClick={() => setShowAdminPassword(!showAdminPassword)} style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', padding: 0 }}>
-                    {showAdminPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              </div>
-              <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={isSavingSecurity || (!newAdminUser.trim() && !newAdminPass.trim())}>
-                <Lock size={16} /> {isSavingSecurity ? 'Saving...' : 'Update Credentials'}
-              </button>
-            </form>
-          </div>
-          </div>
-        )}
-
-        {/* RECEIPT TAB */}
-        {activeTab === 'receipt' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div className="panel" style={{ padding: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Package size={18} color="var(--color-primary)" /> Receipt Configuration
-              </h2>
-              <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
-                
-                {/* Editor Side */}
-                <div style={{ flex: '1 1 300px' }}>
-                  <form onSubmit={handleSaveStoreSettings} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    <h3 style={{ fontSize: '0.9rem', margin: 0 }}>Header Lines</h3>
-                    <input type="text" className="input-field" placeholder="TEMPLATE STORE" value={receiptH1} onChange={e => setReceiptH1(e.target.value)} required />
-                    <input type="text" className="input-field" placeholder="KAZHAKUTTOM,TRIVANDRUM" value={receiptH2} onChange={e => setReceiptH2(e.target.value)} required />
-                    <input type="text" className="input-field" placeholder="PH:+91-999507648" value={receiptH3} onChange={e => setReceiptH3(e.target.value)} required />
-                    <input type="text" className="input-field" placeholder="GSTIN:32AKIPA6398K2ZW" value={receiptH4} onChange={e => setReceiptH4(e.target.value)} required />
-                    
-                    <h3 style={{ fontSize: '0.9rem', margin: '1rem 0 0 0' }}>Footer Lines</h3>
-                    <input type="text" className="input-field" placeholder="For :  TEMPLATE STORE" value={receiptF1} onChange={e => setReceiptF1(e.target.value)} required />
-                    <input type="text" className="input-field" placeholder="Thank you . . . Visit Again . . ." value={receiptF2} onChange={e => setReceiptF2(e.target.value)} required />
-                    
-                    <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }} disabled={isSavingStoreSettings}>
-                      {isSavingStoreSettings ? 'Saving...' : 'Save Configuration'}
+                    <button
+                      type="submit"
+                      className="w-full py-2 px-4 bg-[#8B4513] hover:bg-[#63300C] text-white text-xs font-semibold rounded-xl transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <Plus size={14} /> Add Staff Account
                     </button>
                   </form>
                 </div>
 
-                {/* Live Preview Side */}
-                <div style={{ flex: '1 1 300px', backgroundColor: '#fff', border: '1px solid #ccc', padding: '1.5rem', fontFamily: 'monospace', fontSize: '13px', whiteSpace: 'pre', color: '#000', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', borderRadius: '8px', minWidth: '350px' }}>
-                  <div style={{ textAlign: 'center' }}>
-                    {receiptH1}<br />
-                    {receiptH2}<br />
-                    {receiptH3}<br />
-                    {receiptH4}
+                {/* Right: Active Staff List */}
+                <div className="lg:col-span-2 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-bold text-[#361B0E]">Active Staff Accounts ({workers.length})</h3>
                   </div>
-                  <br />
-                  Invoice No: 1234       Date :08-07-2026<br />
-                  Customer Name : JOHN DOE<br />
-                  --------------------------------------------<br />
-                  SI  Item       Qty  MRP    Rate GST%  Amount<br />
-                  --------------------------------------------<br />
-                  1 //001//Bread       1    50    47.62    5    47.62<br />
-                  <br />
-                  Total :                                50.00<br />
-                  ============================================<br />
-                  Amount in words payable:<br />
-                  Fifty Rupees Only<br />
-                  <br />
-                  <div style={{ textAlign: 'center' }}>
-                    {receiptF1}<br />
-                    {receiptF2}
-                  </div>
-                </div>
 
+                  {workers.length === 0 ? (
+                    <div className="bg-white p-8 rounded-2xl border border-[#EADBCE] text-center text-xs text-[#7C6053]">
+                      No active workers registered yet.
+                    </div>
+                  ) : (
+                    <div className="space-y-2.5">
+                      {workers.map(w => (
+                        <div 
+                          key={w.id} 
+                          className="bg-white p-4 rounded-xl border border-[#EADBCE] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                        >
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-bold text-[#361B0E]">{w.email}</span>
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#FAF2EB] text-[#8B4513]">
+                                Staff
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-[#7C6053] font-mono mt-0.5">
+                              Password: {w.password || 'Managed by User'}
+                            </p>
+                          </div>
+                          <div>
+                            <button
+                              onClick={() => handleRemoveWorker(w.id, w.email)}
+                              className="px-2.5 py-1 text-xs font-semibold text-rose-700 hover:bg-rose-50 border border-rose-200 rounded-lg transition-all cursor-pointer flex items-center gap-1"
+                            >
+                              <Trash2 size={12} /> Revoke Access
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
+          {/* ========================================================================= */}
+          {/* 3. CATEGORIES TAB */}
+          {/* ========================================================================= */}
+          {activeTab === 'categories' && (
+            <div className="space-y-6">
+              {/* Category Creator / Editor */}
+              <div className="bg-white p-5 rounded-2xl border border-[#EADBCE] shadow-xs">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-bold text-[#361B0E] flex items-center gap-2">
+                    <Tag size={16} className="text-[#8B4513]" />
+                    {editingCategoryId ? 'Edit Category' : 'Create New Category'}
+                  </h3>
+                  {editingCategoryId && (
+                    <button
+                      onClick={() => {
+                        setEditingCategoryId(null);
+                        setNewCatName('');
+                        setNewCatImageUrl('');
+                      }}
+                      className="text-xs text-[#7C6053] hover:text-[#361B0E] underline"
+                    >
+                      Cancel Edit
+                    </button>
+                  )}
+                </div>
 
-        {/* HERO TAB */}
-        {activeTab === 'hero' && (
-          <div className="panel" style={{ padding: '1.5rem' }}>
-            <h2 style={{ fontSize: '1.05rem', margin: '0 0 1rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <ImageIcon size={18} color="var(--color-primary)" /> Hero Slides ({heroSlides.length})
-            </h2>
+                <form onSubmit={handleAddCategory} className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="sm:col-span-2">
+                      <label className="block text-xs font-medium text-[#7C6053] mb-1">Category Name</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Silicone Cake Moulds, Couverture Chocolate..."
+                        value={newCatName}
+                        onChange={e => setNewCatName(e.target.value)}
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-[#EADBCE] bg-[#FDFBF7] focus:bg-white focus:outline-none focus:border-[#8B4513]"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-[#7C6053] mb-1">Store Assignment</label>
+                      <select
+                        value={newCatStoreType}
+                        onChange={e => setNewCatStoreType(e.target.value as 'online' | 'offline')}
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-[#EADBCE] bg-[#FDFBF7] focus:bg-white focus:outline-none focus:border-[#8B4513]"
+                      >
+                        <option value="online">Online Web Store</option>
+                        <option value="offline">Offline Counter Showroom</option>
+                      </select>
+                    </div>
+                  </div>
 
-            {/* Add New Slide Form */}
-            <form onSubmit={handleAddSlide} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', backgroundColor: 'var(--color-bg-light)', padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem' }}>
-              <h3 style={{ fontSize: '0.9rem', margin: 0, fontWeight: 700 }}>Add New Slide</h3>
-              
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-                <input 
-                  type="text" 
-                  className="input-field" 
-                  placeholder="Slide Title (e.g. Premium Ingredients)" 
-                  value={newSlideTitle} 
-                  onChange={e => setNewSlideTitle(e.target.value)} 
-                  required 
-                />
-                <input 
-                  type="text" 
-                  className="input-field" 
-                  placeholder="Slide Subtitle" 
-                  value={newSlideSubtitle} 
-                  onChange={e => setNewSlideSubtitle(e.target.value)} 
-                  required 
-                />
+                  {/* Swatch & Upload */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-[#7C6053]">Color Swatch:</span>
+                      <div className="flex items-center gap-1.5">
+                        {colorPalette.map(c => (
+                          <button
+                            key={c}
+                            type="button"
+                            onClick={() => setNewCatColor(c)}
+                            style={{ backgroundColor: c }}
+                            className={`w-6 h-6 rounded-full cursor-pointer transition-transform ${
+                              newCatColor === c ? 'scale-125 ring-2 ring-offset-2 ring-[#8B4513]' : 'hover:scale-110'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <label className="px-3 py-1.5 bg-[#FAF2EB] hover:bg-[#F3E3D3] text-[#63300C] text-xs font-semibold rounded-xl border border-[#EADBCE] cursor-pointer transition-all">
+                        {isUploadingCatImage ? 'Uploading...' : 'Upload Icon/Image'}
+                        <input type="file" accept="image/*" onChange={handleCatImageUpload} className="hidden" />
+                      </label>
+                      <button
+                        type="submit"
+                        className="px-4 py-1.5 bg-[#8B4513] hover:bg-[#63300C] text-white text-xs font-semibold rounded-xl transition-all shadow-xs cursor-pointer"
+                      >
+                        {editingCategoryId ? 'Update Category' : 'Save Category'}
+                      </button>
+                    </div>
+                  </div>
+                </form>
               </div>
 
-              <div>
-                <label style={{ fontSize: '0.8rem', fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>Slide Image</label>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleHeroImageUpload}
-                    disabled={isUploadingSlide}
-                    style={{ fontSize: '0.8rem' }}
-                  />
-                  {isUploadingSlide && <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>Uploading...</span>}
-                </div>
-                {newSlideImageUrl && (
-                  <div style={{ marginTop: '0.5rem' }}>
-                    <img src={newSlideImageUrl} alt="Preview" style={{ height: '60px', borderRadius: '8px', objectFit: 'cover' }} />
+              {/* Category Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {categories.map(cat => (
+                  <div 
+                    key={cat.id} 
+                    className="bg-white rounded-2xl border border-[#EADBCE] p-4 shadow-xs flex flex-col justify-between hover:border-[#8B4513]/40 transition-all"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span 
+                          className="w-3.5 h-3.5 rounded-full shadow-xs" 
+                          style={{ backgroundColor: cat.color }} 
+                        />
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#FAF2EB] text-[#7C6053]">
+                          {(cat as any).store_type || 'offline'}
+                        </span>
+                      </div>
+                      <h4 className="text-xs font-bold text-[#361B0E] line-clamp-1">{cat.name}</h4>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-1.5 mt-3 pt-2 border-t border-[#F2E7DC]">
+                      <button
+                        onClick={() => handleEditCategoryClick(cat)}
+                        className="p-1.5 rounded-lg text-[#7C6053] hover:text-[#8B4513] hover:bg-[#FAF2EB] transition-colors"
+                        title="Edit category"
+                      >
+                        <Edit2 size={13} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteCategory(cat.id, cat.name)}
+                        className="p-1.5 rounded-lg text-rose-600 hover:text-rose-800 hover:bg-rose-50 transition-colors"
+                        title="Delete category"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================================= */}
+          {/* 4. HERO BANNERS TAB */}
+          {/* ========================================================================= */}
+          {activeTab === 'hero' && isOnline && (
+            <div className="space-y-6">
+              {/* Add Banner Form */}
+              <div className="bg-white p-5 rounded-2xl border border-[#EADBCE] shadow-xs">
+                <h3 className="text-sm font-bold text-[#361B0E] mb-3 flex items-center gap-2">
+                  <ImageIcon size={16} className="text-[#8B4513]" /> Add Homepage Hero Carousel Slide
+                </h3>
+                <form onSubmit={handleAddSlide} className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-[#7C6053] mb-1">Banner Title</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Belgian Chocolate Fest"
+                        value={newSlideTitle}
+                        onChange={e => setNewSlideTitle(e.target.value)}
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-[#EADBCE] bg-[#FDFBF7] focus:bg-white focus:outline-none focus:border-[#8B4513]"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-[#7C6053] mb-1">Subtitle / Offer Tag</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Flat 15% off on all couverture chocolate slabs"
+                        value={newSlideSubtitle}
+                        onChange={e => setNewSlideSubtitle(e.target.value)}
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-[#EADBCE] bg-[#FDFBF7] focus:bg-white focus:outline-none focus:border-[#8B4513]"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                    <label className="inline-flex items-center gap-2 px-3.5 py-2 bg-[#FAF2EB] hover:bg-[#F3E3D3] text-[#63300C] text-xs font-semibold rounded-xl border border-[#EADBCE] cursor-pointer transition-all">
+                      <ImageIcon size={14} />
+                      <span>{isUploadingSlide ? 'Uploading banner...' : newSlideImageUrl ? 'Replace Banner Image' : 'Upload Banner Image'}</span>
+                      <input type="file" accept="image/*" onChange={handleHeroImageUpload} className="hidden" />
+                    </label>
+
+                    <button
+                      type="submit"
+                      disabled={!newSlideImageUrl}
+                      className="px-4 py-2 bg-[#8B4513] hover:bg-[#63300C] text-white text-xs font-semibold rounded-xl transition-all shadow-xs cursor-pointer disabled:opacity-50"
+                    >
+                      Publish Banner Slide
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Current Slides */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-bold text-[#361B0E]">Current Slides ({heroSlides.length})</h3>
+                {heroSlides.length === 0 ? (
+                  <div className="bg-white p-8 rounded-2xl border border-[#EADBCE] text-center text-xs text-[#7C6053]">
+                    No homepage promo slides uploaded yet.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {heroSlides.sort((a, b) => a.order_index - b.order_index).map(slide => (
+                      <div key={slide.id} className="bg-white rounded-2xl border border-[#EADBCE] overflow-hidden shadow-xs flex flex-col justify-between">
+                        <img 
+                          src={slide.image_url} 
+                          alt={slide.title} 
+                          className="w-full h-36 object-cover bg-neutral-100"
+                        />
+                        <div className="p-4 flex items-start justify-between gap-2">
+                          <div>
+                            <h4 className="text-xs font-bold text-[#361B0E]">{slide.title}</h4>
+                            <p className="text-[11px] text-[#7C6053] mt-0.5 line-clamp-1">{slide.subtitle}</p>
+                          </div>
+                          <button
+                            onClick={() => handleDeleteSlide(slide.id, slide.title)}
+                            className="p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg transition-colors"
+                            title="Delete slide"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
+            </div>
+          )}
 
-              <button 
-                type="submit" 
-                className="btn btn-primary" 
-                disabled={isUploadingSlide || !newSlideImageUrl || !newSlideTitle.trim()}
-                style={{ alignSelf: 'flex-start', display: 'flex', gap: '0.5rem', alignItems: 'center' }}
-              >
-                <Plus size={16} /> Add Slide
-              </button>
+          {/* ========================================================================= */}
+          {/* 5. STORE & POS SETTINGS TAB */}
+          {/* ========================================================================= */}
+          {activeTab === 'settings' && (
+            <form onSubmit={handleSaveStoreSettings} className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Left Card: Digital Payments & Store Contact */}
+                <div className="bg-white p-5 rounded-2xl border border-[#EADBCE] shadow-xs space-y-4">
+                  <h3 className="text-sm font-bold text-[#361B0E] flex items-center gap-2 border-b border-[#F2E7DC] pb-3">
+                    <Sliders size={16} className="text-[#8B4513]" /> Digital Payments & Store Info
+                  </h3>
+
+                  <div>
+                    <label className="block text-xs font-medium text-[#7C6053] mb-1">Store UPI VPA (for QR payments)</label>
+                    <input
+                      type="text"
+                      value={storeUpiId}
+                      onChange={e => setStoreUpiId(e.target.value)}
+                      placeholder="e.g. anshajshaji3-2@okicici"
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-[#EADBCE] bg-[#FDFBF7] focus:bg-white focus:outline-none focus:border-[#8B4513]"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-[#7C6053] mb-1">Customer Support Phone</label>
+                    <input
+                      type="text"
+                      value={storePhoneNumber}
+                      onChange={e => setStorePhoneNumber(e.target.value)}
+                      placeholder="e.g. 919778052356"
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-[#EADBCE] bg-[#FDFBF7] focus:bg-white focus:outline-none focus:border-[#8B4513]"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-[#7C6053] mb-1">Store Operating Hours</label>
+                    <input
+                      type="text"
+                      value={footerHours}
+                      onChange={e => setFooterHours(e.target.value)}
+                      placeholder="e.g. 9:00 AM - 8:30 PM"
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-[#EADBCE] bg-[#FDFBF7] focus:bg-white focus:outline-none focus:border-[#8B4513]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-[#7C6053] mb-1">Store Description (Footer / About)</label>
+                    <textarea
+                      value={footerDescription}
+                      onChange={e => setFooterDescription(e.target.value)}
+                      rows={3}
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-[#EADBCE] bg-[#FDFBF7] focus:bg-white focus:outline-none focus:border-[#8B4513]"
+                    />
+                  </div>
+                </div>
+
+                {/* Right Card: Counter Thermal Receipt & Order Sequence */}
+                <div className="bg-white p-5 rounded-2xl border border-[#EADBCE] shadow-xs space-y-4">
+                  <h3 className="text-sm font-bold text-[#361B0E] flex items-center gap-2 border-b border-[#F2E7DC] pb-3">
+                    <Receipt size={16} className="text-[#8B4513]" /> Counter Thermal Receipt (POS)
+                  </h3>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-medium text-[#7C6053] mb-1">Header Line 1 (Store Name)</label>
+                      <input
+                        type="text"
+                        value={receiptH1}
+                        onChange={e => setReceiptH1(e.target.value)}
+                        className="w-full px-3 py-1.5 text-xs rounded-xl border border-[#EADBCE] bg-[#FDFBF7]"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-medium text-[#7C6053] mb-1">Header Line 2 (Location)</label>
+                      <input
+                        type="text"
+                        value={receiptH2}
+                        onChange={e => setReceiptH2(e.target.value)}
+                        className="w-full px-3 py-1.5 text-xs rounded-xl border border-[#EADBCE] bg-[#FDFBF7]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-medium text-[#7C6053] mb-1">Header Line 3 (Phone)</label>
+                      <input
+                        type="text"
+                        value={receiptH3}
+                        onChange={e => setReceiptH3(e.target.value)}
+                        className="w-full px-3 py-1.5 text-xs rounded-xl border border-[#EADBCE] bg-[#FDFBF7]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-medium text-[#7C6053] mb-1">Header Line 4 (GSTIN)</label>
+                      <input
+                        type="text"
+                        value={receiptH4}
+                        onChange={e => setReceiptH4(e.target.value)}
+                        className="w-full px-3 py-1.5 text-xs rounded-xl border border-[#EADBCE] bg-[#FDFBF7]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 pt-2">
+                    <div>
+                      <label className="block text-[11px] font-medium text-[#7C6053] mb-1">Invoice Prefix</label>
+                      <input
+                        type="text"
+                        value={orderIdPrefix}
+                        onChange={e => setOrderIdPrefix(e.target.value)}
+                        className="w-full px-3 py-1.5 text-xs rounded-xl border border-[#EADBCE] bg-[#FDFBF7]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-medium text-[#7C6053] mb-1">Start Sequence #</label>
+                      <input
+                        type="number"
+                        value={orderIdSequence}
+                        onChange={e => setOrderIdSequence(parseInt(e.target.value) || 1000)}
+                        className="w-full px-3 py-1.5 text-xs rounded-xl border border-[#EADBCE] bg-[#FDFBF7]"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-medium text-[#7C6053] mb-1">Footer Greeting Line</label>
+                    <input
+                      type="text"
+                      value={receiptF2}
+                      onChange={e => setReceiptF2(e.target.value)}
+                      className="w-full px-3 py-1.5 text-xs rounded-xl border border-[#EADBCE] bg-[#FDFBF7]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={isSavingStoreSettings}
+                  className="px-6 py-2.5 bg-[#8B4513] hover:bg-[#63300C] text-white text-xs font-bold rounded-xl transition-all shadow-xs cursor-pointer disabled:opacity-50"
+                >
+                  {isSavingStoreSettings ? 'Saving Configuration...' : 'Save Configuration'}
+                </button>
+              </div>
             </form>
+          )}
 
-            {/* Slide List */}
-            {heroSlides.length === 0 ? (
-              <p style={{ color: 'var(--color-text-secondary)', textAlign: 'center', padding: '1rem' }}>No slides configured.</p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {heroSlides.sort((a,b) => a.order_index - b.order_index).map(slide => (
-                  <div key={slide.id} style={{ display: 'flex', gap: '1rem', padding: '1rem', backgroundColor: 'var(--color-bg-light)', borderRadius: '12px', border: '1px solid rgba(230,57,70,0.1)', alignItems: 'center' }}>
-                    <img src={slide.image_url} alt={slide.title} style={{ width: '120px', height: '80px', objectFit: 'cover', borderRadius: '8px' }} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <h4 style={{ margin: '0 0 0.25rem 0', fontSize: '0.95rem', fontWeight: 700 }}>{slide.title}</h4>
-                      <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--color-text-secondary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{slide.subtitle}</p>
-                      <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.7rem', color: 'var(--color-primary)', fontWeight: 600 }}>Order: {slide.order_index}</p>
-                    </div>
-                    <button 
-                      onClick={() => handleDeleteSlide(slide.id, slide.title)}
-                      style={{ padding: '0.5rem', color: '#E63946', backgroundColor: 'rgba(230,57,70,0.1)', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
-                      title="Delete Slide"
+          {/* ========================================================================= */}
+          {/* 6. AUDIT TRAIL TAB */}
+          {/* ========================================================================= */}
+          {activeTab === 'logs' && (
+            <div className="space-y-4">
+              <div className="bg-white p-4 rounded-2xl border border-[#EADBCE] shadow-xs flex items-center justify-between gap-3">
+                <div className="relative w-full sm:w-80">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7C6053]" />
+                  <input
+                    type="text"
+                    placeholder="Search logs by staff email or action..."
+                    value={logSearchQuery}
+                    onChange={e => setLogSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-[#EADBCE] bg-[#FDFBF7] focus:bg-white focus:outline-none focus:border-[#8B4513]"
+                  />
+                </div>
+                <span className="text-xs text-[#7C6053] hidden sm:inline">
+                  Showing {filteredLogs.length} events
+                </span>
+              </div>
+
+              {filteredLogs.length === 0 ? (
+                <div className="bg-white p-8 rounded-2xl border border-[#EADBCE] text-center text-xs text-[#7C6053]">
+                  No audit log entries found.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {filteredLogs.map(log => (
+                    <div 
+                      key={log.id} 
+                      className="bg-white p-3.5 rounded-xl border border-[#EADBCE] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2"
                     >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ORDERS TAB */}
-        {activeTab === 'orders' && (
-          <div className="panel" style={{ padding: '1.5rem' }}>
-            <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <ShoppingCart size={18} color="var(--color-primary)" /> Online Orders ({onlineOrders.length})
-            </h2>
-            {onlineOrders.length === 0 ? <p style={{ color: 'var(--color-text-secondary)', textAlign: 'center', padding: '2rem' }}>No orders yet.</p> : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {onlineOrders.map(order => (
-                  <div key={order.id} style={{ padding: '1rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-light)', border: '1px solid rgba(230,57,70,0.05)' }}>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                      <div style={{ minWidth: 0, flex: 1 }}>
-                        <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--color-primary)' }}>{order.id}</span>
-                        <p style={{ margin: '0.2rem 0 0', fontWeight: 600, fontSize: '0.85rem' }}>👤 {order.customer_name}</p>
-                        <p style={{ margin: '0.1rem 0 0', fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>📞 {order.customer_phone}</p>
-                        {order.customer_email && <p style={{ margin: '0.1rem 0 0', fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>📧 {order.customer_email}</p>}
-                        <p style={{ margin: '0.4rem 0 0', fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
-                          <strong>{order.delivery_type === 'delivery' ? '🚚 Delivery' : '🏪 Pickup'}</strong>
-                          {order.address && ` - ${order.address}`}
-                        </p>
-                        <p style={{ margin: '0.2rem 0 0', fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>{new Date(order.created_at || '').toLocaleString()}</p>
-                        {order.transaction_id && (
-                          <div style={{ marginTop: '0.4rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', backgroundColor: '#E8F5E9', padding: '0.2rem 0.4rem', borderRadius: '4px', border: '1px solid #A5D6A7' }}>
-                            <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#2E7D32' }}>UTR/Txn: {order.transaction_id}</span>
-                          </div>
-                        )}
+                      <div className="flex items-center gap-3">
+                        <span className="w-2 h-2 rounded-full bg-[#8B4513]" />
+                        <div>
+                          <p className="text-xs font-bold text-[#361B0E]">{log.action}</p>
+                          <p className="text-[11px] text-[#7C6053]">
+                            By <strong className="text-[#361B0E]">{log.worker_email}</strong>
+                            {log.details?.item_name && ` — ${String(log.details.item_name)}`}
+                          </p>
+                        </div>
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
-                        <span style={{ fontWeight: 800, fontSize: '1.1rem', color: '#D95B35' }}>₹{order.total_amount}</span>
-                        <select 
-                          value={order.status}
-                          onChange={async (e) => {
-                            await db.updateOrderStatus(order.id, e.target.value as any);
-                            await refreshData();
-                            showToast('Order status updated!');
-                          }}
-                          style={{
-                            padding: '0.3rem 0.6rem',
-                            borderRadius: '8px',
-                            border: '1px solid var(--color-primary)',
-                            fontSize: '0.75rem',
-                            fontWeight: 600,
-                            backgroundColor: order.status === 'completed' ? '#E8F5E9' : order.status === 'cancelled' ? '#FFEBEE' : 'var(--color-bg-light)',
-                            color: order.status === 'completed' ? '#2E7D32' : order.status === 'cancelled' ? '#C62828' : 'var(--color-primary)',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          <option value="pending">Pending</option>
-                          <option value="completed">Completed</option>
-                          <option value="cancelled">Cancelled</option>
-                        </select>
-                      </div>
+                      <span className="text-[10px] text-[#7C6053] font-mono">
+                        {new Date(log.created_at).toLocaleString()}
+                      </span>
                     </div>
-                    
-                    <div style={{ borderTop: '1px solid rgba(0,0,0,0.05)', paddingTop: '0.75rem', marginTop: '0.5rem' }}>
-                      <p style={{ margin: '0 0 0.4rem 0', fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-text-secondary)' }}>Items:</p>
-                      <ul style={{ margin: 0, paddingLeft: '1.2rem', fontSize: '0.8rem', color: 'var(--color-text)' }}>
-                        {order.items.map((item, idx) => (
-                          <li key={idx}>
-                            {item.name} <span style={{ color: 'var(--color-text-secondary)' }}>x{item.quantity}</span> 
-                            <span style={{ fontSize: '0.75rem', color: 'var(--color-primary)', marginLeft: '0.5rem' }}>(₹{item.price})</span>
-                          </li>
-                        ))}
-                      </ul>
-                      {order.notes && (
-                        <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.75rem', color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>
-                          <span style={{ fontWeight: 600 }}>Notes:</span> {order.notes}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-      </>)}
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

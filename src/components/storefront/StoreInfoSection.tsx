@@ -21,10 +21,10 @@ export const StoreInfoSection: React.FC<StoreInfoSectionProps> = ({ settings }) 
         
         {/* Top Header */}
         <div className="text-center max-w-xl mx-auto mb-12 sm:mb-16">
-          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-medium text-[#4A2818] tracking-tight mb-3">
+          <h2 className="text-center font-serif text-3xl sm:text-4xl lg:text-5xl font-medium text-[#4A2818] tracking-tight mb-3">
             Visit Our Store
           </h2>
-          <p className="text-sm sm:text-base text-[#7A6153] leading-relaxed">
+          <p className="text-center text-sm sm:text-base text-[#7A6153] leading-relaxed">
             Step into our bakery supplies showroom or pick up your online WhatsApp orders in person. 
             Touch the moulds, inspect the nozzles, and smell the pure vanilla before you buy.
           </p>

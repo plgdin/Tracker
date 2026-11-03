@@ -197,7 +197,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ settings }) => {
               </div>
 
               {/* Slide Content Box */}
-              <div className="relative z-20 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center pb-12 sm:pb-16">
+              <div className="relative z-20 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-start pb-12 sm:pb-16 text-left">
                 <div className="max-w-2xl sm:max-w-3xl space-y-3 sm:space-y-4 text-left">
                   
                   {/* Offer Pill Badge */}
@@ -212,17 +212,17 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ settings }) => {
                   </div>
 
                   {/* Main Product/Store Headline */}
-                  <h1 className="font-serif text-2xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-bold text-[#FFF8F0] tracking-tight leading-[1.12] drop-shadow-md">
+                  <h1 className="text-left font-serif text-2xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-bold text-[#FFF8F0] tracking-[-0.015em] leading-[1.16] drop-shadow-md">
                     {slide.title}
                   </h1>
 
                   {/* Subtitle / Descriptive Copy specifically for baking supplies store */}
-                  <p className="text-xs sm:text-sm md:text-base text-[#F4ECE4]/95 font-normal leading-relaxed max-w-2xl drop-shadow-sm">
+                  <p className="text-left text-xs sm:text-sm md:text-base text-[#F4ECE4]/95 font-normal leading-relaxed max-w-2xl drop-shadow-sm">
                     {slide.subtitle}
                   </p>
 
                   {/* Deal Highlight Bar */}
-                  <div className="inline-flex items-center gap-2 bg-[#2E150B]/90 backdrop-blur-md border border-[#522914] px-3.5 py-1.5 rounded-xl shadow-xs">
+                  <div className="inline-flex items-center gap-2 bg-[#2E150B]/90 backdrop-blur-md border border-[#522914] px-4 py-2 rounded-full shadow-xs">
                     <Sparkles className="w-4 h-4 text-[#EAD9CF] shrink-0" />
                     <span className="text-xs sm:text-sm font-medium text-[#F9F4EE]">
                       {slide.highlight}
@@ -230,7 +230,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ settings }) => {
                   </div>
 
                   {/* CTA Action Buttons */}
-                  <div className="pt-2 sm:pt-4 flex flex-wrap items-center gap-3 sm:gap-4 pointer-events-auto">
+                  <div className="pt-2 sm:pt-4 flex flex-wrap items-center justify-start gap-3 sm:gap-4 pointer-events-auto">
                     <Link
                       to={slide.ctaLink}
                       style={{ color: '#F9F4EE' }}

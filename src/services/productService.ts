@@ -51,7 +51,7 @@ export const productService = {
             categoryName: item.category || 'Uncategorized',
             images: item.image_url ? [item.image_url] : (extra.images || []),
             stock: Number(item.quantity) || 0,
-            brand: extra.brand || 'Bake & Joy',
+            brand: extra.brand || 'NayaKart',
             rating: extra.rating || 4.8,
             reviewsCount: extra.reviewsCount || 12,
             isFeatured: extra.isFeatured ?? true,

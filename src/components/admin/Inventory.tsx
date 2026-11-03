@@ -18,6 +18,8 @@ export default function Inventory() {
   const [warningDays, setWarningDays] = useState(30);
   const [loading, setLoading] = useState(true);
 
+  const isOnline = window.location.pathname.includes('online');
+
   // Search & Filter state
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -27,9 +29,18 @@ export default function Inventory() {
   useEffect(() => {
     async function loadData() {
       try {
+        const storeKey = isOnline ? 'online' : 'offline';
         // ── Phase 1: Show cached data instantly
-        const cachedItems = JSON.parse(localStorage.getItem('tracker_items') || '[]') as Item[];
-        const cachedCats = JSON.parse(localStorage.getItem('tracker_categories') || '[]') as Category[];
+        const cachedItems = JSON.parse(
+          localStorage.getItem(`tracker_items_${storeKey}`) || 
+          localStorage.getItem('tracker_items') || 
+          '[]'
+        ) as Item[];
+        const cachedCats = JSON.parse(
+          localStorage.getItem(`tracker_categories_${storeKey}`) || 
+          localStorage.getItem('tracker_categories') || 
+          '[]'
+        ) as Category[];
         const cachedSettings = JSON.parse(localStorage.getItem('tracker_settings') || '{"warning_period_days":30}');
         if (cachedItems.length > 0) {
           setItems(cachedItems.sort(
@@ -55,7 +66,7 @@ export default function Inventory() {
       }
     }
     loadData();
-  }, []);
+  }, [isOnline]);
 
   const getDaysRemaining = (expiryDateStr: string) => {
     const today = new Date();
@@ -237,7 +248,7 @@ export default function Inventory() {
                       position: 'absolute',
                       top: '6px',
                       left: '6px',
-                      background: 'rgba(230, 57, 70, 0.9)',
+                      background: 'rgba(185, 28, 28, 0.9)',
                       border: 'none',
                       borderRadius: '50%',
                       width: '28px',
@@ -248,7 +259,7 @@ export default function Inventory() {
                       color: 'white',
                       cursor: 'pointer',
                       zIndex: 5,
-                      boxShadow: '0 2px 6px rgba(230, 57, 70, 0.3)',
+                      boxShadow: '0 2px 6px rgba(185, 28, 28, 0.25)',
                       transition: 'transform 0.15s ease'
                     }}
                     title="Delete item"

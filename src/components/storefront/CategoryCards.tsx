@@ -14,10 +14,10 @@ export const CategoryCards: React.FC<CategoryCardsProps> = ({ categories }) => {
         
         {/* Centered Editorial Header like reference image */}
         <div className="text-center max-w-xl mx-auto mb-12">
-          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-medium text-[#4A2818] tracking-tight mb-3">
+          <h2 className="text-center font-serif text-3xl sm:text-4xl lg:text-5xl font-medium text-[#4A2818] tracking-tight mb-3">
             Handcrafted Essentials
           </h2>
-          <p className="text-sm sm:text-base text-[#7A6153] leading-relaxed">
+          <p className="text-center text-sm sm:text-base text-[#7A6153] leading-relaxed">
             Select your sweet craft. Calibrated couverture, professional moulds, fine toppers, and patisserie creams.
           </p>
         </div>

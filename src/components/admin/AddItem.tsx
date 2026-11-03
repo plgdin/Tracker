@@ -17,7 +17,7 @@ export default function AddItem() {
 
   const { profile } = useAuthStore();
   const [categories, setCategories] = useState<Category[]>([]);
-  const [itemStoreType, setItemStoreType] = useState<'online' | 'offline'>('online');
+  const [itemStoreType, setItemStoreType] = useState<'online' | 'offline'>(() => window.location.pathname.includes('online') ? 'online' : 'offline');
   
   const [formData, setFormData] = useState({
     name: '',
@@ -39,7 +39,8 @@ export default function AddItem() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    setItemStoreType(storeType);
+    const routeStoreType = window.location.pathname.includes('online') ? 'online' : 'offline';
+    setItemStoreType(routeStoreType);
   }, [storeType]);
 
   useEffect(() => {
@@ -205,7 +206,7 @@ export default function AddItem() {
               fontWeight: 700,
               fontSize: '0.85rem',
               color: 'var(--color-text-primary)',
-              boxShadow: '0 4px 10px rgba(230, 57, 70, 0.06)'
+              boxShadow: '0 4px 10px rgba(139, 69, 19, 0.06)'
             }}>
               {success ? (
                 "Yay! Successfully saved! 👍 Thumbs up!"
@@ -237,7 +238,7 @@ export default function AddItem() {
               alignItems: 'center', 
               justifyContent: 'center', 
               marginBottom: '1rem',
-              border: '1.5px dashed rgba(230, 57, 70, 0.2)'
+              border: '1.5px dashed rgba(139, 69, 19, 0.2)'
             }}>
               <MilkCarton winking={!success} thumbsUp={success} size={90} />
             </div>
@@ -297,7 +298,7 @@ export default function AddItem() {
             <div className="input-group" style={{ marginTop: '1.5rem' }}>
               <label className="input-label">💰 Price</label>
               <div style={{ display: 'flex', alignItems: 'center' }}>
-                <span style={{ padding: '0 0.75rem', background: 'rgba(230,57,70,0.1)', color: 'var(--color-primary)', fontWeight: 'bold', border: '1px solid rgba(230,57,70,0.2)', borderRight: 'none', borderRadius: '12px 0 0 12px', height: '42px', display: 'flex', alignItems: 'center' }}>₹</span>
+                <span style={{ padding: '0 0.75rem', background: 'rgba(139, 69, 19, 0.1)', color: 'var(--color-primary)', fontWeight: 'bold', border: '1px solid rgba(139, 69, 19, 0.2)', borderRight: 'none', borderRadius: '12px 0 0 12px', height: '42px', display: 'flex', alignItems: 'center' }}>₹</span>
                 <input 
                   type="text" 
                   className="input-field" 
@@ -355,7 +356,7 @@ export default function AddItem() {
                     onChange={e => setFormData({ ...formData, custom_gst: e.target.value })}
                     style={{ borderTopRightRadius: 0, borderBottomRightRadius: 0, flex: 1 }}
                   />
-                  <span style={{ padding: '0 0.75rem', background: 'rgba(230,57,70,0.1)', color: 'var(--color-primary)', fontWeight: 'bold', border: '1px solid rgba(230,57,70,0.2)', borderLeft: 'none', borderRadius: '0 12px 12px 0', height: '42px', display: 'flex', alignItems: 'center' }}>%</span>
+                  <span style={{ padding: '0 0.75rem', background: 'rgba(139, 69, 19, 0.1)', color: 'var(--color-primary)', fontWeight: 'bold', border: '1px solid rgba(139, 69, 19, 0.2)', borderLeft: 'none', borderRadius: '0 12px 12px 0', height: '42px', display: 'flex', alignItems: 'center' }}>%</span>
                 </div>
               )}
               <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', marginTop: '0.35rem' }}>
@@ -391,8 +392,8 @@ export default function AddItem() {
                     padding: '0 1rem', 
                     height: '42px',
                     borderRadius: '12px',
-                    border: '1px solid rgba(230,57,70,0.2)',
-                    background: 'rgba(230,57,70,0.1)',
+                    border: '1px solid rgba(139, 69, 19, 0.2)',
+                    background: 'rgba(139, 69, 19, 0.1)',
                     color: 'var(--color-primary)',
                     fontWeight: 'bold',
                     display: 'flex',
@@ -410,7 +411,7 @@ export default function AddItem() {
             </div>
 
             {/* List items with right alignment as seen in Screenshot 4 */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.5rem', borderTop: '1px solid rgba(230, 57, 70, 0.08)', paddingTop: '1.5rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.5rem', borderTop: '1px solid rgba(139, 69, 19, 0.08)', paddingTop: '1.5rem' }}>
               
               {/* Store / Department row */}
               <div>
@@ -448,7 +449,7 @@ export default function AddItem() {
               </div>
 
               {/* Expiry Date row */}
-              <div style={{ borderTop: '1px solid rgba(230, 57, 70, 0.05)', paddingTop: '0.75rem' }}>
+              <div style={{ borderTop: '1px solid rgba(139, 69, 19, 0.05)', paddingTop: '0.75rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontWeight: 700, color: 'var(--color-text-primary)', fontSize: '0.95rem' }}>📅 Expiry Date</span>
                   <input 
@@ -464,7 +465,7 @@ export default function AddItem() {
               </div>
 
               {/* Warning Date row */}
-              <div style={{ borderTop: '1px solid rgba(230, 57, 70, 0.05)', paddingTop: '0.75rem' }}>
+              <div style={{ borderTop: '1px solid rgba(139, 69, 19, 0.05)', paddingTop: '0.75rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontWeight: 700, color: 'var(--color-text-primary)', fontSize: '0.95rem' }}>⚠️ Custom Warning Date</span>
                   <input 

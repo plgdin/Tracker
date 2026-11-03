@@ -37,13 +37,13 @@ export default function Ledger() {
 
   return (
     <div style={{ paddingBottom: '5rem', width: '100%', minWidth: 0 }}>
-      <header style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'center' }}>
-        <div style={{ backgroundColor: 'var(--color-accent)', color: 'white', padding: '0.5rem', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(42,157,143,0.25)' }}>
-          <BookOpen size={26} />
+      <header style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'flex-start' }}>
+        <div style={{ backgroundColor: 'var(--color-primary)', color: 'white', padding: '0.65rem', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(139,69,19,0.2)' }}>
+          <BookOpen size={24} />
         </div>
         <div>
-          <h1 style={{ margin: 0, fontSize: '1.5rem' }}>Ledger</h1>
-          <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem', margin: 0 }}>Purchasing · Selling · Reports</p>
+          <h1 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-primary)' }}>Financial Ledger & POS</h1>
+          <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.8rem', margin: 0 }}>Purchasing inventory · Counter sales · Customer outstanding dues · Revenue reports</p>
         </div>
       </header>
 

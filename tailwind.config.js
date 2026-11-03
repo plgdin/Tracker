@@ -77,11 +77,12 @@ module.exports = {
         "dark-chocolate": "#361B0E",
       },
       fontFamily: {
-        serif: ["'DM Serif Display'", "'Playfair Display'", 'Georgia', 'serif'],
-        display: ["'DM Serif Display'", "'Playfair Display'", 'serif'],
+        serif: ["'Playfair Display'", "'DM Serif Display'", 'Georgia', 'serif'],
+        display: ["'Playfair Display'", "'DM Serif Display'", 'serif'],
+        heading: ["'Playfair Display'", "'DM Serif Display'", 'serif'],
+        sans: ["'Plus Jakarta Sans'", "'Outfit'", '-apple-system', 'sans-serif'],
+        body: ["'Plus Jakarta Sans'", "'Outfit'", '-apple-system', 'sans-serif'],
         script: ["'Alex Brush'", 'cursive', 'serif'],
-        sans: ["'Plus Jakarta Sans'", "'Outfit'", 'sans-serif'],
-        body: ["'Plus Jakarta Sans'", "'Outfit'", 'sans-serif'],
       },
       borderRadius: {
         xl: "calc(var(--radius) + 4px)",
