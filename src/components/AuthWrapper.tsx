@@ -34,6 +34,11 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
   }
 
   if (user) {
+    if (profile?.role === 'customer') {
+      window.location.replace('/');
+      return null;
+    }
+
     const hasAccess = profile && (profile.role === 'admin' || profile.role === 'worker');
     if (!hasAccess) {
       return (
@@ -86,14 +91,28 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
           setIsSubmitting(false);
           return;
         }
-        const { error } = await supabase.auth.signUp({
+        const { data: signUpData, error } = await supabase.auth.signUp({
           email: trimInput.toLowerCase(),
           password: trimPassword,
-          options: { data: { full_name: username.trim() } }
+          options: { data: { full_name: username.trim(), role: 'customer' } }
         });
         if (error) throw error;
-        // Show the access-request notice and switch to login tab
-        setAuthNotice('✅ Request submitted! The admin will review and activate your account. Check back once approved.');
+
+        if (signUpData.user) {
+          await supabase.from('profiles').upsert([{
+            id: signUpData.user.id,
+            name: username.trim(),
+            email: trimInput.toLowerCase(),
+            role: 'customer'
+          }]);
+        }
+
+        if (signUpData.session) {
+          window.location.replace('/');
+          return;
+        }
+
+        setAuthNotice('✅ Account created! Please check your email to confirm your account, then log in.');
         setMode('login');
         setEmail('');
         setPassword('');
@@ -115,13 +134,18 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
         loginEmail = data as string;
       }
 
-      const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password: trimPassword });
+      const { data: signInData, error } = await supabase.auth.signInWithPassword({ email: loginEmail, password: trimPassword });
       if (error) {
-        // Show friendly message for pending accounts
         if (error.message.toLowerCase().includes('invalid login credentials')) {
           setError('Invalid credentials.');
         } else {
           setError(error.message);
+        }
+      } else if (signInData?.user) {
+        const { data: userProf } = await supabase.from('profiles').select('role').eq('id', signInData.user.id).maybeSingle();
+        if (userProf?.role === 'customer') {
+          window.location.replace('/');
+          return;
         }
       }
     } catch (err: unknown) {
@@ -157,7 +181,9 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
     <div className="auth-shell">
       <div className="auth-card">
         <h1 className="auth-title">NayaKart</h1>
-        <p className="auth-subtitle">Welcome back to your stockroom</p>
+        <p className="auth-subtitle">
+          {mode === 'signup' ? 'Create your customer account' : 'Welcome back'}
+        </p>
 
         {(authNotice || error) && (
           <div className={`auth-error${authNotice ? ' auth-notice' : ''}`}>{authNotice || error}</div>
@@ -272,7 +298,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
             </div>
 
             <button type="submit" className="btn btn-primary auth-submit" disabled={isSubmitting}>
-              {isSubmitting ? (mode === 'signup' ? 'Submitting...' : 'Logging in...') : (mode === 'signup' ? 'Request Access' : 'Log In')}
+              {isSubmitting ? (mode === 'signup' ? 'Creating Account...' : 'Logging in...') : (mode === 'signup' ? 'Sign Up' : 'Log In')}
             </button>
 
             {/* Forgot Password link — only on login tab */}

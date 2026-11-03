@@ -30,6 +30,8 @@ import OfflineAddItem from './pages/offline/AddItem';
 import OfflineAdminDashboard from './pages/offline/AdminDashboard';
 import OfflineLedger from './pages/offline/Ledger';
 
+import Profile from './pages/Profile';
+
 function App() {
   return (
     <BrowserRouter>
@@ -54,6 +56,15 @@ function App() {
                 <MobileBottomNav />
                 <FloatingSearch />
                 <Products />
+              </>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <>
+                <MobileBottomNav />
+                <Profile />
               </>
             }
           />

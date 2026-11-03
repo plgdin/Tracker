@@ -10,6 +10,7 @@ import {
   PhoneCall 
 } from 'lucide-react';
 import type { StoreSettings } from '../../types/ecommerce';
+import { db } from '../../lib/db';
 
 interface HeroSectionProps {
   settings?: StoreSettings;
@@ -104,12 +105,54 @@ const HERO_SLIDES: PromoSlide[] = [
 ];
 
 export const HeroSection: React.FC<HeroSectionProps> = ({ settings }) => {
+  const [slides, setSlides] = useState<PromoSlide[]>(HERO_SLIDES);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const touchStartX = useRef<number>(0);
   const touchEndX = useRef<number>(0);
 
-  const totalSlides = HERO_SLIDES.length;
+  // Fetch live hero slides from database and match / format with store theme
+  useEffect(() => {
+    const loadSlides = async () => {
+      try {
+        const dbSlides = await db.getHeroSlides();
+        if (dbSlides && dbSlides.length > 0) {
+          const sorted = [...dbSlides].sort((a, b) => a.order_index - b.order_index);
+          const mapped: PromoSlide[] = sorted.map((slide, idx) => {
+            const match = HERO_SLIDES.find(
+              s => s.id === slide.id || s.title.trim().toLowerCase() === slide.title.trim().toLowerCase()
+            );
+            return {
+              id: slide.id,
+              badge: match?.badge || 'FEATURED COLLECTION · SPECIAL OFFERS',
+              badgeColor: match?.badgeColor || (idx % 2 === 0 ? 'bg-[#4A2818] text-[#F9F4EE] border border-[#6D381E]' : 'bg-[#361B0E] text-[#F9F4EE] border border-[#522914]'),
+              title: slide.title,
+              subtitle: slide.subtitle,
+              highlight: match?.highlight || slide.subtitle,
+              ctaText: match?.ctaText || 'Shop Collection',
+              ctaLink: match?.ctaLink || '/products',
+              secondaryCtaText: match?.secondaryCtaText || 'View All Supplies',
+              secondaryCtaLink: match?.secondaryCtaLink || '/products',
+              image: slide.image_url,
+              fallbackImage: match?.fallbackImage || '/cat-baking-materials.jpg',
+            };
+          });
+          setSlides(mapped);
+        }
+      } catch (e) {
+        console.warn('Could not fetch hero slides from backend', e);
+      }
+    };
+    loadSlides();
+  }, []);
+
+  const totalSlides = slides.length;
+
+  useEffect(() => {
+    if (currentSlide >= totalSlides && totalSlides > 0) {
+      setCurrentSlide(0);
+    }
+  }, [totalSlides, currentSlide]);
 
   const nextSlide = useCallback(() => {
     setCurrentSlide((prev) => (prev + 1) % totalSlides);
@@ -162,7 +205,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ settings }) => {
     >
       {/* 1. Full-Width Amazon-style Slideshow Container */}
       <div className="relative w-full h-[500px] sm:h-[540px] md:h-[580px] lg:h-[620px] overflow-hidden select-none">
-        {HERO_SLIDES.map((slide, index) => {
+        {slides.map((slide, index) => {
           const isActive = index === currentSlide;
 
           return (
@@ -290,7 +333,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ settings }) => {
 
         {/* 3. Amazon-style Slide Indicators & Counter */}
         <div className="absolute bottom-5 sm:bottom-7 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-black/45 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15">
-          {HERO_SLIDES.map((slide, index) => (
+          {slides.map((slide, index) => (
             <button
               key={slide.id}
               onClick={() => setCurrentSlide(index)}

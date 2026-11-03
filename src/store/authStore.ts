@@ -47,7 +47,24 @@ const ensureProfile = async (user: User, set: (s: Partial<AuthState>) => void) =
     );
 
     if (!error && !profile) {
-      // No profile row — create one as pending
+      const requestedRole = (user.user_metadata?.role as Role) || 'customer';
+      if (requestedRole === 'customer') {
+        const { data: created } = await withTimeout(
+          supabase.from('profiles').insert([{ 
+            id: user.id, 
+            name: user.user_metadata?.full_name || (user.email?.split('@')[0] ?? 'Customer'), 
+            email: user.email, 
+            role: 'customer' 
+          }]).select('*').maybeSingle(),
+          5000
+        );
+        if (created) {
+          set({ user, profile: created as Profile });
+          return;
+        }
+      }
+
+      // No profile row — create one as pending (for staff)
       const { data: created, error: insertError } = await withTimeout(
         supabase.from('profiles').insert([{ id: user.id, name: user.email?.split('@')[0] ?? null, role: 'pending' }]).select('*').maybeSingle(),
         5000

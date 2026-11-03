@@ -25,7 +25,9 @@ import {
   Receipt,
   Search,
   Check,
-  X
+  X,
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react';
 
 type TabKey = 'orders' | 'workers' | 'categories' | 'hero' | 'settings' | 'logs';
@@ -83,13 +85,13 @@ export default function AdminDashboard() {
   const [isSavingStoreSettings, setIsSavingStoreSettings] = useState(false);
 
   // POS Thermal Receipt Settings
-  const [receiptH1, setReceiptH1] = useState('NAYAKART');
+  const [receiptH1, setReceiptH1] = useState(() => isOnline ? 'CHEF & JOY' : 'NAYAKART');
   const [receiptH2, setReceiptH2] = useState('KAZHAKUTTOM,TRIVANDRUM');
   const [receiptH3, setReceiptH3] = useState('PH:+91-999507648');
   const [receiptH4, setReceiptH4] = useState('GSTIN:32AKIPA6398K2ZW');
-  const [receiptF1, setReceiptF1] = useState('For :  NAYAKART');
+  const [receiptF1, setReceiptF1] = useState(() => isOnline ? 'For :  CHEF & JOY' : 'For :  NAYAKART');
   const [receiptF2, setReceiptF2] = useState('Thank you . . .      Visit Again . . .');
-  const [orderIdPrefix, setOrderIdPrefix] = useState('ORD-');
+  const [orderIdPrefix, setOrderIdPrefix] = useState(() => isOnline ? 'ORD-' : 'POS-');
   const [orderIdSequence, setOrderIdSequence] = useState(1000);
 
   // Category Form State
@@ -105,6 +107,7 @@ export default function AdminDashboard() {
   const [newSlideSubtitle, setNewSlideSubtitle] = useState('');
   const [newSlideImageUrl, setNewSlideImageUrl] = useState('');
   const [isUploadingSlide, setIsUploadingSlide] = useState(false);
+  const [editingSlideId, setEditingSlideId] = useState<string | null>(null);
 
   // Worker Form State
   const [workerEmail, setWorkerEmail] = useState('');
@@ -126,6 +129,7 @@ export default function AdminDashboard() {
   const refreshData = async () => {
     setRefreshing(true);
     try {
+      const currentStoreType: 'online' | 'offline' = isOnline ? 'online' : 'offline';
       const [l, c, pw, wList, oList, hSlides, settings] = await Promise.all([
         db.getAuditLogs(),
         db.getCategories(),
@@ -133,7 +137,7 @@ export default function AdminDashboard() {
         db.getWorkers(),
         db.getOnlineOrders(),
         db.getHeroSlides(),
-        db.getStoreSettings()
+        db.getStoreSettings(currentStoreType)
       ]);
 
       const localWorkers: WorkerData[] = JSON.parse(localStorage.getItem('worker_accounts') || '[]');
@@ -158,20 +162,20 @@ export default function AdminDashboard() {
       if (settings) {
         if (settings.upi_id) setStoreUpiId(settings.upi_id);
         if (settings.phone_number) setStorePhoneNumber(settings.phone_number);
-        if (settings.bank_details) setStoreBankDetails(settings.bank_details);
+        setStoreBankDetails(settings.bank_details || '');
         if (settings.footer_description) setFooterDescription(settings.footer_description);
         if (settings.footer_phone) setFooterPhone(settings.footer_phone);
         if (settings.footer_hours) setFooterHours(settings.footer_hours);
         if (settings.footer_days) setFooterDays(settings.footer_days);
         if (settings.footer_copyright) setFooterCopyright(settings.footer_copyright);
-        if (settings.receipt_header_1) setReceiptH1(settings.receipt_header_1);
-        if (settings.receipt_header_2) setReceiptH2(settings.receipt_header_2);
-        if (settings.receipt_header_3) setReceiptH3(settings.receipt_header_3);
-        if (settings.receipt_header_4) setReceiptH4(settings.receipt_header_4);
-        if (settings.receipt_footer_1) setReceiptF1(settings.receipt_footer_1);
-        if (settings.receipt_footer_2) setReceiptF2(settings.receipt_footer_2);
-        if (settings.order_id_prefix) setOrderIdPrefix(settings.order_id_prefix);
-        if (settings.order_id_sequence) setOrderIdSequence(settings.order_id_sequence);
+        setReceiptH1(settings.receipt_header_1 || (isOnline ? 'CHEF & JOY' : 'NAYAKART'));
+        setReceiptH2(settings.receipt_header_2 || 'KAZHAKUTTOM,TRIVANDRUM');
+        setReceiptH3(settings.receipt_header_3 || 'PH:+91-999507648');
+        setReceiptH4(settings.receipt_header_4 || 'GSTIN:32AKIPA6398K2ZW');
+        setReceiptF1(settings.receipt_footer_1 || `For :  ${settings.receipt_header_1 || (isOnline ? 'CHEF & JOY' : 'NAYAKART')}`);
+        setReceiptF2(settings.receipt_footer_2 || 'Thank you . . .      Visit Again . . .');
+        setOrderIdPrefix(settings.order_id_prefix || (isOnline ? 'ORD-' : 'POS-'));
+        setOrderIdSequence(settings.order_id_sequence || 1000);
       }
       setWorkers(mergedWorkers);
       localStorage.setItem('worker_accounts', JSON.stringify(mergedWorkers));
@@ -360,27 +364,95 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleAddSlide = async (e: React.FormEvent) => {
+  const handleSaveSlide = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newSlideTitle.trim() || !newSlideSubtitle.trim() || !newSlideImageUrl) {
       showToast('Please provide a title, subtitle, and banner image.');
       return;
     }
-    const maxOrder = heroSlides.reduce((max, s) => Math.max(max, s.order_index), 0);
-    const newSlide = await db.saveHeroSlide({
-      title: newSlideTitle,
-      subtitle: newSlideSubtitle,
-      image_url: newSlideImageUrl,
-      order_index: maxOrder + 1
-    });
-    if (newSlide) {
-      setHeroSlides([...heroSlides, newSlide]);
-      setNewSlideTitle('');
-      setNewSlideSubtitle('');
-      setNewSlideImageUrl('');
-      showToast('Hero banner added! ✅');
-      db.addAuditLog('Added Hero Slide', newSlide.title);
+
+    if (editingSlideId) {
+      const existing = heroSlides.find(s => s.id === editingSlideId);
+      const updated = await db.saveHeroSlide({
+        id: editingSlideId,
+        title: newSlideTitle.trim(),
+        subtitle: newSlideSubtitle.trim(),
+        image_url: newSlideImageUrl,
+        order_index: existing ? existing.order_index : 1
+      });
+
+      if (updated) {
+        setHeroSlides(heroSlides.map(s => s.id === updated.id ? updated : s));
+        setEditingSlideId(null);
+        setNewSlideTitle('');
+        setNewSlideSubtitle('');
+        setNewSlideImageUrl('');
+        showToast('Hero banner updated! ✅');
+        db.addAuditLog('Updated Hero Slide', updated.title);
+      }
+    } else {
+      const maxOrder = heroSlides.reduce((max, s) => Math.max(max, s.order_index), 0);
+      const newSlide = await db.saveHeroSlide({
+        title: newSlideTitle.trim(),
+        subtitle: newSlideSubtitle.trim(),
+        image_url: newSlideImageUrl,
+        order_index: maxOrder + 1
+      });
+      if (newSlide) {
+        setHeroSlides([...heroSlides, newSlide]);
+        setNewSlideTitle('');
+        setNewSlideSubtitle('');
+        setNewSlideImageUrl('');
+        showToast('Hero banner added! ✅');
+        db.addAuditLog('Added Hero Slide', newSlide.title);
+      }
     }
+  };
+
+  const handleEditSlide = (slide: HeroSlide) => {
+    setEditingSlideId(slide.id);
+    setNewSlideTitle(slide.title);
+    setNewSlideSubtitle(slide.subtitle);
+    setNewSlideImageUrl(slide.image_url);
+    const formElem = document.getElementById('hero-slide-form');
+    if (formElem) {
+      formElem.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleCancelEditSlide = () => {
+    setEditingSlideId(null);
+    setNewSlideTitle('');
+    setNewSlideSubtitle('');
+    setNewSlideImageUrl('');
+  };
+
+  const handleMoveSlide = async (index: number, direction: 'up' | 'down') => {
+    const sorted = [...heroSlides].sort((a, b) => a.order_index - b.order_index);
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= sorted.length) return;
+
+    const currentSlide = sorted[index];
+    const targetSlide = sorted[targetIndex];
+
+    const tempOrder = currentSlide.order_index;
+    currentSlide.order_index = targetSlide.order_index;
+    targetSlide.order_index = tempOrder;
+
+    if (currentSlide.order_index === targetSlide.order_index) {
+      sorted[index] = targetSlide;
+      sorted[targetIndex] = currentSlide;
+      sorted.forEach((s, idx) => { s.order_index = idx + 1; });
+    }
+
+    const updatedList = [...sorted].sort((a, b) => a.order_index - b.order_index);
+    setHeroSlides(updatedList);
+
+    await Promise.all([
+      db.saveHeroSlide(currentSlide),
+      db.saveHeroSlide(targetSlide)
+    ]);
+    showToast('Slide arrangement updated! ↕️');
   };
 
   const handleDeleteSlide = async (id: string, title: string) => {
@@ -395,8 +467,10 @@ export default function AdminDashboard() {
   const handleSaveStoreSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSavingStoreSettings(true);
+    const targetStoreType: 'online' | 'offline' = isOnline ? 'online' : 'offline';
     try {
       await db.updateStoreSettings({
+        id: targetStoreType,
         upi_id: storeUpiId,
         phone_number: storePhoneNumber,
         bank_details: storeBankDetails,
@@ -413,9 +487,9 @@ export default function AdminDashboard() {
         receipt_footer_2: receiptF2,
         order_id_prefix: orderIdPrefix,
         order_id_sequence: orderIdSequence
-      });
-      showToast('Store & POS settings saved! ⚙️');
-      await db.addAuditLog('Updated Store Settings', `UPI: ${storeUpiId}`);
+      }, targetStoreType);
+      showToast(`${isOnline ? 'Online' : 'Offline'} Store & POS settings saved! ⚙️`);
+      await db.addAuditLog(`Updated ${isOnline ? 'Online' : 'Offline'} Settings`, `UPI: ${storeUpiId}`);
     } catch (err) {
       showToast('Failed to update settings ❌');
     } finally {
@@ -1132,12 +1206,24 @@ export default function AdminDashboard() {
           {/* ========================================================================= */}
           {activeTab === 'hero' && isOnline && (
             <div className="space-y-6">
-              {/* Add Banner Form */}
-              <div className="bg-white p-5 rounded-2xl border border-[#EADBCE] shadow-xs">
-                <h3 className="text-sm font-bold text-[#361B0E] mb-3 flex items-center gap-2">
-                  <ImageIcon size={16} className="text-[#8B4513]" /> Add Homepage Hero Carousel Slide
-                </h3>
-                <form onSubmit={handleAddSlide} className="space-y-3">
+              {/* Add / Edit Banner Form */}
+              <div id="hero-slide-form" className="bg-white p-5 rounded-2xl border border-[#EADBCE] shadow-xs">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-bold text-[#361B0E] flex items-center gap-2">
+                    <ImageIcon size={16} className="text-[#8B4513]" /> 
+                    {editingSlideId ? 'Edit Hero Carousel Slide' : 'Add Homepage Hero Carousel Slide'}
+                  </h3>
+                  {editingSlideId && (
+                    <button
+                      type="button"
+                      onClick={handleCancelEditSlide}
+                      className="text-xs font-semibold text-[#8B4513] hover:underline cursor-pointer"
+                    >
+                      Cancel Edit
+                    </button>
+                  )}
+                </div>
+                <form onSubmit={handleSaveSlide} className="space-y-3">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-medium text-[#7C6053] mb-1">Banner Title</label>
@@ -1163,6 +1249,13 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
+                  {newSlideImageUrl && (
+                    <div className="flex items-center gap-3 p-2 bg-[#FDFBF7] rounded-xl border border-[#EADBCE]">
+                      <img src={newSlideImageUrl} alt="Preview" className="w-16 h-10 object-cover rounded-lg border border-[#EADBCE]" />
+                      <div className="text-[11px] text-[#7C6053] truncate flex-1">{newSlideImageUrl}</div>
+                    </div>
+                  )}
+
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
                     <label className="inline-flex items-center gap-2 px-3.5 py-2 bg-[#FAF2EB] hover:bg-[#F3E3D3] text-[#63300C] text-xs font-semibold rounded-xl border border-[#EADBCE] cursor-pointer transition-all">
                       <ImageIcon size={14} />
@@ -1170,13 +1263,24 @@ export default function AdminDashboard() {
                       <input type="file" accept="image/*" onChange={handleHeroImageUpload} className="hidden" />
                     </label>
 
-                    <button
-                      type="submit"
-                      disabled={!newSlideImageUrl}
-                      className="px-4 py-2 bg-[#8B4513] hover:bg-[#63300C] text-white text-xs font-semibold rounded-xl transition-all shadow-xs cursor-pointer disabled:opacity-50"
-                    >
-                      Publish Banner Slide
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {editingSlideId && (
+                        <button
+                          type="button"
+                          onClick={handleCancelEditSlide}
+                          className="px-3.5 py-2 bg-neutral-100 hover:bg-neutral-200 text-[#7C6053] text-xs font-semibold rounded-xl transition-all cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                      <button
+                        type="submit"
+                        disabled={!newSlideImageUrl}
+                        className="px-4 py-2 bg-[#8B4513] hover:bg-[#63300C] text-white text-xs font-semibold rounded-xl transition-all shadow-xs cursor-pointer disabled:opacity-50"
+                      >
+                        {editingSlideId ? 'Save Changes' : 'Publish Banner Slide'}
+                      </button>
+                    </div>
                   </div>
                 </form>
               </div>
@@ -1190,25 +1294,67 @@ export default function AdminDashboard() {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {heroSlides.sort((a, b) => a.order_index - b.order_index).map(slide => (
-                      <div key={slide.id} className="bg-white rounded-2xl border border-[#EADBCE] overflow-hidden shadow-xs flex flex-col justify-between">
-                        <img 
-                          src={slide.image_url} 
-                          alt={slide.title} 
-                          className="w-full h-36 object-cover bg-neutral-100"
-                        />
-                        <div className="p-4 flex items-start justify-between gap-2">
-                          <div>
-                            <h4 className="text-xs font-bold text-[#361B0E]">{slide.title}</h4>
+                    {[...heroSlides].sort((a, b) => a.order_index - b.order_index).map((slide, index, arr) => (
+                      <div 
+                        key={slide.id} 
+                        className={`bg-white rounded-2xl border ${editingSlideId === slide.id ? 'border-[#8B4513] ring-2 ring-[#8B4513]/20' : 'border-[#EADBCE]'} overflow-hidden shadow-xs flex flex-col justify-between transition-all`}
+                      >
+                        <div className="relative">
+                          <img 
+                            src={slide.image_url} 
+                            alt={slide.title} 
+                            className="w-full h-36 object-cover bg-neutral-100"
+                          />
+                          <span className="absolute top-2 left-2 px-2 py-0.5 bg-black/60 backdrop-blur-xs text-white text-[10px] font-bold rounded-md">
+                            Slide #{index + 1}
+                          </span>
+                        </div>
+                        <div className="p-3.5 flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0 pr-2">
+                            <h4 className="text-xs font-bold text-[#361B0E] truncate">{slide.title}</h4>
                             <p className="text-[11px] text-[#7C6053] mt-0.5 line-clamp-1">{slide.subtitle}</p>
                           </div>
-                          <button
-                            onClick={() => handleDeleteSlide(slide.id, slide.title)}
-                            className="p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg transition-colors"
-                            title="Delete slide"
-                          >
-                            <Trash2 size={14} />
-                          </button>
+                          <div className="flex items-center gap-1 shrink-0">
+                            {/* Reordering Arrows */}
+                            <button
+                              type="button"
+                              onClick={() => handleMoveSlide(index, 'up')}
+                              disabled={index === 0}
+                              className="p-1.5 text-[#7C6053] hover:text-[#361B0E] hover:bg-[#FAF2EB] rounded-lg transition-colors disabled:opacity-25 disabled:pointer-events-none"
+                              title="Move slide up"
+                            >
+                              <ArrowUp size={14} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleMoveSlide(index, 'down')}
+                              disabled={index === arr.length - 1}
+                              className="p-1.5 text-[#7C6053] hover:text-[#361B0E] hover:bg-[#FAF2EB] rounded-lg transition-colors disabled:opacity-25 disabled:pointer-events-none"
+                              title="Move slide down"
+                            >
+                              <ArrowDown size={14} />
+                            </button>
+
+                            {/* Edit Button */}
+                            <button
+                              type="button"
+                              onClick={() => handleEditSlide(slide)}
+                              className="p-1.5 text-amber-700 hover:text-amber-900 hover:bg-amber-50 rounded-lg transition-colors"
+                              title="Edit slide text and image"
+                            >
+                              <Edit2 size={14} />
+                            </button>
+
+                            {/* Delete Button */}
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteSlide(slide.id, slide.title)}
+                              className="p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg transition-colors"
+                              title="Delete slide"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -1343,14 +1489,75 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-[11px] font-medium text-[#7C6053] mb-1">Footer Greeting Line</label>
-                    <input
-                      type="text"
-                      value={receiptF2}
-                      onChange={e => setReceiptF2(e.target.value)}
-                      className="w-full px-3 py-1.5 text-xs rounded-xl border border-[#EADBCE] bg-[#FDFBF7]"
-                    />
+                  <div className="grid grid-cols-2 gap-3 pt-2">
+                    <div>
+                      <label className="block text-[11px] font-medium text-[#7C6053] mb-1">Footer Line 1 (Store Sign-off)</label>
+                      <input
+                        type="text"
+                        value={receiptF1}
+                        onChange={e => setReceiptF1(e.target.value)}
+                        className="w-full px-3 py-1.5 text-xs rounded-xl border border-[#EADBCE] bg-[#FDFBF7]"
+                        placeholder="For :  NAYAKART"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-medium text-[#7C6053] mb-1">Footer Greeting Line</label>
+                      <input
+                        type="text"
+                        value={receiptF2}
+                        onChange={e => setReceiptF2(e.target.value)}
+                        className="w-full px-3 py-1.5 text-xs rounded-xl border border-[#EADBCE] bg-[#FDFBF7]"
+                        placeholder="Thank you . . .      Visit Again . . ."
+                      />
+                    </div>
+                  </div>
+
+                  {/* Thermal Receipt Live Preview */}
+                  <div className="pt-4 border-t border-[#F2E7DC]">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-bold text-[#361B0E]">Live Receipt Preview</span>
+                      <span className="text-[10px] text-[#7C6053] font-medium bg-[#F5EDE4] px-2 py-0.5 rounded-full">Thermal 80mm</span>
+                    </div>
+                    <div className="flex justify-center p-3 bg-[#FAF5F0] rounded-xl border border-[#EADBCE] overflow-x-auto">
+                      <div
+                        style={{
+                          backgroundColor: '#fff',
+                          border: '1px solid #d4d4d8',
+                          padding: '1.5rem',
+                          fontFamily: 'monospace',
+                          fontSize: '13px',
+                          whiteSpace: 'pre',
+                          color: '#000',
+                          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                          borderRadius: '8px',
+                          minWidth: '350px'
+                        }}
+                      >
+                        <div style={{ textAlign: 'center' }}>
+                          {receiptH1}<br />
+                          {receiptH2}<br />
+                          {receiptH3}<br />
+                          {receiptH4}
+                        </div>
+                        <br />
+                        Invoice No: {(orderIdPrefix || '')}1234       Date :08-07-2026<br />
+                        Customer Name : JOHN DOE<br />
+                        --------------------------------------------<br />
+                        SI  Item       Qty  MRP    Rate GST%  Amount<br />
+                        --------------------------------------------<br />
+                        1 //001//Bread       1    50    47.62    5    47.62<br />
+                        <br />
+                        Total :                                50.00<br />
+                        ============================================<br />
+                        Amount in words payable:<br />
+                        Fifty Rupees Only<br />
+                        <br />
+                        <div style={{ textAlign: 'center' }}>
+                          {receiptF1 || ('For :  ' + (receiptH1 || ''))}<br />
+                          {receiptF2}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

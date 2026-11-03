@@ -837,8 +837,9 @@ export const db = {
     if (useSupabase && dbSupabase) {
       try {
         if (slide.id) {
+          const { id, ...dataToUpdate } = slide;
           const { data, error } = await withTimeout(
-            dbSupabase.from('hero_slides').update(slide).eq('id', slide.id).select().single()
+            dbSupabase.from('hero_slides').update(dataToUpdate).eq('id', id).select().single()
           );
           if (error) throw error;
           return data as HeroSlide;
@@ -858,9 +859,13 @@ export const db = {
     if (slide.id) {
       const idx = slides.findIndex(s => s.id === slide.id);
       if (idx !== -1) {
-        slides[idx] = slide as HeroSlide;
+        slides[idx] = { ...slides[idx], ...slide } as HeroSlide;
         setLocal('tracker_hero_slides', slides);
         return slides[idx];
+      } else {
+        slides.push(slide as HeroSlide);
+        setLocal('tracker_hero_slides', slides);
+        return slide as HeroSlide;
       }
     } else {
       const newSlide = { ...slide, id: `hs-${Date.now()}` } as HeroSlide;
@@ -868,7 +873,6 @@ export const db = {
       setLocal('tracker_hero_slides', slides);
       return newSlide;
     }
-    return null;
   },
 
   async deleteHeroSlide(id: string): Promise<boolean> {
@@ -888,29 +892,51 @@ export const db = {
     return true;
   },
 
-  async getStoreSettings(): Promise<StoreSettings> {
-    const defaultSettings: StoreSettings = { id: 'default', upi_id: 'anshajshaji3-2@okicici', phone_number: '919778052356' };
+  async getStoreSettings(storeType?: 'online' | 'offline'): Promise<StoreSettings> {
+    const targetType = storeType || (typeof window !== 'undefined' && window.location.pathname.includes('online') ? 'online' : useAppStore.getState().storeType || 'offline');
+    const settingsId = targetType;
+    const defaultSettings: StoreSettings = { 
+      id: settingsId, 
+      upi_id: 'anshajshaji3-2@okicici', 
+      phone_number: '919778052356',
+      receipt_header_1: targetType === 'online' ? 'CHEF & JOY' : 'NAYAKART',
+      receipt_footer_1: targetType === 'online' ? 'For :  CHEF & JOY' : 'For :  NAYAKART',
+      order_id_prefix: targetType === 'online' ? 'ORD-' : 'POS-'
+    };
     const useSupabase = await getUseSupabase();
     if (useSupabase && dbSupabase) {
       try {
-        const { data, error } = await withTimeout(
-          dbSupabase.from('store_settings').select('*').eq('id', 'default').single()
+        let { data, error } = await withTimeout(
+          dbSupabase.from('store_settings').select('*').eq('id', settingsId).maybeSingle()
         );
-        if (error) throw error;
+        if (error) console.warn(`Supabase specific settings query warning:`, error);
+        
+        // If specific settings not found yet, fallback to 'default' row
+        if (!data) {
+          const { data: defaultData } = await withTimeout(
+            dbSupabase.from('store_settings').select('*').eq('id', 'default').maybeSingle()
+          );
+          if (defaultData) {
+            data = { ...defaultData, id: settingsId };
+          }
+        }
+
         if (data) {
-          setLocal('tracker_store_settings', data);
+          setLocal(`tracker_store_settings_${settingsId}`, data);
           return data as StoreSettings;
         }
       } catch (e) {
-        console.warn('Supabase settings fetch failed', e);
+        console.warn(`Supabase settings fetch failed for ${settingsId}`, e);
       }
     }
-    return getLocal<StoreSettings>('tracker_store_settings', defaultSettings);
+    return getLocal<StoreSettings>(`tracker_store_settings_${settingsId}`, defaultSettings);
   },
 
-  async updateStoreSettings(updates: Partial<StoreSettings>): Promise<StoreSettings> {
-    const current = await this.getStoreSettings();
-    const updated = { ...current, ...updates };
+  async updateStoreSettings(updates: Partial<StoreSettings>, storeType?: 'online' | 'offline'): Promise<StoreSettings> {
+    const targetType = storeType || (updates.id as ('online' | 'offline')) || (typeof window !== 'undefined' && window.location.pathname.includes('online') ? 'online' : useAppStore.getState().storeType || 'offline');
+    const settingsId = targetType;
+    const current = await this.getStoreSettings(settingsId);
+    const updated = { ...current, ...updates, id: settingsId };
     const useSupabase = await getUseSupabase();
     
     if (useSupabase && dbSupabase) {
@@ -920,10 +946,13 @@ export const db = {
         );
         if (error) throw error;
       } catch (e) {
-        console.warn('Supabase settings update failed', e);
+        console.warn(`Supabase settings update failed for ${settingsId}`, e);
       }
     }
-    setLocal('tracker_store_settings', updated);
+    setLocal(`tracker_store_settings_${settingsId}`, updated);
+    if (settingsId === 'offline') {
+      setLocal('tracker_store_settings', updated);
+    }
     return updated;
   }
 };

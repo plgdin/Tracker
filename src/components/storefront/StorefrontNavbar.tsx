@@ -4,9 +4,12 @@ import {
   ShoppingBag, 
   Search, 
   ShieldCheck, 
-  ArrowRight
+  ArrowRight,
+  LogIn,
+  User
 } from 'lucide-react';
 import { useCartContext } from '../../context/CartContext';
+import { useAuthStore } from '@/store/authStore';
 import type { Category, Product, StoreSettings } from '../../types/ecommerce';
 import { cn } from '@/lib/utils';
 import { MenuToggleIcon } from '@/components/ui/menu-toggle-icon';
@@ -28,7 +31,13 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
   onSelectProduct: _onSelectProduct,
 }) => {
   const { totalItems, setIsCartOpen } = useCartContext();
+  const { user, profile, initialize } = useAuthStore();
+  const isAdmin = profile?.role === 'admin' || profile?.role === 'worker';
   const navigate = useNavigate();
+
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
 
   const [localQuery, setLocalQuery] = useState(searchQuery);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -138,15 +147,37 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
               )}
             </button>
 
-            {/* Admin Desk Pill */}
-            <Link
-              to="/admin"
-              style={{ color: '#FFFFFF' }}
-              className="hidden lg:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-[#6B371B] bg-[#4A2818] hover:bg-[#5C2E17] !text-white text-white text-xs font-semibold shadow-xs hover:shadow-sm transition-all duration-200"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 !text-white text-white stroke-[2.2]" />
-              <span className="!text-white text-white font-semibold">Admin</span>
-            </Link>
+            {/* Admin Desk / Sign In / Customer Profile Pill */}
+            {user ? (
+              isAdmin ? (
+                <Link
+                  to="/admin"
+                  style={{ color: '#FFFFFF' }}
+                  className="hidden lg:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-[#6B371B] bg-[#4A2818] hover:bg-[#5C2E17] !text-white text-white text-xs font-semibold shadow-xs hover:shadow-sm transition-all duration-200"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 !text-white text-white stroke-[2.2]" />
+                  <span className="!text-white text-white font-semibold">Admin</span>
+                </Link>
+              ) : (
+                <Link
+                  to="/profile"
+                  style={{ color: '#FFFFFF' }}
+                  className="hidden lg:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-[#6B371B] bg-[#4A2818] hover:bg-[#5C2E17] !text-white text-white text-xs font-semibold shadow-xs hover:shadow-sm transition-all duration-200"
+                >
+                  <User className="w-3.5 h-3.5 !text-white text-white stroke-[2.2]" />
+                  <span className="!text-white text-white font-semibold">{profile?.name || 'My Account'}</span>
+                </Link>
+              )
+            ) : (
+              <Link
+                to="/admin"
+                style={{ color: '#FFFFFF' }}
+                className="hidden lg:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-[#6B371B] bg-[#4A2818] hover:bg-[#5C2E17] !text-white text-white text-xs font-semibold shadow-xs hover:shadow-sm transition-all duration-200"
+              >
+                <LogIn className="w-3.5 h-3.5 !text-white text-white stroke-[2.2]" />
+                <span className="!text-white text-white font-semibold">Sign In</span>
+              </Link>
+            )}
 
             {/* Mobile Menu Toggle Button */}
             <button
@@ -246,15 +277,39 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
               <ShoppingBag className="w-4 h-4" />
               <span>Open Cart ({totalItems})</span>
             </button>
-            <Link
-              to="/admin"
-              onClick={() => setIsMobileMenuOpen(false)}
-              style={{ color: '#FFFFFF' }}
-              className="w-full flex items-center justify-center gap-2 border border-[#6B371B] bg-[#4A2818] !text-white text-white py-2.5 rounded-xl font-semibold text-xs transition-colors"
-            >
-              <ShieldCheck className="w-4 h-4 !text-white text-white" />
-              <span className="!text-white text-white font-semibold">Admin Portal</span>
-            </Link>
+            {user ? (
+              isAdmin ? (
+                <Link
+                  to="/admin"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  style={{ color: '#FFFFFF' }}
+                  className="w-full flex items-center justify-center gap-2 border border-[#6B371B] bg-[#4A2818] !text-white text-white py-2.5 rounded-xl font-semibold text-xs transition-colors"
+                >
+                  <ShieldCheck className="w-4 h-4 !text-white text-white" />
+                  <span className="!text-white text-white font-semibold">Admin Portal</span>
+                </Link>
+              ) : (
+                <Link
+                  to="/profile"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  style={{ color: '#FFFFFF' }}
+                  className="w-full flex items-center justify-center gap-2 border border-[#6B371B] bg-[#4A2818] !text-white text-white py-2.5 rounded-xl font-semibold text-xs transition-colors"
+                >
+                  <User className="w-4 h-4 !text-white text-white" />
+                  <span className="!text-white text-white font-semibold">{profile?.name || 'My Account'}</span>
+                </Link>
+              )
+            ) : (
+              <Link
+                to="/admin"
+                onClick={() => setIsMobileMenuOpen(false)}
+                style={{ color: '#FFFFFF' }}
+                className="w-full flex items-center justify-center gap-2 border border-[#6B371B] bg-[#4A2818] !text-white text-white py-2.5 rounded-xl font-semibold text-xs transition-colors"
+              >
+                <LogIn className="w-4 h-4 !text-white text-white" />
+                <span className="!text-white text-white font-semibold">Sign In</span>
+              </Link>
+            )}
           </div>
         </div>
       </div>

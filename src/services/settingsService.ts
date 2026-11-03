@@ -28,7 +28,7 @@ export const settingsService = {
    */
   async getSettings(): Promise<StoreSettings> {
     try {
-      const dbSettings = await db.getStoreSettings();
+      const dbSettings = await db.getStoreSettings('online');
       if (dbSettings) {
         const current = getStoredSettings();
         const merged: StoreSettings = {
@@ -58,7 +58,7 @@ export const settingsService = {
         footer_description: updates.description || current.description,
         footer_hours: updates.openingHours || current.openingHours,
         footer_copyright: `© ${new Date().getFullYear()} ${updates.storeName || current.storeName}. All rights reserved.`,
-      });
+      }, 'online');
     } catch (e) {
       console.warn('Backend updateStoreSettings failed:', e);
     }
