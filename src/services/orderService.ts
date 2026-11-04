@@ -100,7 +100,7 @@ export const orderService = {
   /**
    * Create a new order connected to stanes db backend
    */
-  async create(input: CreateOrderInput): Promise<{ order: Order; whatsappUrl: string }> {
+  async create(input: CreateOrderInput): Promise<{ order: Order; whatsappUrl: string; receiptUrl: string }> {
     const orders = getStoredOrders();
 
     // Idempotency Key Check
@@ -110,6 +110,7 @@ export const orderService = {
         return {
           order: existing,
           whatsappUrl: this.generateWhatsAppUrl(existing),
+          receiptUrl: this.generateReceiptUrl(existing),
         };
       }
     }
@@ -184,42 +185,86 @@ export const orderService = {
     orders.unshift(newOrder);
     saveOrders(orders);
 
-    const whatsappUrl = this.generateWhatsAppUrl(newOrder);
-    return { order: newOrder, whatsappUrl };
+    const storeSettings = await db.getStoreSettings('online');
+    const storePhone = storeSettings?.phone_number;
+
+    const receiptUrl = this.generateReceiptUrl(newOrder);
+    const whatsappUrl = this.generateWhatsAppUrl(newOrder, storePhone);
+    return { order: newOrder, whatsappUrl, receiptUrl };
+  },
+
+  generateReceiptUrl(order: Order): string {
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const receiptItems = order.items.map((it) => ({
+      id: it.productId || it.id,
+      name: it.productName,
+      price: it.unitPrice.toString(),
+      quantity: it.quantity,
+      gstPercentage: 0
+    }));
+
+    const itemsParam = encodeURIComponent(JSON.stringify(receiptItems));
+    const phoneParam = encodeURIComponent(order.customerPhone);
+    const emailParam = '';
+    const deliveryParam = encodeURIComponent(order.pickupPreference.toLowerCase().includes('delivery') ? 'delivery' : 'pickup');
+    const addressParam = encodeURIComponent(order.pickupPreference || 'Store Pickup');
+    const notesParam = encodeURIComponent(order.notes || '');
+
+    return `${origin}/receipt?order=${order.orderNumber}&amount=${Number(order.total).toFixed(2)}&name=${encodeURIComponent(order.customerName)}&phone=${phoneParam}&email=${emailParam}&delivery=${deliveryParam}&address=${addressParam}&notes=${notesParam}&items=${itemsParam}`;
   },
 
   generateWhatsAppUrl(order: Order, targetPhoneNumber?: string): string {
-    const storeNumber = 
-      targetPhoneNumber || 
-      import.meta.env.VITE_WHATSAPP_NUMBER || 
-      '919778052356';
-
-    const cleanNumber = storeNumber.replace(/\D/g, '');
+    let storeNumber = targetPhoneNumber;
+    if (!storeNumber) {
+      try {
+        const stored = localStorage.getItem('tracker_store_settings_online');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          storeNumber = parsed.phone_number;
+        }
+      } catch {
+        // ignore
+      }
+    }
+    const finalNumber = storeNumber || (import.meta.env.VITE_WHATSAPP_NUMBER as string | undefined) || '919778052356';
+    const cleanNumber = String(finalNumber).replace(/\D/g, '');
+    let storeName = 'Template Store';
+    try {
+      const stored = localStorage.getItem('tracker_store_settings_online');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.receipt_header_1) storeName = parsed.receipt_header_1;
+      }
+    } catch {
+      // ignore
+    }
 
     const lines: string[] = [
-      `🍰 *NEW ORDER: ${order.orderNumber}*`,
-      `*Store:* NayaKart (Kazhakuttam, Thiruvananthapuram)`,
-      `---------------------------------`,
-      `👤 *Customer:* ${order.customerName}`,
-      `📞 *Phone:* ${order.customerPhone}`,
-      order.customerWhatsapp ? `💬 *WhatsApp:* ${order.customerWhatsapp}` : '',
-      `⏰ *Pickup:* ${order.pickupPreference}`,
-      order.notes ? `📝 *Notes:* ${order.notes}` : '',
-      `---------------------------------`,
-      `🛒 *ITEMS ORDERED:*`,
+      `*New Order - ${storeName}*`,
+      ``,
+      `*Order ID:* ${order.orderNumber}`,
+      `*Customer:* ${order.customerName}`,
+      `*Phone:* ${order.customerPhone}`,
+      `*Delivery Type:* ${order.pickupPreference || 'pickup'}`,
+      order.notes ? `*Notes:* ${order.notes}` : '',
+      ``,
+      `*Items:*`,
     ].filter(Boolean);
 
-    order.items.forEach((item, i) => {
+    order.items.forEach((item) => {
       const variantText = item.variantName ? ` (${item.variantName})` : '';
-      lines.push(`${i + 1}. ${item.productName}${variantText}`);
-      lines.push(`   Qty: ${item.quantity} × ₹${item.unitPrice} = *₹${item.lineTotal}*`);
+      lines.push(`* ${item.productName}${variantText} x${item.quantity} (Rs.${item.lineTotal})`);
     });
 
-    lines.push(`---------------------------------`);
-    lines.push(`💰 *TOTAL AMOUNT: ₹${order.total}*`);
-    lines.push(`💳 *Payment:* In-store at counter / UPI`);
     lines.push(``);
-    lines.push(`Hi NayaKart, I have placed order *${order.orderNumber}*. Please confirm item availability and let me know when ready for pickup!`);
+    lines.push(`*Total Amount: Rs.${Number(order.total).toFixed(2)}*`);
+    lines.push(``);
+    lines.push(`Please confirm my order and share payment QR.`);
+
+    const receiptUrl = this.generateReceiptUrl(order);
+    lines.push(``);
+    lines.push(`*View Receipt & Payment QR:*`);
+    lines.push(`${receiptUrl}`);
 
     const messageText = lines.join('\n');
     const encodedMessage = encodeURIComponent(messageText);

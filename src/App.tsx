@@ -31,6 +31,7 @@ import OfflineAdminDashboard from './pages/offline/AdminDashboard';
 import OfflineLedger from './pages/offline/Ledger';
 
 import Profile from './pages/Profile';
+import Receipt from './pages/Receipt';
 
 function App() {
   return (
@@ -67,6 +68,10 @@ function App() {
                 <Profile />
               </>
             }
+          />
+          <Route
+            path="/receipt"
+            element={<Receipt />}
           />
 
           {/* Offline Admin from stanes */}

@@ -1,6 +1,8 @@
-import { X, Plus, Minus, ShoppingBag, ArrowRight, ArrowLeft, ChevronDown } from "lucide-react";
+import { X, Plus, Minus, ShoppingBag, ArrowRight, ArrowLeft, ChevronDown, ReceiptText } from "lucide-react";
 import { useCartContext } from "@/context/CartContext";
 import { useState, useEffect } from "react";
+import { useAuthStore } from "@/store/authStore";
+import { db } from "@/lib/db";
 
 const INDIAN_STATES = [
   "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
@@ -111,36 +113,86 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     }
   }, [addressLine1, addressLine2, city, state, pincode, formattedAddress]);
 
+  const { user } = useAuthStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState<{
     whatsappUrl: string;
+    receiptUrl?: string;
   } | null>(null);
 
-  const handleCheckout = () => {
-    if (!canPlaceOrder) return;
+  const handleCheckout = async () => {
+    if (!canPlaceOrder || isSubmitting) return;
+    setIsSubmitting(true);
 
-    let text = `*New Order - NayaKart*\n\n`;
-    text += `*Customer:* ${customerName}\n`;
-    text += `*Phone:* ${customerPhone}\n`;
-    if (customerEmail) text += `*Email:* ${customerEmail}\n`;
-    text += `*Delivery Type:* ${deliveryType}\n`;
-    if (deliveryType === "delivery") text += `*Address:* ${formattedAddress}\n`;
-    if (notes) text += `*Notes:* ${notes}\n`;
-    if (offerCode) text += `*Offer Code:* ${offerCode}\n`;
-    text += `\n*Items:*\n`;
-    items.forEach((item) => {
-      text += `- ${item.name} x${item.quantity} (Rs.${Number(item.price) * item.quantity})\n`;
-    });
-    text += `\n*Total Amount: Rs.${totalAmount}*\n`;
-    text += `\nPlease confirm my order and share payment QR.`;
+    try {
+      const orderId = await db.generateOrderId();
+      const receiptItems = items.map((item) => ({
+        id: item.productId,
+        name: item.name,
+        price: item.price.toString(),
+        quantity: item.quantity,
+        gstPercentage: (item as any).gstPercentage || 0,
+      }));
 
-    const encodedText = encodeURIComponent(text);
-    const phoneNumber = import.meta.env.VITE_WHATSAPP_NUMBER || "919999999999";
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedText}`;
+      // Save order to database
+      await db.addOnlineOrder({
+        id: orderId,
+        user_id: user?.id,
+        customer_name: customerName,
+        customer_phone: customerPhone,
+        customer_email: customerEmail || undefined,
+        delivery_type: deliveryType,
+        address: deliveryType === "delivery" ? formattedAddress : "Store Pickup",
+        notes: notes || undefined,
+        offer_code: offerCode || undefined,
+        total_amount: Number(totalAmount),
+        items: receiptItems,
+      });
 
-    setOrderSuccess({
-      whatsappUrl,
-    });
-    clearCart();
+      const itemsParam = encodeURIComponent(JSON.stringify(receiptItems));
+      const phoneParam = encodeURIComponent(customerPhone);
+      const emailParam = encodeURIComponent(customerEmail || '');
+      const deliveryParam = encodeURIComponent(deliveryType);
+      const addressParam = encodeURIComponent(deliveryType === "delivery" ? formattedAddress : "Store Pickup");
+      const notesParam = encodeURIComponent(notes || '');
+
+      const receiptUrl = `${window.location.origin}/receipt?order=${orderId}&amount=${Number(totalAmount).toFixed(2)}&name=${encodeURIComponent(customerName)}&phone=${phoneParam}&email=${emailParam}&delivery=${deliveryParam}&address=${addressParam}&notes=${notesParam}&items=${itemsParam}`;
+
+      const settings = await db.getStoreSettings('online');
+      const storeName = settings.receipt_header_1 || 'Template Store';
+
+      let text = `*New Order - ${storeName}*\n\n`;
+      text += `*Order ID:* ${orderId}\n`;
+      text += `*Customer:* ${customerName}\n`;
+      text += `*Phone:* ${customerPhone}\n`;
+      if (customerEmail) text += `*Email:* ${customerEmail}\n`;
+      text += `*Delivery Type:* ${deliveryType}\n`;
+      if (deliveryType === "delivery") text += `*Address:* ${formattedAddress}\n`;
+      if (notes) text += `*Notes:* ${notes}\n`;
+      if (offerCode) text += `*Offer Code:* ${offerCode}\n`;
+      text += `\n*Items:*\n`;
+      items.forEach((item) => {
+        text += `- ${item.name} x${item.quantity} (Rs.${Number(item.price) * item.quantity})\n`;
+      });
+      text += `\n*Total Amount: Rs.${totalAmount}*\n`;
+      text += `\nPlease confirm my order and share payment QR.`;
+      text += `\n\n*View Receipt & Payment QR:*\n${receiptUrl}`;
+
+      const encodedText = encodeURIComponent(text);
+      const phoneNumber = (settings.phone_number || import.meta.env.VITE_WHATSAPP_NUMBER || "919999999999").replace(/\D/g, '');
+      const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedText}`;
+
+      setOrderSuccess({
+        whatsappUrl,
+        receiptUrl,
+      });
+      clearCart();
+    } catch (e) {
+      console.error("Failed to checkout:", e);
+      alert("Failed to place order. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (orderSuccess) {
@@ -157,8 +209,21 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             Order Placed!
           </h2>
           <p className="text-taupe mb-6">
-            Your order details are ready. Click below to send it via WhatsApp to our store.
+            Your order details are ready. You can pay via UPI on your receipt or send it directly to WhatsApp.
           </p>
+
+          {orderSuccess.receiptUrl && (
+            <a
+              href={orderSuccess.receiptUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-4 mb-3 bg-[#e85d36] text-white font-bold rounded-full hover:bg-[#d44e27] transition-colors flex items-center justify-center gap-2 shadow-lg shadow-[#e85d36]/25"
+            >
+              <ReceiptText className="w-5 h-5" />
+              View Receipt & Pay via UPI (New Tab)
+            </a>
+          )}
+
           <a
             href={orderSuccess.whatsappUrl}
             target="_blank"

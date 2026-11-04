@@ -1,7 +1,8 @@
 import React from 'react';
-import { CheckCircle2, MessageCircle, MapPin, ArrowRight, X } from 'lucide-react';
+import { CheckCircle2, MessageCircle, MapPin, ArrowRight, X, ReceiptText } from 'lucide-react';
 import type { Order, StoreSettings } from '../../types/ecommerce';
 import { Link } from 'react-router-dom';
+import { orderService } from '../../services/orderService';
 
 interface OrderConfirmationModalProps {
   order: Order | null;
@@ -17,6 +18,8 @@ export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
   onClose,
 }) => {
   if (!order) return null;
+
+  const receiptUrl = orderService.generateReceiptUrl(order);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-[#361B0E]/50 backdrop-blur-sm animate-in fade-in duration-200">
@@ -50,7 +53,7 @@ export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
         </p>
 
         {/* Order Details Card */}
-        <div className="p-4 bg-[#F9F4EE] rounded-2xl border border-[#E8D8CC] text-left space-y-2.5 mb-6">
+        <div className="p-4 bg-[#F9F4EE] rounded-2xl border border-[#E8D8CC] text-left space-y-2.5 mb-5">
           <div className="flex justify-between items-center pb-2 border-b border-[#E8D8CC]">
             <span className="text-xs font-medium text-[#7A6153]">Order Reference</span>
             <span className="font-serif font-bold text-sm text-[#4A2818]">{order.orderNumber}</span>
@@ -77,10 +80,21 @@ export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
           </div>
         </div>
 
+        {/* View Receipt & Payment QR in new tab */}
+        <a
+          href={receiptUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center justify-center gap-2 w-full py-3.5 rounded-full bg-[#E85D36] hover:bg-[#d44e27] text-white font-bold text-sm shadow-md shadow-[#E85D36]/25 transition-all mb-4"
+        >
+          <ReceiptText className="w-4 h-4 text-white" />
+          <span>View Receipt & Payment QR (New Tab)</span>
+        </a>
+
         {/* WhatsApp Notice & Button */}
         <div className="p-3 bg-[#F2E7DC] rounded-2xl border border-[#E8D8CC] text-xs text-[#4A2818] mb-6">
           <p className="font-medium mb-2 leading-relaxed">
-            📲 A WhatsApp window has been opened with your order summary. Send it to the store owner to fast-track your packing!
+            📲 A WhatsApp window has been opened with your order summary and payment link.
           </p>
           <a
             href={whatsappUrl}
@@ -89,7 +103,7 @@ export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
             className="inline-flex items-center justify-center gap-2 w-full py-2.5 rounded-full bg-[#4A2818] hover:bg-[#361B0E] text-[#F9F4EE] font-medium text-xs shadow-sm transition-all"
           >
             <MessageCircle className="w-4 h-4 text-[#F9F4EE] stroke-[2.2]" />
-            <span className="text-[#F9F4EE]">Re-open WhatsApp Chat Message</span>
+            <span className="text-[#F9F4EE]">Open WhatsApp Chat</span>
           </a>
         </div>
 
