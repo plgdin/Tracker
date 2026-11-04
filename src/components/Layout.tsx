@@ -171,10 +171,10 @@ export default function Layout() {
 
             {isOnline && profile?.role === 'admin' && (
               <NavLink
-                to="dashboard?tab=orders"
-                className={() =>
+                to="orders"
+                className={({ isActive }) =>
                   `inline-flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                    location.pathname.includes('dashboard') && location.search.includes('tab=orders')
+                    isActive || location.pathname.endsWith('/orders') || (location.pathname.includes('dashboard') && location.search.includes('tab=orders'))
                       ? 'bg-[#C87D55] text-white shadow-xs'
                       : 'text-[#D4A373] hover:text-[#F9F4EE] hover:bg-[#4A2818]'
                   }`
@@ -220,7 +220,7 @@ export default function Layout() {
                 to="dashboard"
                 className={({ isActive }) =>
                   `inline-flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                    isActive && (!isOnline || !location.search.includes('tab=orders'))
+                    isActive && !location.pathname.endsWith('/orders') && (!isOnline || !location.search.includes('tab=orders'))
                       ? 'bg-[#C87D55] text-white shadow-xs'
                       : 'text-[#D4A373] hover:text-[#F9F4EE] hover:bg-[#4A2818]'
                   }`
@@ -266,8 +266,8 @@ export default function Layout() {
 
         {isOnline && profile?.role === 'admin' ? (
           <NavLink 
-            to="dashboard?tab=orders" 
-            className={() => `flex flex-col items-center gap-1 text-[11px] font-semibold transition-colors ${location.search.includes('tab=orders') ? 'text-[#EAD9CF]' : 'text-[#D4A373]/70 hover:text-[#F9F4EE]'}`}
+            to="orders" 
+            className={({ isActive }) => `flex flex-col items-center gap-1 text-[11px] font-semibold transition-colors ${isActive || location.pathname.endsWith('/orders') || location.search.includes('tab=orders') ? 'text-[#EAD9CF]' : 'text-[#D4A373]/70 hover:text-[#F9F4EE]'}`}
           >
             <ShoppingCart size={20} />
             <span>Orders</span>
@@ -293,7 +293,7 @@ export default function Layout() {
         {profile?.role === 'admin' && (
           <NavLink 
             to="dashboard" 
-            className={() => `flex flex-col items-center gap-1 text-[11px] font-semibold transition-colors ${location.pathname.includes('dashboard') && !location.search.includes('tab=orders') ? 'text-[#EAD9CF]' : 'text-[#D4A373]/70 hover:text-[#F9F4EE]'}`}
+            className={({ isActive }) => `flex flex-col items-center gap-1 text-[11px] font-semibold transition-colors ${isActive && !location.pathname.endsWith('/orders') && !location.search.includes('tab=orders') ? 'text-[#EAD9CF]' : 'text-[#D4A373]/70 hover:text-[#F9F4EE]'}`}
           >
             <Shield size={20} />
             <span>Admin</span>

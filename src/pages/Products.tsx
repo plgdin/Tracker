@@ -25,6 +25,11 @@ import type { Product, Category, StoreSettings, Order } from '../types/ecommerce
 import { INITIAL_SETTINGS } from '../services/mockData';
 
 export default function Products() {
+  // Guarantee that navigating to /products always starts at the top
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, []);
+
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [settings, setSettings] = useState<StoreSettings>(INITIAL_SETTINGS);
@@ -236,7 +241,7 @@ export default function Products() {
       </div>
 
       {/* Category Pills Slider (Fast horizontal navigation) */}
-      <div className="bg-[#FCFAF7]/90 backdrop-blur-md border-b border-[#E8D8CC] sticky top-20 z-30 overflow-x-auto no-scrollbar py-2.5 px-4 sm:px-6 lg:px-8">
+      <div className="bg-[#FCFAF7]/90 backdrop-blur-md border-b border-[#E8D8CC] overflow-x-auto no-scrollbar py-3 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex items-center gap-2">
           <button
             onClick={() => handleCategorySelect('all')}
@@ -270,12 +275,12 @@ export default function Products() {
       </div>
 
       {/* Main Content Layout */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full min-h-[60vh]">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* Desktop Filter Sidebar */}
           <div className="hidden lg:block lg:col-span-3 space-y-6">
-            <div className="bg-white rounded-[2rem] p-5 border border-[#E8D8CC] shadow-xs space-y-6 sticky top-36">
+            <div className="bg-white rounded-[2rem] p-5 border border-[#E8D8CC] shadow-xs space-y-6 sticky top-24">
               
               {/* Header with Clear button */}
               <div className="flex items-center justify-between pb-3 border-b border-[#E8D8CC]/60">

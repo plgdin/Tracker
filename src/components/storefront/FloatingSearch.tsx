@@ -113,6 +113,12 @@ export const FloatingSearch: React.FC = () => {
 
   // Keyboard navigation & shortcuts
   useEffect(() => {
+    const handleOpenCustom = () => setIsOpen(true);
+    window.addEventListener('open-storefront-search', handleOpenCustom);
+    return () => window.removeEventListener('open-storefront-search', handleOpenCustom);
+  }, []);
+
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const activeEl = document.activeElement;
       const isTyping =
@@ -512,23 +518,31 @@ export const FloatingSearch: React.FC = () => {
         </div>
       )}
 
-      {/* Floating Action Button (FAB) on Storefront bottom right */}
-      <div className="fixed bottom-20 right-4 sm:bottom-8 sm:right-8 z-40">
+      {/* Friendly, Accessible Floating Search Pill */}
+      <div className="fixed bottom-[max(5.5rem,calc(env(safe-area-inset-bottom)+5rem))] right-4 sm:bottom-8 sm:right-8 z-40">
         <button
+          type="button"
           onClick={() => setIsOpen((prev) => !prev)}
           className={cn(
-            'group relative w-13 h-13 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 active:scale-95 motion-reduce:transition-none',
+            'group relative flex items-center gap-2 rounded-full shadow-2xl transition-all duration-300 active:scale-95 border cursor-pointer select-none',
             isOpen
-              ? 'bg-[#361B0E] text-[#F9F4EE] border border-[#EAD9CF] rotate-90'
-              : 'bg-[#4A2818] hover:bg-[#361B0E] text-[#F9F4EE] border border-[#EAD9CF]/40 hover:scale-105'
+              ? 'w-11 h-11 sm:w-12 sm:h-12 justify-center bg-[#361B0E] text-[#F9F4EE] border-[#EAD9CF] shadow-black/50 rotate-90'
+              : 'h-11 sm:h-12 px-3.5 sm:px-4 bg-[#361B0E]/95 hover:bg-[#4A2818] text-[#F9F4EE] border-[#EADBCE]/50 shadow-black/35 backdrop-blur-md hover:shadow-2xl hover:scale-103'
           )}
           aria-label={isOpen ? 'Close Search' : 'Open Search'}
-          title="Search baking supplies"
+          title="Search baking supplies (/ or ⌘K)"
         >
           {isOpen ? (
-            <X className="w-5 h-5 stroke-[2.2]" />
+            <X className="w-5 h-5 stroke-[2.2] -rotate-90" />
           ) : (
-            <Search className="w-5 h-5 stroke-[2.2] group-hover:scale-110 transition-transform duration-200" />
+            <>
+              <div className="w-7 h-7 rounded-full bg-[#4A2818] flex items-center justify-center text-[#EAD9CF] shrink-0 border border-[#6B371B]/70 shadow-xs group-hover:scale-110 transition-transform">
+                <Search className="w-3.5 h-3.5 stroke-[2.4]" />
+              </div>
+              <span className="text-xs font-semibold tracking-tight text-[#F9F4EE] pr-1">
+                Search <span className="hidden sm:inline">supplies</span>
+              </span>
+            </>
           )}
         </button>
       </div>

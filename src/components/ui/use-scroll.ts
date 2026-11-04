@@ -9,7 +9,7 @@ export function useScroll(threshold: number = 25) {
     const handleScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          const y = window.scrollY;
+          const y = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
           setScrolled((prev) => {
             // Enter scrolled state
             if (!prev && y > threshold) {
@@ -29,7 +29,11 @@ export function useScroll(threshold: number = 25) {
 
     handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    document.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      document.removeEventListener('scroll', handleScroll);
+    };
   }, [threshold]);
 
   return scrolled;

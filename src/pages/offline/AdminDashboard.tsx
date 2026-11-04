@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useAppStore } from '../../store/appStore';
 import AdminDashboard from '../../components/admin/AdminDashboard';
 
-export default function AdminDashboardWrapper() {
+export default function AdminDashboardWrapper({ isOrdersOnly }: { isOrdersOnly?: boolean }) {
   const storeType = useAppStore((s: any) => s.storeType);
   const setStoreType = useAppStore((s: any) => s.setStoreType);
   
@@ -12,5 +12,5 @@ export default function AdminDashboardWrapper() {
 
   if (storeType !== 'offline') return null;
 
-  return <AdminDashboard />;
+  return <AdminDashboard isOrdersOnly={isOrdersOnly} />;
 }

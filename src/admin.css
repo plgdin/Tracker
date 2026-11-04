@@ -41,15 +41,12 @@
   -webkit-tap-highlight-color: transparent; /* Smooth touch response on iOS */
 }
 
-body {
+.app-layout {
   font-family: var(--font-family);
-  background:
-    linear-gradient(135deg, rgba(252, 246, 246, 0.96) 0%, #ffffff 46%, rgba(239, 250, 246, 0.94) 100%);
   color: var(--color-text-primary);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
-  overflow-x: hidden;
   position: relative;
 }
 
@@ -73,8 +70,7 @@ body::before {
 }
 
 /* Container & Mobile Responsiveness */
-html, body {
-  overflow-x: hidden;
+.app-layout {
   width: 100%;
 }
 
@@ -823,11 +819,17 @@ select.input-field {
 /* --- Dynamic Global Toast Pill System --- */
 .toast-pill-wrapper {
   position: fixed;
-  top: 1.5rem;
+  bottom: 2rem;
   left: 50%;
   transform: translateX(-50%);
   z-index: 9999;
   pointer-events: auto;
+}
+
+@media (max-width: 768px) {
+  .toast-pill-wrapper {
+    bottom: 5.5rem;
+  }
 }
 
 .toast-pill {
@@ -850,7 +852,7 @@ select.input-field {
 
 @keyframes toastBounceIn {
   0% {
-    transform: translateY(-25px) scale(0.8) translate3d(0, 0, 0);
+    transform: translateY(25px) scale(0.8) translate3d(0, 0, 0);
     opacity: 0;
   }
   100% {

@@ -27,7 +27,10 @@ import {
   Check,
   X,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  Clock,
+  CheckCircle2,
+  TrendingUp
 } from 'lucide-react';
 
 type TabKey = 'orders' | 'workers' | 'categories' | 'hero' | 'settings' | 'logs';
@@ -40,7 +43,11 @@ interface WorkerData {
   permissions?: Record<string, boolean>;
 }
 
-export default function AdminDashboard() {
+interface AdminDashboardProps {
+  isOrdersOnly?: boolean;
+}
+
+export default function AdminDashboard({ isOrdersOnly }: AdminDashboardProps = {}) {
   const { profile, signOut } = useAuthStore();
   const showToast = useToastStore(s => s.showToast);
   const navigate = useNavigate();
@@ -49,8 +56,17 @@ export default function AdminDashboard() {
 
   const isOnline = location.pathname.includes('online');
 
-  // URL query parameter support for tab selection (e.g. ?tab=orders)
-  const initialTab = (searchParams.get('tab') as TabKey) || (isOnline ? 'orders' : 'workers');
+  // Dedicated Orders Hub mode vs Administrative Desk mode
+  const isOrdersMode = Boolean(isOrdersOnly) || 
+    location.pathname.endsWith('/orders') || 
+    location.pathname.includes('/orders') || 
+    searchParams.get('tab') === 'orders';
+
+  // URL query parameter support for tab selection (e.g. ?tab=categories)
+  const tabParam = searchParams.get('tab') as TabKey;
+  const initialTab: TabKey = isOrdersMode 
+    ? 'orders' 
+    : (tabParam && tabParam !== 'orders' ? tabParam : 'workers');
   const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
 
   const [showAccessDenied, setShowAccessDenied] = useState(false);
@@ -113,13 +129,21 @@ export default function AdminDashboard() {
   const [workerEmail, setWorkerEmail] = useState('');
   const [workerPassword, setWorkerPassword] = useState('');
 
-  // Synchronize activeTab when URL param changes
+  // Synchronize activeTab when URL param changes or mode changes
   useEffect(() => {
-    const tabParam = searchParams.get('tab') as TabKey;
-    if (tabParam && tabParam !== activeTab) {
-      setActiveTab(tabParam);
+    if (isOrdersMode) {
+      if (activeTab !== 'orders') {
+        setActiveTab('orders');
+      }
+    } else {
+      const tabParam = searchParams.get('tab') as TabKey;
+      if (tabParam && tabParam !== 'orders' && tabParam !== activeTab) {
+        setActiveTab(tabParam);
+      } else if (activeTab === 'orders') {
+        setActiveTab('workers');
+      }
     }
-  }, [searchParams]);
+  }, [isOrdersMode, searchParams]);
 
   const handleTabChange = (tab: TabKey) => {
     setActiveTab(tab);
@@ -535,6 +559,11 @@ export default function AdminDashboard() {
   }, [logs, logSearchQuery]);
 
   const pendingOrdersCount = onlineOrders.filter(o => o.status === 'pending').length;
+  const completedOrdersCount = onlineOrders.filter(o => o.status === 'completed').length;
+  const cancelledOrdersCount = onlineOrders.filter(o => o.status === 'cancelled').length;
+  const completedRevenue = onlineOrders
+    .filter(o => o.status === 'completed')
+    .reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
 
   // Swatch colors
   const colorPalette = ['#8B4513', '#C87D55', '#E07A5F', '#D4A373', '#81B29A', '#3D5A80', '#98C1D9', '#EE6C4D'];
@@ -568,17 +597,23 @@ export default function AdminDashboard() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#361B0E] tracking-tight">
-              Admin Management Desk
+              {isOrdersMode ? 'Customer Orders' : 'Admin Management Desk'}
             </h1>
             <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-              isOnline ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'
+              isOrdersMode
+                ? 'bg-emerald-100 text-emerald-800'
+                : isOnline 
+                ? 'bg-emerald-100 text-emerald-800' 
+                : 'bg-amber-100 text-amber-900'
             }`}>
-              {isOnline ? '🌐 Online Hub' : '🏪 Counter Hub'}
+              {isOrdersMode ? '🛍️ Live Orders Hub' : isOnline ? '🌐 Online Hub' : '🏪 Counter Hub'}
             </span>
           </div>
           <p className="text-sm text-[#7C6053] mt-1">
-            {isOnline 
-              ? 'Manage online customer orders, staff permissions, categories & storefront media.' 
+            {isOrdersMode
+              ? 'Track, fulfill and manage online orders placed by customers in real-time.'
+              : isOnline 
+              ? 'Configure staff permissions, storefront categories, hero promotional banners & store settings.' 
               : 'Configure showroom counter staff, in-store categories, thermal POS receipts & audit trail.'}
           </p>
         </div>
@@ -598,185 +633,239 @@ export default function AdminDashboard() {
 
       {/* High-Level Executive Overview Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
-        {isOnline ? (
-          <div 
-            onClick={() => handleTabChange('orders')}
-            className={`p-4 rounded-2xl border transition-all cursor-pointer ${
-              activeTab === 'orders' 
-                ? 'bg-[#FAF2EB] border-[#8B4513] shadow-xs' 
-                : 'bg-white border-[#EADBCE] hover:border-[#8B4513]/40 shadow-xs'
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-[#7C6053]">Online Orders</span>
-              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
-                <ShoppingCart size={16} />
+        {isOrdersMode ? (
+          <>
+            <div 
+              onClick={() => setOrderStatusFilter('all')}
+              className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                orderStatusFilter === 'all' 
+                  ? 'bg-[#FAF2EB] border-[#8B4513] shadow-xs' 
+                  : 'bg-white border-[#EADBCE] hover:border-[#8B4513]/40 shadow-xs'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-[#7C6053]">Total Orders</span>
+                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center">
+                  <ShoppingCart size={16} />
+                </div>
               </div>
+              <p className="text-2xl font-bold text-[#361B0E] mt-2">{onlineOrders.length}</p>
+              <p className="text-[11px] font-semibold text-[#7C6053] mt-1">All customer orders</p>
             </div>
-            <p className="text-2xl font-bold text-[#361B0E] mt-2">{onlineOrders.length}</p>
-            <p className="text-[11px] font-semibold text-emerald-700 mt-1">
-              {pendingOrdersCount > 0 ? `${pendingOrdersCount} pending fulfillment` : 'All caught up'}
-            </p>
-          </div>
+
+            <div 
+              onClick={() => setOrderStatusFilter('pending')}
+              className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                orderStatusFilter === 'pending' 
+                  ? 'bg-amber-50 border-amber-600 shadow-xs' 
+                  : 'bg-white border-[#EADBCE] hover:border-amber-500/40 shadow-xs'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-amber-800">Pending</span>
+                <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center">
+                  <Clock size={16} />
+                </div>
+              </div>
+              <p className="text-2xl font-bold text-amber-900 mt-2">{pendingOrdersCount}</p>
+              <p className="text-[11px] font-semibold text-amber-700 mt-1">
+                {pendingOrdersCount > 0 ? `${pendingOrdersCount} require fulfillment` : 'All caught up'}
+              </p>
+            </div>
+
+            <div 
+              onClick={() => setOrderStatusFilter('completed')}
+              className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                orderStatusFilter === 'completed' 
+                  ? 'bg-emerald-50 border-emerald-600 shadow-xs' 
+                  : 'bg-white border-[#EADBCE] hover:border-emerald-500/40 shadow-xs'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-emerald-800">Completed</span>
+                <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center">
+                  <CheckCircle2 size={16} />
+                </div>
+              </div>
+              <p className="text-2xl font-bold text-emerald-900 mt-2">{completedOrdersCount}</p>
+              <p className="text-[11px] font-semibold text-emerald-700 mt-1">Fulfilled orders</p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white border border-[#EADBCE] shadow-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-[#7C6053]">Completed Value</span>
+                <div className="w-8 h-8 rounded-lg bg-[#FAF2EB] text-[#8B4513] flex items-center justify-center">
+                  <TrendingUp size={16} />
+                </div>
+              </div>
+              <p className="text-2xl font-bold text-[#361B0E] mt-2">₹{completedRevenue.toLocaleString('en-IN')}</p>
+              <p className="text-[11px] font-semibold text-[#7C6053] mt-1">{cancelledOrdersCount} cancelled</p>
+            </div>
+          </>
         ) : (
-          <div 
-            onClick={() => navigate('/adminoffline/ledger')}
-            className="p-4 rounded-2xl bg-white border border-[#EADBCE] hover:border-[#8B4513]/40 shadow-xs transition-all cursor-pointer"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-[#7C6053]">POS Ledger</span>
-              <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center">
-                <Receipt size={16} />
+          <>
+            <div 
+              onClick={() => handleTabChange('workers')}
+              className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                activeTab === 'workers' 
+                  ? 'bg-[#FAF2EB] border-[#8B4513] shadow-xs' 
+                  : 'bg-white border-[#EADBCE] hover:border-[#8B4513]/40 shadow-xs'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-[#7C6053]">Staff Workers</span>
+                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center">
+                  <Users size={16} />
+                </div>
               </div>
+              <p className="text-2xl font-bold text-[#361B0E] mt-2">{workers.length}</p>
+              <p className="text-[11px] font-semibold text-amber-700 mt-1">
+                {pendingWorkers.length > 0 ? `${pendingWorkers.length} pending approval` : 'Fully approved'}
+              </p>
             </div>
-            <p className="text-lg font-bold text-[#361B0E] mt-2">Active</p>
-            <p className="text-[11px] font-semibold text-amber-800 mt-1">Sales & Purchasing</p>
-          </div>
+
+            <div 
+              onClick={() => handleTabChange('categories')}
+              className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                activeTab === 'categories' 
+                  ? 'bg-[#FAF2EB] border-[#8B4513] shadow-xs' 
+                  : 'bg-white border-[#EADBCE] hover:border-[#8B4513]/40 shadow-xs'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-[#7C6053]">Categories</span>
+                <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center">
+                  <Tag size={16} />
+                </div>
+              </div>
+              <p className="text-2xl font-bold text-[#361B0E] mt-2">{categories.length}</p>
+              <p className="text-[11px] font-semibold text-purple-700 mt-1">Active categories</p>
+            </div>
+
+            {isOnline ? (
+              <div 
+                onClick={() => handleTabChange('hero')}
+                className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                  activeTab === 'hero' 
+                    ? 'bg-[#FAF2EB] border-[#8B4513] shadow-xs' 
+                    : 'bg-white border-[#EADBCE] hover:border-[#8B4513]/40 shadow-xs'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-[#7C6053]">Hero Banners</span>
+                  <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-700 flex items-center justify-center">
+                    <ImageIcon size={16} />
+                  </div>
+                </div>
+                <p className="text-2xl font-bold text-[#361B0E] mt-2">{heroSlides.length}</p>
+                <p className="text-[11px] font-semibold text-rose-700 mt-1">Storefront slides</p>
+              </div>
+            ) : (
+              <div 
+                onClick={() => navigate('/adminoffline/ledger')}
+                className="p-4 rounded-2xl bg-white border border-[#EADBCE] hover:border-[#8B4513]/40 shadow-xs transition-all cursor-pointer"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-[#7C6053]">POS Ledger</span>
+                  <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center">
+                    <Receipt size={16} />
+                  </div>
+                </div>
+                <p className="text-lg font-bold text-[#361B0E] mt-2">Active</p>
+                <p className="text-[11px] font-semibold text-amber-800 mt-1">Sales & Purchasing</p>
+              </div>
+            )}
+
+            <div 
+              onClick={() => handleTabChange('settings')}
+              className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                activeTab === 'settings' 
+                  ? 'bg-[#FAF2EB] border-[#8B4513] shadow-xs' 
+                  : 'bg-white border-[#EADBCE] hover:border-[#8B4513]/40 shadow-xs'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-[#7C6053]">Store Config</span>
+                <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center">
+                  <Sliders size={16} />
+                </div>
+              </div>
+              <p className="text-lg font-bold text-[#361B0E] mt-2">Ready</p>
+              <p className="text-[11px] font-semibold text-[#8B4513] mt-1">UPI & POS Receipts</p>
+            </div>
+          </>
         )}
-
-        <div 
-          onClick={() => handleTabChange('workers')}
-          className={`p-4 rounded-2xl border transition-all cursor-pointer ${
-            activeTab === 'workers' 
-              ? 'bg-[#FAF2EB] border-[#8B4513] shadow-xs' 
-              : 'bg-white border-[#EADBCE] hover:border-[#8B4513]/40 shadow-xs'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-[#7C6053]">Staff Workers</span>
-            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center">
-              <Users size={16} />
-            </div>
-          </div>
-          <p className="text-2xl font-bold text-[#361B0E] mt-2">{workers.length}</p>
-          <p className="text-[11px] font-semibold text-amber-700 mt-1">
-            {pendingWorkers.length > 0 ? `${pendingWorkers.length} pending approval` : 'Fully approved'}
-          </p>
-        </div>
-
-        <div 
-          onClick={() => handleTabChange('categories')}
-          className={`p-4 rounded-2xl border transition-all cursor-pointer ${
-            activeTab === 'categories' 
-              ? 'bg-[#FAF2EB] border-[#8B4513] shadow-xs' 
-              : 'bg-white border-[#EADBCE] hover:border-[#8B4513]/40 shadow-xs'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-[#7C6053]">Categories</span>
-            <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center">
-              <Tag size={16} />
-            </div>
-          </div>
-          <p className="text-2xl font-bold text-[#361B0E] mt-2">{categories.length}</p>
-          <p className="text-[11px] font-semibold text-purple-700 mt-1">Active categories</p>
-        </div>
-
-        <div 
-          onClick={() => handleTabChange('settings')}
-          className={`p-4 rounded-2xl border transition-all cursor-pointer ${
-            activeTab === 'settings' 
-              ? 'bg-[#FAF2EB] border-[#8B4513] shadow-xs' 
-              : 'bg-white border-[#EADBCE] hover:border-[#8B4513]/40 shadow-xs'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-[#7C6053]">Store Config</span>
-            <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center">
-              <Sliders size={16} />
-            </div>
-          </div>
-          <p className="text-lg font-bold text-[#361B0E] mt-2">Ready</p>
-          <p className="text-[11px] font-semibold text-[#8B4513] mt-1">UPI & POS Receipts</p>
-        </div>
       </div>
 
-      {/* Clean Uncluttered Tab Bar */}
-      <div className="flex items-center gap-1.5 p-1.5 bg-[#F5ECE3] rounded-2xl border border-[#EADBCE] mb-6 overflow-x-auto">
-        {isOnline && (
+      {/* Sub-Tab Bar - ONLY on Admin Desk (Orders view has dedicated status pills and search) */}
+      {!isOrdersMode && (
+        <div className="flex items-center gap-1.5 p-1.5 bg-[#F5ECE3] rounded-2xl border border-[#EADBCE] mb-6 overflow-x-auto">
           <button
-            onClick={() => handleTabChange('orders')}
+            onClick={() => handleTabChange('workers')}
             className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
-              activeTab === 'orders'
+              activeTab === 'workers'
                 ? 'bg-[#8B4513] text-white shadow-xs'
                 : 'text-[#7C6053] hover:text-[#361B0E] hover:bg-white/50'
             }`}
           >
-            <ShoppingCart size={15} />
-            <span>Online Orders</span>
-            {pendingOrdersCount > 0 && (
-              <span className="px-1.5 py-0.2 bg-amber-400 text-black text-[10px] font-black rounded-full">
-                {pendingOrdersCount}
-              </span>
+            <Users size={15} />
+            <span>Staff & Access</span>
+            {pendingWorkers.length > 0 && (
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
             )}
           </button>
-        )}
 
-        <button
-          onClick={() => handleTabChange('workers')}
-          className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
-            activeTab === 'workers'
-              ? 'bg-[#8B4513] text-white shadow-xs'
-              : 'text-[#7C6053] hover:text-[#361B0E] hover:bg-white/50'
-          }`}
-        >
-          <Users size={15} />
-          <span>Staff & Access</span>
-          {pendingWorkers.length > 0 && (
-            <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
-          )}
-        </button>
-
-        <button
-          onClick={() => handleTabChange('categories')}
-          className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
-            activeTab === 'categories'
-              ? 'bg-[#8B4513] text-white shadow-xs'
-              : 'text-[#7C6053] hover:text-[#361B0E] hover:bg-white/50'
-          }`}
-        >
-          <Tag size={15} />
-          <span>Categories</span>
-        </button>
-
-        {isOnline && (
           <button
-            onClick={() => handleTabChange('hero')}
+            onClick={() => handleTabChange('categories')}
             className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
-              activeTab === 'hero'
+              activeTab === 'categories'
                 ? 'bg-[#8B4513] text-white shadow-xs'
                 : 'text-[#7C6053] hover:text-[#361B0E] hover:bg-white/50'
             }`}
           >
-            <ImageIcon size={15} />
-            <span>Hero Banners</span>
+            <Tag size={15} />
+            <span>Categories</span>
           </button>
-        )}
 
-        <button
-          onClick={() => handleTabChange('settings')}
-          className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
-            activeTab === 'settings'
-              ? 'bg-[#8B4513] text-white shadow-xs'
-              : 'text-[#7C6053] hover:text-[#361B0E] hover:bg-white/50'
-          }`}
-        >
-          <Sliders size={15} />
-          <span>Store & POS Config</span>
-        </button>
+          {isOnline && (
+            <button
+              onClick={() => handleTabChange('hero')}
+              className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+                activeTab === 'hero'
+                  ? 'bg-[#8B4513] text-white shadow-xs'
+                  : 'text-[#7C6053] hover:text-[#361B0E] hover:bg-white/50'
+              }`}
+            >
+              <ImageIcon size={15} />
+              <span>Hero Banners</span>
+            </button>
+          )}
 
-        <button
-          onClick={() => handleTabChange('logs')}
-          className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
-            activeTab === 'logs'
-              ? 'bg-[#8B4513] text-white shadow-xs'
-              : 'text-[#7C6053] hover:text-[#361B0E] hover:bg-white/50'
-          }`}
-        >
-          <Activity size={15} />
-          <span>Audit Trail</span>
-        </button>
-      </div>
+          <button
+            onClick={() => handleTabChange('settings')}
+            className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+              activeTab === 'settings'
+                ? 'bg-[#8B4513] text-white shadow-xs'
+                : 'text-[#7C6053] hover:text-[#361B0E] hover:bg-white/50'
+            }`}
+          >
+            <Sliders size={15} />
+            <span>Store & POS Config</span>
+          </button>
+
+          <button
+            onClick={() => handleTabChange('logs')}
+            className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+              activeTab === 'logs'
+                ? 'bg-[#8B4513] text-white shadow-xs'
+                : 'text-[#7C6053] hover:text-[#361B0E] hover:bg-white/50'
+            }`}
+          >
+            <Activity size={15} />
+            <span>Audit Trail</span>
+          </button>
+        </div>
+      )}
 
       {loading ? (
         <div className="bg-white rounded-3xl p-12 text-center border border-[#EADBCE]">
@@ -788,7 +877,7 @@ export default function AdminDashboard() {
           {/* ========================================================================= */}
           {/* 1. ORDERS TAB */}
           {/* ========================================================================= */}
-          {activeTab === 'orders' && isOnline && (
+          {(isOrdersMode || activeTab === 'orders') && isOnline && (
             <div className="space-y-4">
               {/* Filter and Search Bar */}
               <div className="bg-white p-4 rounded-2xl border border-[#EADBCE] shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -941,7 +1030,7 @@ export default function AdminDashboard() {
           {/* ========================================================================= */}
           {/* 2. STAFF & ACCESS TAB */}
           {/* ========================================================================= */}
-          {activeTab === 'workers' && (
+          {!isOrdersMode && activeTab === 'workers' && (
             <div className="space-y-6">
               {/* Pending Signup Approvals Banner */}
               {pendingWorkers.length > 0 && (
@@ -1075,7 +1164,7 @@ export default function AdminDashboard() {
           {/* ========================================================================= */}
           {/* 3. CATEGORIES TAB */}
           {/* ========================================================================= */}
-          {activeTab === 'categories' && (
+          {!isOrdersMode && activeTab === 'categories' && (
             <div className="space-y-6">
               {/* Category Creator / Editor */}
               <div className="bg-white p-5 rounded-2xl border border-[#EADBCE] shadow-xs">
@@ -1204,7 +1293,7 @@ export default function AdminDashboard() {
           {/* ========================================================================= */}
           {/* 4. HERO BANNERS TAB */}
           {/* ========================================================================= */}
-          {activeTab === 'hero' && isOnline && (
+          {!isOrdersMode && activeTab === 'hero' && isOnline && (
             <div className="space-y-6">
               {/* Add / Edit Banner Form */}
               <div id="hero-slide-form" className="bg-white p-5 rounded-2xl border border-[#EADBCE] shadow-xs">
@@ -1367,7 +1456,7 @@ export default function AdminDashboard() {
           {/* ========================================================================= */}
           {/* 5. STORE & POS SETTINGS TAB */}
           {/* ========================================================================= */}
-          {activeTab === 'settings' && (
+          {!isOrdersMode && activeTab === 'settings' && (
             <form onSubmit={handleSaveStoreSettings} className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Left Card: Digital Payments & Store Contact */}
@@ -1577,7 +1666,7 @@ export default function AdminDashboard() {
           {/* ========================================================================= */}
           {/* 6. AUDIT TRAIL TAB */}
           {/* ========================================================================= */}
-          {activeTab === 'logs' && (
+          {!isOrdersMode && activeTab === 'logs' && (
             <div className="space-y-4">
               <div className="bg-white p-4 rounded-2xl border border-[#EADBCE] shadow-xs flex items-center justify-between gap-3">
                 <div className="relative w-full sm:w-80">

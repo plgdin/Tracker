@@ -520,37 +520,46 @@ export const db = {
 
   // Audit Logs
   async getAuditLogs(): Promise<AuditLog[]> {
+    const currentStore = useAppStore.getState().storeType || 'online';
     const useSupabase = await getUseSupabase();
     if (useSupabase && dbSupabase) {
       try {
         const { data, error } = await withTimeout(
-          dbSupabase.from('audit_logs').select('*').eq('store_type', useAppStore.getState().storeType).order('created_at', { ascending: false })
+          dbSupabase
+            .from('audit_logs')
+            .select('*')
+            .or(`store_type.eq.${currentStore},store_type.is.null`)
+            .order('created_at', { ascending: false })
         );
-        if (!error && data) {
+        if (!error && data && data.length > 0) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          return data.map((log: any) => ({
+          const mappedLogs = data.map((log: any) => ({
             id: log.id,
-            worker_email: log.details?.worker_email || 'worker@example.com',
+            worker_email: log.details?.worker_email || log.details?.worker_name || log.worker_email || 'Staff',
             action: log.action,
             details: log.details || {},
             created_at: log.created_at
           }));
+          setLocal(`tracker_audit_logs_${currentStore}`, mappedLogs.slice(0, 100));
+          return mappedLogs;
         }
       } catch (e) {
         console.warn('Supabase audit logs fetch failed', e);
       }
     }
-    return getLocal<AuditLog[]>(`tracker_audit_logs_${useAppStore.getState().storeType}`, []);
+    return getLocal<AuditLog[]>(`tracker_audit_logs_${currentStore}`, []);
   },
 
   async addAuditLog(action: string, itemName: string, details: Record<string, unknown> = {}): Promise<AuditLog> {
     const userState = useAuthStore.getState();
-    const email = userState.user?.email || localStorage.getItem('admin_username') || 'admin';
+    const email = userState.profile?.email || userState.user?.email || userState.profile?.name || localStorage.getItem('admin_username') || 'Staff';
+    const staffName = userState.profile?.name || email;
+    const currentStore = useAppStore.getState().storeType || 'online';
     const newLog: AuditLog = {
       id: generateId(),
       worker_email: email,
       action,
-      details: { item_name: itemName, ...details },
+      details: { item_name: itemName, worker_email: email, worker_name: staffName, ...details },
       created_at: new Date().toISOString()
     };
 
@@ -560,9 +569,11 @@ export const db = {
         const { data: userData } = await withTimeout(dbSupabase.auth.getUser());
         await withTimeout(
           dbSupabase.from('audit_logs').insert([{
+            user_id: userData?.user?.id,
             worker_id: userData?.user?.id,
             action,
-            details: { item_name: itemName, worker_email: email, ...details }
+            details: { item_name: itemName, worker_email: email, worker_name: staffName, ...details },
+            store_type: currentStore
           }])
         );
       } catch (e) {
@@ -570,9 +581,9 @@ export const db = {
       }
     }
 
-    const logs = getLocal<AuditLog[]>(`tracker_audit_logs_${useAppStore.getState().storeType}`, []);
+    const logs = getLocal<AuditLog[]>(`tracker_audit_logs_${currentStore}`, []);
     logs.unshift(newLog);
-    setLocal(`tracker_audit_logs_${useAppStore.getState().storeType}`, logs.slice(0, 100));
+    setLocal(`tracker_audit_logs_${currentStore}`, logs.slice(0, 100));
     return newLog;
   },
 

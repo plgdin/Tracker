@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   ShoppingBag, 
@@ -43,7 +44,7 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Smooth hysteresis-based scroll detector (triggers at 25px, releases below 10px)
-  const scrolled = useScroll(25);
+  const scrolled = useScroll(30);
 
   useEffect(() => {
     setLocalQuery(searchQuery);
@@ -70,31 +71,58 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
   };
 
   return (
-    <header
-      className="sticky top-0 z-50 w-full h-20 pointer-events-none"
+    <>
+      <header
+      className="fixed top-0 left-0 right-0 z-50 w-full pointer-events-none"
     >
-      {/* Floating Animated Pill Card */}
-      <div
-        className={cn(
-          'pointer-events-auto transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[width,max-width,transform,border-radius,height,margin]',
-          scrolled && !isMobileMenuOpen
-            ? 'w-[94%] max-w-5xl mx-auto mt-3 h-14 rounded-full border border-[#5C2E17] bg-[#361B0E]/95 supports-[backdrop-filter]:bg-[#361B0E]/90 backdrop-blur-md shadow-2xl shadow-black/35 px-4 sm:px-6'
-            : 'w-full max-w-full mx-auto mt-0 h-20 rounded-none border-b border-[#522914] bg-[#361B0E] shadow-sm px-4 sm:px-6 lg:px-8'
-        )}
-      >
+      {/* Floating Animated Pill Card with Smooth Spring Physics */}
+        <motion.div
+          className="pointer-events-auto mx-auto border"
+          initial={false}
+          animate={{
+            width: scrolled && !isMobileMenuOpen ? '94%' : '100%',
+            maxWidth: scrolled && !isMobileMenuOpen ? '64rem' : '100%',
+            marginTop: scrolled && !isMobileMenuOpen ? 12 : 0,
+            height: scrolled && !isMobileMenuOpen ? 58 : 80,
+            borderRadius: scrolled && !isMobileMenuOpen ? 9999 : 0,
+            backgroundColor: scrolled && !isMobileMenuOpen ? 'rgba(54, 27, 14, 0.94)' : 'rgba(54, 27, 14, 1)',
+            borderColor: scrolled && !isMobileMenuOpen ? '#5C2E17' : '#522914',
+            boxShadow: scrolled && !isMobileMenuOpen 
+              ? '0 20px 35px -10px rgba(0, 0, 0, 0.5)' 
+              : '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+            paddingLeft: scrolled && !isMobileMenuOpen ? 24 : 32,
+            paddingRight: scrolled && !isMobileMenuOpen ? 24 : 32,
+          }}
+          transition={{
+            type: 'spring',
+            stiffness: 260,
+            damping: 28,
+            mass: 0.6,
+          }}
+          style={{
+            backdropFilter: scrolled && !isMobileMenuOpen ? 'blur(16px)' : 'none',
+            WebkitBackdropFilter: scrolled && !isMobileMenuOpen ? 'blur(16px)' : 'none',
+          }}
+        >
         <div className="w-full h-full flex items-center justify-between">
           
           {/* Brand Logo in Warm Cream on Dark Chocolate */}
           <Link to="/" className="flex items-center gap-2 group shrink-0">
-            <span 
+            <motion.span 
               id="storefront-navbar-logo"
-              className={cn(
-                'font-serif font-normal tracking-tight text-[#F9F4EE] italic group-hover:text-[#EAD9CF] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] inline-block',
-                scrolled && !isMobileMenuOpen ? 'text-2xl sm:text-3xl' : 'text-3xl sm:text-4xl'
-              )}
+              className="font-serif font-normal tracking-tight text-[#F9F4EE] italic group-hover:text-[#EAD9CF] inline-block origin-left select-none text-2xl sm:text-3xl"
+              initial={false}
+              animate={{
+                scale: scrolled && !isMobileMenuOpen ? 0.92 : 1,
+              }}
+              transition={{
+                type: 'spring',
+                stiffness: 260,
+                damping: 28,
+              }}
             >
               {settings.storeName || 'NayaKart'}
-            </span>
+            </motion.span>
           </Link>
 
           {/* Desktop Center Navigation Links */}
@@ -133,6 +161,17 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
 
           {/* Right Action Icons & Controls */}
           <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+            {/* Quick Search Button (Mobile & Desktop) */}
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent('open-storefront-search'))}
+              className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#4A2818] hover:bg-[#5C2E17] text-[#F9F4EE] border border-[#6B371B] transition-all shadow-xs active:scale-95 cursor-pointer"
+              aria-label="Open Search"
+              title="Search baking supplies (/ or ⌘K)"
+            >
+              <Search className="w-4 h-4 text-[#EAD9CF]" />
+            </button>
+
             {/* Cart Button Pill in Warm Biscuit Contrast */}
             <button
               onClick={() => setIsCartOpen(true)}
@@ -190,7 +229,7 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
 
           </div>
         </div>
-      </div>
+        </motion.div>
 
       {/* Mobile Slide-down Menu in Rich Cocoa */}
       <div
@@ -314,5 +353,6 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
         </div>
       </div>
     </header>
-  );
+      <div className="h-20 w-full shrink-0 pointer-events-none" aria-hidden="true" />
+    </>);
 };

@@ -20,12 +20,12 @@ export default function Toast() {
     <div 
       role="status"
       aria-live="polite"
-      className="toast-pill-wrapper"
+      className="toast-pill-wrapper fixed bottom-20 md:bottom-8 left-1/2 -translate-x-1/2 z-[9999] pointer-events-auto select-none"
       style={{
-        animation: `toast-slide-up-down-${animId} 6.5s cubic-bezier(0.25, 1, 0.5, 1) forwards`
+        animation: `toast-slide-up-${animId} 4.5s cubic-bezier(0.22, 1, 0.36, 1) forwards`
       }}
     >
-      <div className="toast-pill !bg-[#361B0E] !text-[#F9F4EE] !border-[#E8D8CC] !py-2.5 !px-4 shadow-2xl flex items-center gap-2.5 rounded-full">
+      <div className="toast-pill !bg-[#361B0E] !text-[#F9F4EE] !border-[#E8D8CC] !py-2.5 !px-4.5 shadow-2xl flex items-center gap-2.5 rounded-full border border-[#522914]">
         <Sparkles size={16} className="text-[#EAD9CF] shrink-0" />
         <span className="text-xs sm:text-sm font-medium pr-1">{message}</span>
         
@@ -37,7 +37,7 @@ export default function Toast() {
               action.onClick();
               hideToast();
             }}
-            className="px-3 py-1 bg-[#EAD9CF] hover:bg-white text-[#361B0E] font-bold text-xs rounded-full transition-all active:scale-95 shadow-xs"
+            className="px-3 py-1 bg-[#EAD9CF] hover:bg-white text-[#361B0E] font-bold text-xs rounded-full transition-all active:scale-95 shadow-xs cursor-pointer"
           >
             {action.label}
           </button>
@@ -46,7 +46,7 @@ export default function Toast() {
         <button
           type="button"
           onClick={hideToast}
-          className="text-[#EAD9CF]/60 hover:text-white p-1 rounded-full transition-colors ml-1"
+          className="text-[#EAD9CF]/60 hover:text-white p-1 rounded-full transition-colors ml-1 cursor-pointer"
           aria-label="Dismiss notification"
         >
           <X size={14} />
@@ -54,21 +54,21 @@ export default function Toast() {
       </div>
 
       <style>{`
-        @keyframes toast-slide-up-down-${animId} {
+        @keyframes toast-slide-up-${animId} {
           0% {
-            transform: translateX(-50%) translateY(-100px);
+            transform: translateX(-50%) translateY(60px);
             opacity: 0;
           }
-          6% {
+          8% {
             transform: translateX(-50%) translateY(0);
             opacity: 1;
           }
-          92% {
+          90% {
             transform: translateX(-50%) translateY(0);
             opacity: 1;
           }
           100% {
-            transform: translateX(-50%) translateY(-100px);
+            transform: translateX(-50%) translateY(60px);
             opacity: 0;
           }
         }

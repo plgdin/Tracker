@@ -32,10 +32,12 @@ import OfflineLedger from './pages/offline/Ledger';
 
 import Profile from './pages/Profile';
 import Receipt from './pages/Receipt';
+import ScrollToTop from './components/ScrollToTop';
 
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <CartProvider>
         <Toast />
         <Routes>
@@ -82,10 +84,11 @@ function App() {
                 <Routes>
                   <Route path="/" element={<Layout />}>
                     <Route index element={<OfflineDashboard />} />
+                    <Route path="orders" element={<Navigate to="../dashboard" replace />} />
                     <Route path="inventory" element={<OfflineInventory />} />
                     <Route path="settings" element={<OfflineSettings />} />
                     <Route path="add-item" element={<OfflineAddItem />} />
-                    <Route path="dashboard" element={<OfflineAdminDashboard />} />
+                    <Route path="dashboard" element={<OfflineAdminDashboard isOrdersOnly={false} />} />
                     <Route path="ledger" element={<OfflineLedger />} />
                   </Route>
                 </Routes>
@@ -101,10 +104,11 @@ function App() {
                 <Routes>
                   <Route path="/" element={<Layout />}>
                     <Route index element={<OnlineDashboard />} />
+                    <Route path="orders" element={<OnlineAdminDashboard isOrdersOnly={true} />} />
                     <Route path="inventory" element={<OnlineInventory />} />
                     <Route path="settings" element={<OnlineSettings />} />
                     <Route path="add-item" element={<OnlineAddItem />} />
-                    <Route path="dashboard" element={<OnlineAdminDashboard />} />
+                    <Route path="dashboard" element={<OnlineAdminDashboard isOrdersOnly={false} />} />
                     <Route path="ledger" element={<OnlineLedger />} />
                   </Route>
                 </Routes>
