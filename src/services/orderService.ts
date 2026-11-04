@@ -116,7 +116,7 @@ export const orderService = {
     }
 
     // Atomic order ID via stanes db RPC or fallback
-    let orderNumber = `ORD-${Date.now().toString(36).toUpperCase()}`;
+    let orderNumber: string;
     try {
       orderNumber = await db.generateOrderId();
     } catch {
@@ -195,22 +195,12 @@ export const orderService = {
 
   generateReceiptUrl(order: Order): string {
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
-    const receiptItems = order.items.map((it) => ({
-      id: it.productId || it.id,
-      name: it.productName,
-      price: it.unitPrice.toString(),
-      quantity: it.quantity,
-      gstPercentage: 0
-    }));
-
-    const itemsParam = encodeURIComponent(JSON.stringify(receiptItems));
     const phoneParam = encodeURIComponent(order.customerPhone);
-    const emailParam = '';
     const deliveryParam = encodeURIComponent(order.pickupPreference.toLowerCase().includes('delivery') ? 'delivery' : 'pickup');
-    const addressParam = encodeURIComponent(order.pickupPreference || 'Store Pickup');
-    const notesParam = encodeURIComponent(order.notes || '');
+    const nameParam = encodeURIComponent(order.customerName);
+    const amountParam = Number(order.total).toFixed(2);
 
-    return `${origin}/receipt?order=${order.orderNumber}&amount=${Number(order.total).toFixed(2)}&name=${encodeURIComponent(order.customerName)}&phone=${phoneParam}&email=${emailParam}&delivery=${deliveryParam}&address=${addressParam}&notes=${notesParam}&items=${itemsParam}`;
+    return `${origin}/receipt?order=${order.orderNumber}&amount=${amountParam}&name=${nameParam}&phone=${phoneParam}&delivery=${deliveryParam}`;
   },
 
   generateWhatsAppUrl(order: Order, targetPhoneNumber?: string): string {

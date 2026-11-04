@@ -154,7 +154,7 @@ body::before {
   justify-content: space-between;
   gap: 0.75rem;
   box-shadow: var(--soft-shadow);
-  animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  animation: slideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
   will-change: transform, opacity;
 }
 
@@ -628,13 +628,12 @@ select.input-field {
   font-size: 2rem;
   color: var(--color-primary);
   margin-top: 1rem;
-  animation: bounce 2s infinite;
+  animation: floatSubtle 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
-@keyframes bounce {
-  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-8px); }
-  60% { transform: translateY(-4px); }
+@keyframes floatSubtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
 }
 
 /* Badge styles */
@@ -844,13 +843,13 @@ select.input-field {
   align-items: center;
   gap: 0.5rem;
   box-shadow: 0 10px 30px rgba(74, 40, 24, 0.15);
-  animation: toastBounceIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  animation: toastSlideUpIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
   cursor: pointer;
   white-space: nowrap;
   will-change: transform, opacity;
 }
 
-@keyframes toastBounceIn {
+@keyframes toastSlideUpIn {
   0% {
     transform: translateY(25px) scale(0.8) translate3d(0, 0, 0);
     opacity: 0;
@@ -861,8 +860,8 @@ select.input-field {
   }
 }
 
-/* Thumbs Up cartoon hand bounce */
-@keyframes bounceUp {
+/* Thumbs Up cartoon hand gentle bob */
+@keyframes mascotBob {
   0% {
     transform: translateY(2px) scale(0.98);
   }
@@ -873,7 +872,7 @@ select.input-field {
 
 .thumbs-up-arm {
   transform-origin: 50px 48px;
-  animation: bounceUp 0.4s ease-in-out infinite alternate;
+  animation: mascotBob 0.6s ease-in-out infinite alternate;
 }
 
 @media (prefers-reduced-motion: reduce) {

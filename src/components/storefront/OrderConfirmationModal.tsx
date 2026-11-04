@@ -25,7 +25,7 @@ export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-[#361B0E]/50 backdrop-blur-sm animate-in fade-in duration-200">
       
       <div 
-        className="relative w-full max-w-lg bg-white rounded-[2.5rem] border border-[#E8D8CC] shadow-2xl p-6 sm:p-8 text-center my-auto animate-in zoom-in-95 duration-200"
+        className="relative w-full max-w-lg bg-white rounded-[2.5rem] border border-[#E8D8CC] shadow-2xl p-6 sm:p-8 text-center my-auto animate-in zoom-in-95 duration-200 max-h-[90dvh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}

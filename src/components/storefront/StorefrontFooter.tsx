@@ -134,7 +134,7 @@ export const StorefrontFooter: React.FC<StorefrontFooterProps> = ({ settings, ca
 
       {/* Bottom Sub-footer Bar */}
       <div className="border-t border-[#4A2818] bg-[#2A1308]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#C5B3A6]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-[max(5.5rem,calc(env(safe-area-inset-bottom)+4.5rem))] sm:py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#C5B3A6]">
           <p>© {new Date().getFullYear()} {storeName}. All rights reserved.</p>
           <div className="flex items-center gap-6">
             <span className="flex items-center gap-1">

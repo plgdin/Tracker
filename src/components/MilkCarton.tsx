@@ -135,7 +135,7 @@ export default function MilkCarton({ daysRemaining, winking = false, thumbsUp = 
 
       {/* Thumbs Up Hand SVG (Only when thumbsUp is true) */}
       {thumbsUp && (
-        <g className="thumbs-up-arm" style={{ animation: 'bounceUp 0.6s ease infinite alternate' }}>
+        <g className="thumbs-up-arm" style={{ animation: 'mascotBob 0.6s ease infinite alternate' }}>
           {/* Arm sleeve */}
           <path 
             d="M56 46C60 46 64 44 65 42" 

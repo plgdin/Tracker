@@ -23,6 +23,22 @@
 html, body {
   margin: 0;
   padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Prevent iOS Safari abrupt viewport zoom on input focus */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="password"],
+  input[type="search"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
 }
 
 /* Strictly remove default browser underline across ALL links, buttons, and text */
@@ -343,14 +359,13 @@ html {
   }
 }
 
-@keyframes bounceIn {
+@keyframes scaleInSmooth {
   0% {
-    transform: scale(0);
-  }
-  50% {
-    transform: scale(1.2);
+    opacity: 0;
+    transform: scale(0.92);
   }
   100% {
+    opacity: 1;
     transform: scale(1);
   }
 }
@@ -365,15 +380,15 @@ html {
 }
 
 .animate-fade-in-up {
-  animation: fadeInUp 0.6s ease-out forwards;
+  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-slide-in-right {
-  animation: slideInRight 0.3s ease-out forwards;
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.animate-bounce-in {
-  animation: bounceIn 0.5s ease-out forwards;
+.animate-scale-in {
+  animation: scaleInSmooth 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-pulse-soft {

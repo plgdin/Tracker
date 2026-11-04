@@ -28,7 +28,7 @@ export const productService = {
    */
   async getAll(): Promise<Product[]> {
     try {
-      const items: Item[] = await db.getItems();
+      const items: Item[] = await db.getItems('online');
       if (items && items.length > 0) {
         const mapped: Product[] = items.map((item: Item) => {
           let extra: Record<string, any> = {};

@@ -36,9 +36,9 @@ ON online_orders FOR INSERT
 TO public, anon, authenticated
 WITH CHECK (true);
 
--- Create policy to allow updating orders (status changes)
-CREATE POLICY "Admins and workers can update online_orders"
+-- Create policy to allow updating orders (status changes and customer UTR submissions)
+CREATE POLICY "Allow updating online_orders transaction and status"
 ON online_orders FOR UPDATE
-TO authenticated
+TO public, anon, authenticated
 USING (true)
 WITH CHECK (true);

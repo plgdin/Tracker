@@ -172,23 +172,24 @@ const deleteLocalCategory = (id: string): boolean => {
 // Main DB operations with fallback
 export const db = {
   // Items
-  async getItems(): Promise<Item[]> {
+  async getItems(storeTypeOverride?: 'online' | 'offline'): Promise<Item[]> {
+    const store = storeTypeOverride || useAppStore.getState().storeType;
     const useSupabase = await getUseSupabase();
     if (useSupabase && dbSupabase) {
       try {
         const { data, error } = await withTimeout(
-          dbSupabase.from('items').select('*').eq('store_type', useAppStore.getState().storeType).order('expiration_date', { ascending: true })
+          dbSupabase.from('items').select('*').eq('store_type', store).order('expiration_date', { ascending: true })
         );
         if (error) throw error;
         const result = data || [];
         // Cache the fresh items in local storage
-        setLocal(`tracker_items_${useAppStore.getState().storeType}`, result);
+        setLocal(`tracker_items_${store}`, result);
         return result;
       } catch (e) {
         console.warn('Supabase fetch failed, falling back to LocalStorage', e);
       }
     }
-    return getLocal<Item[]>(`tracker_items_${useAppStore.getState().storeType}`, []).sort(
+    return getLocal<Item[]>(`tracker_items_${store}`, []).sort(
       (a, b) => new Date(a.expiration_date).getTime() - new Date(b.expiration_date).getTime()
     );
   },
@@ -688,6 +689,22 @@ export const db = {
     return getLocal<OnlineOrder[]>('tracker_online_orders', [])
       .filter(o => o.user_id === userId)
       .sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime());
+  },
+
+  async getOnlineOrderById(orderId: string): Promise<OnlineOrder | null> {
+    const useSupabase = await getUseSupabase();
+    if (useSupabase && dbSupabase) {
+      try {
+        const { data, error } = await withTimeout(
+          dbSupabase.from('online_orders').select('*').eq('id', orderId).maybeSingle()
+        );
+        if (!error && data) return data;
+      } catch (e) {
+        console.warn('Supabase fetch failed for order by ID', e);
+      }
+    }
+    const local = getLocal<OnlineOrder[]>('tracker_online_orders', []);
+    return local.find(o => o.id === orderId) || null;
   },
 
   async generateOrderId(): Promise<string> {

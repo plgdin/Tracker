@@ -125,7 +125,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-cream pt-24 px-6 pb-16">
+    <div className="min-h-screen bg-cream pt-24 px-6 pb-[max(6rem,calc(env(safe-area-inset-bottom)+5rem))] md:pb-16">
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Back navigation */}
         <button

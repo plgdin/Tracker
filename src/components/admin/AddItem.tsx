@@ -5,7 +5,6 @@ import { db } from '../../lib/db';
 import type { Category } from '../../lib/db';
 import { useAuthStore } from '../../store/authStore';
 import { useToastStore } from '../../store/toastStore';
-import { useAppStore } from '../../store/appStore';
 import MilkCarton from '../../components/MilkCarton';
 
 export default function AddItem() {
@@ -13,7 +12,6 @@ export default function AddItem() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const editId = searchParams.get('edit');
-  const storeType = useAppStore((s: any) => s.storeType);
 
   const { profile } = useAuthStore();
   const [categories, setCategories] = useState<Category[]>([]);
@@ -37,11 +35,6 @@ export default function AddItem() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [success, setSuccess] = useState(false);
-
-  useEffect(() => {
-    const routeStoreType = window.location.pathname.includes('online') ? 'online' : 'offline';
-    setItemStoreType(routeStoreType);
-  }, [storeType]);
 
   useEffect(() => {
     async function loadData() {

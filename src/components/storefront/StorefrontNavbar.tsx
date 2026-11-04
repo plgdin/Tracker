@@ -165,7 +165,7 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
             <button
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent('open-storefront-search'))}
-              className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#4A2818] hover:bg-[#5C2E17] text-[#F9F4EE] border border-[#6B371B] transition-all shadow-xs active:scale-95 cursor-pointer"
+              className="flex items-center justify-center w-10 h-10 min-w-[40px] min-h-[40px] rounded-full bg-[#4A2818] hover:bg-[#5C2E17] text-[#F9F4EE] border border-[#6B371B] transition-all shadow-xs active:scale-95 cursor-pointer"
               aria-label="Open Search"
               title="Search baking supplies (/ or ⌘K)"
             >
@@ -175,7 +175,7 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
             {/* Cart Button Pill in Warm Biscuit Contrast */}
             <button
               onClick={() => setIsCartOpen(true)}
-              className="relative flex items-center gap-1.5 bg-[#F2E7DC] hover:bg-white text-[#4A2818] px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs font-semibold shadow-sm hover:shadow-md transition-all duration-200 active:scale-95"
+              className="relative flex items-center gap-1.5 bg-[#F2E7DC] hover:bg-white text-[#4A2818] px-3.5 py-2 sm:px-4 sm:py-2 min-h-[40px] rounded-full text-xs font-semibold shadow-sm hover:shadow-md transition-all duration-200 active:scale-95 cursor-pointer"
             >
               <ShoppingBag className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Cart</span>
@@ -221,7 +221,7 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
             {/* Mobile Menu Toggle Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 rounded-full text-[#F9F4EE] hover:bg-[#4A2818] border border-[#542B16] transition-colors"
+              className="md:hidden p-2.5 min-w-[40px] min-h-[40px] rounded-full text-[#F9F4EE] hover:bg-[#4A2818] border border-[#542B16] transition-colors flex items-center justify-center cursor-pointer"
               aria-label="Toggle Navigation Menu"
             >
               <MenuToggleIcon open={isMobileMenuOpen} className="size-4" duration={300} />
@@ -234,7 +234,7 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
       {/* Mobile Slide-down Menu in Rich Cocoa */}
       <div
         className={cn(
-          'pointer-events-auto fixed top-16 right-0 bottom-0 left-0 z-50 flex flex-col overflow-hidden border-y border-[#542B16] bg-[#361B0E]/98 backdrop-blur-md md:hidden transition-all duration-300',
+          'pointer-events-auto fixed top-16 right-0 bottom-0 left-0 z-50 flex flex-col overflow-hidden border-y border-[#542B16] bg-[#361B0E]/98 backdrop-blur-md md:hidden transition-all duration-300 pb-[max(1rem,env(safe-area-inset-bottom))]',
           isMobileMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'
         )}
       >
@@ -253,6 +253,7 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
                 value={localQuery}
                 onChange={(e) => setLocalQuery(e.target.value)}
                 placeholder="Search baking supplies..."
+                aria-label="Search baking supplies"
                 leftIcon={<Search className="text-[#EAD9CF]" />}
                 clearable
                 onClear={() => setLocalQuery('')}

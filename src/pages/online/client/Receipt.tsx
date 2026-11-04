@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, ShieldCheck, Send } from 'lucide-react';
-import Navbar from '../../../components/Navbar';
-import { useCartContext } from '../../../context/CartContext';
 import { db } from '../../../lib/db';
 
 // Helper for centering text in monospace line
@@ -78,18 +76,56 @@ interface ReceiptItem {
 export default function Receipt() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { setIsCartOpen } = useCartContext();
 
-  const [orderId, setOrderId] = useState('');
-  const [customerName, setCustomerName] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
-  const [customerAddress, setCustomerAddress] = useState('');
-  const [_customerEmail, setCustomerEmail] = useState('');
-  const [_notes, setNotes] = useState('');
-  const [_deliveryType, setDeliveryType] = useState('pickup');
-  const [orderDate, setOrderDate] = useState<Date>(new Date());
-  const [invoiceNo, setInvoiceNo] = useState('');
-  const [items, setItems] = useState<ReceiptItem[]>([]);
+  const queryParams = new URLSearchParams(typeof window !== 'undefined' ? location.search : '');
+  const initialOrdId = queryParams.get('order') || 'ORD-1001';
+
+  const [orderId] = useState(initialOrdId);
+  const [customerName, setCustomerName] = useState(() => queryParams.get('name') || 'Guest');
+  const [customerPhone, setCustomerPhone] = useState(() => queryParams.get('phone') || '');
+  const [customerAddress, setCustomerAddress] = useState(() => queryParams.get('address') || 'STORE PICKUP');
+  const [deliveryType, setDeliveryType] = useState(() => queryParams.get('delivery') || 'pickup');
+  const [notes, setNotes] = useState(() => queryParams.get('notes') || '');
+  const [orderDate, setOrderDate] = useState<Date>(() => new Date());
+  const [invoiceNo] = useState(() => {
+    const idHash = initialOrdId.replace(/[^0-9]/g, '');
+    return idHash ? idHash.substring(0, 4) : '1001';
+  });
+  const [items, setItems] = useState<ReceiptItem[]>(() => {
+    const itemsParam = queryParams.get('items');
+    if (itemsParam) {
+      try {
+        const parsed = JSON.parse(decodeURIComponent(itemsParam));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return parsed.map((item: any, idx: number) => {
+          const priceVal = parseFloat(String(item.price).replace(/[^0-9.]/g, '')) || 0;
+          const unitRate = Number(priceVal.toFixed(2));
+          const qty = Number(item.quantity) || 1;
+          const amount = Number((unitRate * qty).toFixed(2));
+          const mrp = Math.ceil(priceVal * 1.3);
+          const idNum = String(item.id).replace(/[^0-9]/g, '').substring(0, 8) || String(10000000 + idx);
+          const code = String(item.id).substring(0, 4).toUpperCase() || 'GEN';
+          return {
+            id: idNum,
+            name: String(item.name || '').toLowerCase(),
+            code,
+            quantity: qty,
+            mrp,
+            price: unitRate,
+            gst: item.gstPercentage || 0,
+            amount
+          };
+        });
+      } catch {
+        return [
+          { id: '16068487', name: 'cake', code: 'FD16', quantity: 1, mrp: 325, price: 250, gst: 0, amount: 250 }
+        ];
+      }
+    }
+    return [
+      { id: '16068487', name: 'cake', code: 'FD16', quantity: 1, mrp: 325, price: 250, gst: 0, amount: 250 }
+    ];
+  });
   const [transactionId, setTransactionId] = useState('');
   const [isSubmittingUtr, setIsSubmittingUtr] = useState(false);
   const [utrSubmitted, setUtrSubmitted] = useState(false);
@@ -104,76 +140,49 @@ export default function Receipt() {
   const [receiptF1, setReceiptF1] = useState('                         For :  NAYAKART');
   const [receiptF2, setReceiptF2] = useState('   Thank you . . .      Visit Again . . .');
 
-  // Default fallback items
-  const DEFAULT_ITEMS: ReceiptItem[] = [
-    { id: '16068487', name: 'cake', code: 'FD16', quantity: 1, mrp: 325, price: 250, gst: 0, amount: 250 }
-  ];
-
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const ordId = params.get('order');
     
     if (ordId) {
-      setOrderId(ordId);
-      setCustomerName(params.get('name') || 'Guest');
-      setCustomerPhone(params.get('phone') || '');
-      setCustomerAddress(params.get('address') || '');
-      setCustomerEmail(params.get('email') || '');
-      setDeliveryType(params.get('delivery') || 'pickup');
-      setNotes(params.get('notes') || '');
-      setOrderDate(new Date()); // Current checkout date/time
-      
-      // Invoice number: numeric part or default based on order ID hash
-      const idHash = ordId.replace(/[^0-9]/g, '');
-      const numCode = idHash ? idHash.substring(0, 4) : String(Math.floor(1000 + Math.random() * 9000));
-      setInvoiceNo(numCode || '1001');
-
-      const itemsParam = params.get('items');
-      if (itemsParam) {
-        try {
-          const parsed = JSON.parse(decodeURIComponent(itemsParam));
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const receiptItems = parsed.map((item: any, idx: number) => {
-            const gst = (item as any).gstPercentage || 0;
-            const priceVal = parseFloat(String(item.price).replace(/[^0-9.]/g, '')) || 0;
-            
-            const unitRate = Number(priceVal.toFixed(2));
-            const amount = Number((unitRate * item.quantity).toFixed(2));
-            const mrp = Math.ceil(priceVal * 1.3);
-
-            const idNum = String(item.id).replace(/[^0-9]/g, '').substring(0, 8) || String(10000000 + idx);
-            const code = String(item.id).substring(0, 4).toUpperCase() || 'GEN';
-
-            return {
-              id: idNum,
-              name: item.name.toLowerCase(),
-              code: code,
-              quantity: item.quantity,
-              mrp: mrp,
-              price: unitRate,
-              gst: gst,
-              amount: amount
-            };
-          });
-          setItems(receiptItems);
-        } catch (e) {
-          console.error('Failed to parse items param:', e);
-          setItems(DEFAULT_ITEMS);
+      // Fetch verified order from database
+      db.getOnlineOrderById(ordId).then((dbOrder) => {
+        if (dbOrder) {
+          if (dbOrder.customer_name) setCustomerName(dbOrder.customer_name);
+          if (dbOrder.customer_phone) setCustomerPhone(dbOrder.customer_phone);
+          if (dbOrder.address) setCustomerAddress(dbOrder.address);
+          if (dbOrder.delivery_type) setDeliveryType(dbOrder.delivery_type);
+          if (dbOrder.notes) setNotes(dbOrder.notes);
+          if (dbOrder.created_at) setOrderDate(new Date(dbOrder.created_at));
+          if (dbOrder.transaction_id) {
+            setTransactionId(dbOrder.transaction_id);
+            setUtrSubmitted(true);
+          }
+          if (Array.isArray(dbOrder.items) && dbOrder.items.length > 0) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const receiptItems = dbOrder.items.map((item: any, idx: number) => {
+              const priceVal = parseFloat(String(item.price).replace(/[^0-9.]/g, '')) || 0;
+              const unitRate = Number(priceVal.toFixed(2));
+              const qty = Number(item.quantity) || 1;
+              const amount = Number((unitRate * qty).toFixed(2));
+              const mrp = Math.ceil(priceVal * 1.3);
+              const idNum = String(item.id || item.productId || '').replace(/[^0-9]/g, '').substring(0, 8) || String(10000000 + idx);
+              const code = String(item.id || item.productId || '').substring(0, 4).toUpperCase() || 'GEN';
+              return {
+                id: idNum,
+                name: (item.name || item.productName || 'Item').toLowerCase(),
+                code,
+                quantity: qty,
+                mrp,
+                price: unitRate,
+                gst: Number(item.gst_percentage || item.gstPercentage) || 0,
+                amount
+              };
+            });
+            setItems(receiptItems);
+          }
         }
-      } else {
-        setItems(DEFAULT_ITEMS);
-      }
-    } else {
-      // Fallback values
-      setOrderId('ORD-1001');
-      setCustomerName('A');
-      setCustomerPhone('33333');
-      setCustomerAddress('STORE PICKUP');
-      setCustomerEmail('');
-      setDeliveryType('pickup');
-      setOrderDate(new Date());
-      setInvoiceNo('1001');
-      setItems(DEFAULT_ITEMS);
+      }).catch(console.error);
     }
 
     db.getStoreSettings('online').then(settings => {
@@ -250,6 +259,8 @@ export default function Receipt() {
     `Invoice No: ${invoiceNo.padEnd(10, ' ')} Date :${dateDMY}`,
     `Customer Name : ${customerName ? customerName.toUpperCase().substring(0, 25) : ''}`,
     `Address : ${customerAddress ? customerAddress.toUpperCase().substring(0, 30) : ''}`,
+    deliveryType ? `Delivery : ${deliveryType.toUpperCase().substring(0, 30)}` : '',
+    notes ? `Note : ${notes.substring(0, 32)}` : '',
     separator1,
     "SI  Item       Qty  MRP    Rate GST%  Amount",
     separator1,
@@ -321,18 +332,28 @@ export default function Receipt() {
       <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-[#4A2818]/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#361B0E]/40 rounded-full blur-[100px] pointer-events-none" />
 
-      <Navbar
-        onCartClick={() => setIsCartOpen(true)}
-        searchQuery={""}
-        setSearchQuery={() => {}}
-        selectedCategory={undefined}
-        setSelectedCategory={() => {}}
-        categories={[]}
-        inStockOnly={false}
-        setInStockOnly={() => {}}
-      />
+      {/* Branded Storefront Navigation Header */}
+      <header className="sticky top-0 z-40 bg-[#361B0E]/95 backdrop-blur-md border-b border-[#522914] px-4 sm:px-8 py-3.5 flex items-center justify-between non-printable shadow-md">
+        <Link to="/" className="flex items-center gap-2 group">
+          <span className="font-serif italic text-2xl sm:text-3xl text-[#F9F4EE] group-hover:text-[#EAD9CF] transition-colors">
+            NayaKart
+          </span>
+          <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#4A2818] text-[#EAD9CF] border border-[#6B371B] font-sans font-medium hidden sm:inline-block">
+            Order Receipt & Verification
+          </span>
+        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/products"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-[#F9F4EE] bg-[#4A2818] hover:bg-[#5C2E17] border border-[#6B371B] rounded-full transition-all shadow-xs"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 text-[#EAD9CF]" />
+            <span>Continue Shopping</span>
+          </Link>
+        </div>
+      </header>
 
-      <div className="flex-1 flex flex-col-reverse lg:flex-row items-center lg:items-start justify-center gap-12 max-w-6xl w-full mx-auto pt-32 pb-12 px-6 relative z-10">
+      <div className="flex-1 flex flex-col-reverse lg:flex-row items-center lg:items-start justify-center gap-12 max-w-6xl w-full mx-auto pt-8 sm:pt-12 pb-16 px-4 sm:px-6 relative z-10">
         
         {/* LEFT COLUMN: The Physical Monospace Thermal Receipt */}
         <div className="w-fit mx-auto relative transition-all duration-300 hover:scale-[1.01]">

@@ -20,7 +20,7 @@ export default function Toast() {
     <div 
       role="status"
       aria-live="polite"
-      className="toast-pill-wrapper fixed bottom-20 md:bottom-8 left-1/2 -translate-x-1/2 z-[9999] pointer-events-auto select-none"
+      className="toast-pill-wrapper fixed bottom-[max(5.5rem,calc(env(safe-area-inset-bottom)+5rem))] md:bottom-8 left-1/2 -translate-x-1/2 z-[9999] pointer-events-auto select-none"
       style={{
         animation: `toast-slide-up-${animId} 4.5s cubic-bezier(0.22, 1, 0.36, 1) forwards`
       }}

@@ -64,12 +64,11 @@ export default function AdminDashboard({ isOrdersOnly }: AdminDashboardProps = {
 
   // URL query parameter support for tab selection (e.g. ?tab=categories)
   const tabParam = searchParams.get('tab') as TabKey;
-  const initialTab: TabKey = isOrdersMode 
+  const activeTab: TabKey = isOrdersMode 
     ? 'orders' 
     : (tabParam && tabParam !== 'orders' ? tabParam : 'workers');
-  const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
 
-  const [showAccessDenied, setShowAccessDenied] = useState(false);
+  const showAccessDenied = Boolean(profile && profile.role !== 'admin' && location.key !== 'default');
   const [showWorkerPassword, setShowWorkerPassword] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -129,25 +128,12 @@ export default function AdminDashboard({ isOrdersOnly }: AdminDashboardProps = {
   const [workerEmail, setWorkerEmail] = useState('');
   const [workerPassword, setWorkerPassword] = useState('');
 
-  // Synchronize activeTab when URL param changes or mode changes
-  useEffect(() => {
-    if (isOrdersMode) {
-      if (activeTab !== 'orders') {
-        setActiveTab('orders');
-      }
-    } else {
-      const tabParam = searchParams.get('tab') as TabKey;
-      if (tabParam && tabParam !== 'orders' && tabParam !== activeTab) {
-        setActiveTab(tabParam);
-      } else if (activeTab === 'orders') {
-        setActiveTab('workers');
-      }
-    }
-  }, [isOrdersMode, searchParams]);
-
   const handleTabChange = (tab: TabKey) => {
-    setActiveTab(tab);
-    setSearchParams({ tab });
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('tab', tab);
+      return next;
+    });
   };
 
   const refreshData = async () => {
@@ -172,8 +158,7 @@ export default function AdminDashboard({ isOrdersOnly }: AdminDashboardProps = {
           ...localMatch, 
           id: fw.id, 
           email: fw.email || localMatch?.email || '', 
-          name: fw.name || localMatch?.name, 
-          password: localMatch?.password || 'User Managed' 
+          name: fw.name || localMatch?.name
         };
       });
 
@@ -217,12 +202,8 @@ export default function AdminDashboard({ isOrdersOnly }: AdminDashboardProps = {
   }, [profile, isOnline]);
 
   useEffect(() => {
-    if (profile && profile.role !== 'admin') {
-      if (location.key !== 'default') {
-        setShowAccessDenied(true);
-      } else {
-        signOut().then(() => navigate('/?error=access_denied', { replace: true }));
-      }
+    if (profile && profile.role !== 'admin' && location.key === 'default') {
+      signOut().then(() => navigate('/?error=access_denied', { replace: true }));
     }
   }, [profile, location.key, navigate, signOut]);
 
@@ -249,7 +230,7 @@ export default function AdminDashboard({ isOrdersOnly }: AdminDashboardProps = {
       return;
     }
 
-    const w = { id: 'w-' + Math.random().toString(36).substr(2, 9), email: em, password: pw, permissions: {}, created_at: new Date().toISOString() };
+    const w = { id: 'w-' + Math.random().toString(36).substr(2, 9), email: em, permissions: {}, created_at: new Date().toISOString() };
     const up = [...workers, w];
     setWorkers(up);
     localStorage.setItem('worker_accounts', JSON.stringify(up));
@@ -802,7 +783,7 @@ export default function AdminDashboard({ isOrdersOnly }: AdminDashboardProps = {
         <div className="flex items-center gap-1.5 p-1.5 bg-[#F5ECE3] rounded-2xl border border-[#EADBCE] mb-6 overflow-x-auto">
           <button
             onClick={() => handleTabChange('workers')}
-            className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+            className={`px-4 py-2 text-xs font-semibold rounded-xl min-h-[44px] transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
               activeTab === 'workers'
                 ? 'bg-[#8B4513] text-white shadow-xs'
                 : 'text-[#7C6053] hover:text-[#361B0E] hover:bg-white/50'
@@ -817,7 +798,7 @@ export default function AdminDashboard({ isOrdersOnly }: AdminDashboardProps = {
 
           <button
             onClick={() => handleTabChange('categories')}
-            className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+            className={`px-4 py-2 text-xs font-semibold rounded-xl min-h-[44px] transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
               activeTab === 'categories'
                 ? 'bg-[#8B4513] text-white shadow-xs'
                 : 'text-[#7C6053] hover:text-[#361B0E] hover:bg-white/50'
@@ -830,7 +811,7 @@ export default function AdminDashboard({ isOrdersOnly }: AdminDashboardProps = {
           {isOnline && (
             <button
               onClick={() => handleTabChange('hero')}
-              className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+              className={`px-4 py-2 text-xs font-semibold rounded-xl min-h-[44px] transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
                 activeTab === 'hero'
                   ? 'bg-[#8B4513] text-white shadow-xs'
                   : 'text-[#7C6053] hover:text-[#361B0E] hover:bg-white/50'
@@ -843,7 +824,7 @@ export default function AdminDashboard({ isOrdersOnly }: AdminDashboardProps = {
 
           <button
             onClick={() => handleTabChange('settings')}
-            className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+            className={`px-4 py-2 text-xs font-semibold rounded-xl min-h-[44px] transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
               activeTab === 'settings'
                 ? 'bg-[#8B4513] text-white shadow-xs'
                 : 'text-[#7C6053] hover:text-[#361B0E] hover:bg-white/50'
@@ -855,7 +836,7 @@ export default function AdminDashboard({ isOrdersOnly }: AdminDashboardProps = {
 
           <button
             onClick={() => handleTabChange('logs')}
-            className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+            className={`px-4 py-2 text-xs font-semibold rounded-xl min-h-[44px] transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
               activeTab === 'logs'
                 ? 'bg-[#8B4513] text-white shadow-xs'
                 : 'text-[#7C6053] hover:text-[#361B0E] hover:bg-white/50'
@@ -1141,7 +1122,7 @@ export default function AdminDashboard({ isOrdersOnly }: AdminDashboardProps = {
                               </span>
                             </div>
                             <p className="text-[11px] text-[#7C6053] font-mono mt-0.5">
-                              Password: {w.password || 'Managed by User'}
+                              Status: Verified Staff Account
                             </p>
                           </div>
                           <div>

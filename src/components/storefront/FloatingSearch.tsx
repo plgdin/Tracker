@@ -235,7 +235,7 @@ export const FloatingSearch: React.FC = () => {
           role="dialog"
           aria-modal="true"
           aria-label="Search Store"
-          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[calc(100vw-32px)] sm:w-[560px] md:w-[620px] max-h-[82vh] bg-[#FCFAF7] rounded-[2rem] shadow-2xl border border-[#E8D8CC] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200 motion-reduce:transition-none motion-reduce:animate-none"
+          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[calc(100vw-32px)] sm:w-[560px] md:w-[620px] max-h-[82dvh] bg-[#FCFAF7] rounded-[2rem] shadow-2xl border border-[#E8D8CC] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200 motion-reduce:transition-none motion-reduce:animate-none"
         >
           {/* Friendly Search Header Bar */}
           <form 
@@ -518,8 +518,8 @@ export const FloatingSearch: React.FC = () => {
         </div>
       )}
 
-      {/* Friendly, Accessible Floating Search Pill */}
-      <div className="fixed bottom-[max(5.5rem,calc(env(safe-area-inset-bottom)+5rem))] right-4 sm:bottom-8 sm:right-8 z-40">
+      {/* Friendly, Accessible Floating Search Pill (Desktop & Tablet) */}
+      <div className="hidden sm:block fixed bottom-8 right-8 z-40">
         <button
           type="button"
           onClick={() => setIsOpen((prev) => !prev)}

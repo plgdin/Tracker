@@ -101,12 +101,12 @@ const setLocal = <T>(key: string, value: T): void => {
 };
 
 const KEYS = {
-  purchases: `ledger_purchases_${useAppStore.getState().storeType}`,
-  sales: `ledger_sales_${useAppStore.getState().storeType}`,
-  customers: `ledger_customers_${useAppStore.getState().storeType}`,
-  payments: `ledger_payments_${useAppStore.getState().storeType}`,
-  inventory: `ledger_inventory_${useAppStore.getState().storeType}`,
-  brands: `ledger_brand_names_${useAppStore.getState().storeType}`,
+  get purchases() { return `ledger_purchases_${useAppStore.getState().storeType || 'offline'}`; },
+  get sales() { return `ledger_sales_${useAppStore.getState().storeType || 'offline'}`; },
+  get customers() { return `ledger_customers_${useAppStore.getState().storeType || 'offline'}`; },
+  get payments() { return `ledger_payments_${useAppStore.getState().storeType || 'offline'}`; },
+  get inventory() { return `ledger_inventory_${useAppStore.getState().storeType || 'offline'}`; },
+  get brands() { return `ledger_brand_names_${useAppStore.getState().storeType || 'offline'}`; },
 };
 
 // ── Derived helpers ───────────────────────────────────────────
@@ -404,9 +404,10 @@ export const ledgerDb = {
   // CUSTOMERS ------------------------------------------------
   async getCustomers(): Promise<Customer[]> {
     const useSupabase = await getUseSupabase();
+    const currentStore = useAppStore.getState().storeType || 'offline';
     if (useSupabase && dbSupabase) {
       try {
-        const { data, error } = await withTimeout(dbSupabase.from(`ledger_customers_${useAppStore.getState().storeType}`).select('*'));
+        const { data, error } = await withTimeout(dbSupabase.from('ledger_customers').select('*').eq('store_type', currentStore));
         if (error) throw error;
         if (data) {
           const sorted = data.sort((a, b) => b.outstanding_balance - a.outstanding_balance);
@@ -440,17 +441,18 @@ export const ledgerDb = {
     setLocal(KEYS.customers, list);
 
     const useSupabase = await getUseSupabase();
+    const currentStore = useAppStore.getState().storeType || 'offline';
     if (useSupabase && dbSupabase) {
       try {
-        const { data: existing } = await withTimeout(dbSupabase.from(`ledger_customers_${useAppStore.getState().storeType}`).select('id, outstanding_balance').ilike('name', name).maybeSingle());
+        const { data: existing } = await withTimeout(dbSupabase.from('ledger_customers').select('id, outstanding_balance').eq('store_type', currentStore).ilike('name', name).maybeSingle());
         if (existing) {
-          await withTimeout(dbSupabase.from(`ledger_customers_${useAppStore.getState().storeType}`).update({ 
+          await withTimeout(dbSupabase.from('ledger_customers').update({ 
             outstanding_balance: Math.max(0, r2(existing.outstanding_balance + balanceDelta)),
             ...(phone ? { phone } : {}),
             ...(purchaseDate ? { last_purchase_date: purchaseDate } : {})
           }).eq('id', existing.id));
         } else {
-          await withTimeout(dbSupabase.from(`ledger_customers_${useAppStore.getState().storeType}`).insert([{ name, phone, outstanding_balance: newBalance, last_purchase_date: purchaseDate , store_type: useAppStore.getState().storeType}]));
+          await withTimeout(dbSupabase.from('ledger_customers').insert([{ name, phone, outstanding_balance: newBalance, last_purchase_date: purchaseDate , store_type: currentStore}]));
         }
       } catch (e) { console.warn('Supabase upsertCustomer error', e); }
     }
@@ -463,9 +465,10 @@ export const ledgerDb = {
   // PAYMENTS -------------------------------------------------
   async getPayments(): Promise<LedgerPayment[]> {
     const useSupabase = await getUseSupabase();
+    const currentStore = useAppStore.getState().storeType || 'offline';
     if (useSupabase && dbSupabase) {
       try {
-        const { data, error } = await withTimeout(dbSupabase.from(`ledger_payments_${useAppStore.getState().storeType}`).select('*'));
+        const { data, error } = await withTimeout(dbSupabase.from('ledger_payments').select('*').eq('store_type', currentStore));
         if (error) throw error;
         if (data) {
           const sorted = data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
@@ -480,12 +483,13 @@ export const ledgerDb = {
 
   async addPayment(data: Omit<LedgerPayment, 'id' | 'created_at'>): Promise<LedgerPayment> {
     const useSupabase = await getUseSupabase();
+    const currentStore = useAppStore.getState().storeType || 'offline';
     const id = genId();
     const created_at = new Date().toISOString();
     
     if (useSupabase && dbSupabase) {
       try {
-        await withTimeout(dbSupabase.from(`ledger_payments_${useAppStore.getState().storeType}`).insert([{ ...data, store_type: useAppStore.getState().storeType }]));
+        await withTimeout(dbSupabase.from('ledger_payments').insert([{ ...data, store_type: currentStore }]));
       } catch (e) { console.warn('Supabase addPayment error', e); }
     }
 
@@ -500,9 +504,10 @@ export const ledgerDb = {
   // INVENTORY ------------------------------------------------
   async getInventory(): Promise<InventoryStock[]> {
     const useSupabase = await getUseSupabase();
+    const currentStore = useAppStore.getState().storeType || 'offline';
     if (useSupabase && dbSupabase) {
       try {
-        const { data, error } = await withTimeout(dbSupabase.from(`ledger_inventory_${useAppStore.getState().storeType}`).select('*'));
+        const { data, error } = await withTimeout(dbSupabase.from('ledger_inventory').select('*').eq('store_type', currentStore));
         if (error) throw error;
         if (data) {
           const sorted = data.sort((a, b) => a.stock - b.stock);
@@ -528,13 +533,14 @@ export const ledgerDb = {
     setLocal(KEYS.inventory, list);
 
     const useSupabase = await getUseSupabase();
+    const currentStore = useAppStore.getState().storeType || 'offline';
     if (useSupabase && dbSupabase) {
       try {
-        const { data: existing } = await withTimeout(dbSupabase.from(`ledger_inventory_${useAppStore.getState().storeType}`).select('stock').ilike('item_name', itemName).maybeSingle());
+        const { data: existing } = await withTimeout(dbSupabase.from('ledger_inventory').select('stock').eq('store_type', currentStore).ilike('item_name', itemName).maybeSingle());
         if (existing) {
-          await withTimeout(dbSupabase.from(`ledger_inventory_${useAppStore.getState().storeType}`).update({ stock: Math.max(0, r2(existing.stock + delta)), last_updated: new Date().toISOString() }).ilike('item_name', itemName));
+          await withTimeout(dbSupabase.from('ledger_inventory').update({ stock: Math.max(0, r2(existing.stock + delta)), last_updated: new Date().toISOString() }).eq('store_type', currentStore).ilike('item_name', itemName));
         } else if (delta > 0) {
-          await withTimeout(dbSupabase.from(`ledger_inventory_${useAppStore.getState().storeType}`).insert([{ item_name: itemName, stock: newStock , store_type: useAppStore.getState().storeType}]));
+          await withTimeout(dbSupabase.from('ledger_inventory').insert([{ item_name: itemName, stock: newStock , store_type: currentStore}]));
         }
       } catch (e) { console.warn('Supabase adjustStock error', e); }
     }

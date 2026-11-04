@@ -8,7 +8,16 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('error') === 'access_denied') {
+        window.history.replaceState({}, document.title, window.location.pathname);
+        return 'Access denied. You have been logged out.';
+      }
+    }
+    return '';
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mode, setMode] = useState<'login' | 'signup' | 'forgot'>('login');
   const [showPassword, setShowPassword] = useState(false);
@@ -17,12 +26,6 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     initialize();
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('error') === 'access_denied') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setError('Access denied. You have been logged out.');
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
   }, [initialize]);
 
   if (isLoading) {

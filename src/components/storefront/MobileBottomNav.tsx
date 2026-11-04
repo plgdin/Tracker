@@ -5,8 +5,8 @@ import { NavBar, type NavItem } from '../ui/tubelight-navbar';
 export function MobileBottomNav() {
   const location = useLocation();
 
-  // Hide on admin portal screens
-  if (location.pathname.startsWith('/admin')) {
+  // Hide on admin portal screens and receipt confirmation
+  if (location.pathname.startsWith('/admin') || location.pathname === '/receipt') {
     return null;
   }
 
@@ -15,7 +15,7 @@ export function MobileBottomNav() {
     { name: 'Products', url: '/products', icon: ShoppingBag },
     { name: 'Decors', url: '/products?category=cat-cake-decoration', icon: Sparkles },
     { name: 'Ingredients', url: '/products?category=cat-baking-ingredients', icon: Package },
-    { name: 'Counter', url: '/admin/login', icon: ShieldCheck },
+    { name: 'Counter', url: '/admin', icon: ShieldCheck },
   ];
 
   let activeItem = 'Home';

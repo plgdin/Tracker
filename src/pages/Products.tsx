@@ -33,14 +33,9 @@ export default function Products() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [settings, setSettings] = useState<StoreSettings>(INITIAL_SETTINGS);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const showSkeleton = useDeferredLoading(isLoading, 300);
 
   // Stale-While-Revalidate: instant cache display + background refetch on focus / reconnect
-  const { data: swrProducts } = useSWR<Product[]>(
+  const { data: swrProducts, isLoading: swrProductsLoading } = useSWR<Product[]>(
     'nayakart_active_products',
     () => productService.getActive(),
     { revalidateOnFocus: true, revalidateOnReconnect: true }
@@ -52,18 +47,10 @@ export default function Products() {
     { revalidateOnFocus: true, revalidateOnReconnect: true }
   );
 
-  useEffect(() => {
-    if (swrProducts) {
-      setAllProducts(swrProducts);
-      setIsLoading(false);
-    }
-  }, [swrProducts]);
-
-  useEffect(() => {
-    if (swrCategories) {
-      setCategories(swrCategories);
-    }
-  }, [swrCategories]);
+  const allProducts = swrProducts || [];
+  const categories = swrCategories || [];
+  const isLoading = swrProductsLoading && !swrProducts;
+  const showSkeleton = useDeferredLoading(isLoading, 300);
 
   // Filters State
   const initialCategory = searchParams.get('category') || 'all';
@@ -93,8 +80,8 @@ export default function Products() {
     setSearchQuery(urlQ);
   }, [searchParams]);
 
-  // Apply filters & sorting
-  useEffect(() => {
+  // Apply filters & sorting (derived via useMemo for instant zero-lag filtering)
+  const filteredProducts = useMemo(() => {
     let list = [...allProducts];
 
     // Category filter
@@ -152,7 +139,7 @@ export default function Products() {
         break;
     }
 
-    setFilteredProducts(list);
+    return list;
   }, [allProducts, selectedCategory, searchQuery, inStockOnly, selectedPricePreset, sortBy]);
 
   const handleCategorySelect = (catId: string) => {

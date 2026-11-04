@@ -114,6 +114,7 @@ export function useSWR<T>(
 
   return {
     data: data as T,
+    isLoading: data === undefined && !error,
     isValidating,
     error,
     mutate,

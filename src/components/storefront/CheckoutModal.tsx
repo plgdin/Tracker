@@ -89,8 +89,12 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ settings, onOrderS
       // 3. Close checkout and show confirmation
       setIsCheckoutOpen(false);
       onOrderSuccess(order, whatsappUrl);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Order creation failed:', err);
+      setErrors((prev) => ({
+        ...prev,
+        form: (err as Error)?.message || 'Unable to submit your order right now. Please check your connection and retry.'
+      }));
     } finally {
       setIsSubmitting(false);
     }
@@ -101,7 +105,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ settings, onOrderS
       
       {/* Modal Dialog */}
       <div 
-        className="relative w-full max-w-2xl bg-white rounded-[2.5rem] border border-[#E8D8CC] shadow-2xl overflow-hidden my-auto max-h-[90vh] flex flex-col"
+        className="relative w-full max-w-2xl bg-white rounded-[2.5rem] border border-[#E8D8CC] shadow-2xl overflow-hidden my-auto max-h-[90dvh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -140,6 +144,13 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ settings, onOrderS
               </div>
             </div>
           </div>
+
+          {errors.form && (
+            <div role="alert" className="p-3.5 bg-rose-50 text-rose-800 rounded-2xl border border-rose-200 text-xs font-semibold flex items-center gap-2">
+              <span>⚠️</span>
+              <span>{errors.form}</span>
+            </div>
+          )}
 
           <form id="checkout-form" onSubmit={handleSubmit} className="space-y-4">
             
@@ -276,7 +287,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ settings, onOrderS
         </div>
 
         {/* Footer Actions */}
-        <div className="p-5 sm:p-6 bg-[#F9F4EE] border-t border-[#E8D8CC] flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+        <div className="p-5 sm:p-6 bg-[#F9F4EE] border-t border-[#E8D8CC] flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
           <div className="text-xs text-[#7A6153] text-center sm:text-left">
             <span className="font-semibold text-[#4A2818]">Clicking Place Order</span> opens WhatsApp to send your request directly to the store!
           </div>

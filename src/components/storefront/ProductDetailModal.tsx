@@ -90,7 +90,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
       
       {/* Modal Dialog */}
       <div 
-        className="relative w-full max-w-3xl bg-white rounded-[2.5rem] border border-[#E8D8CC] shadow-2xl overflow-hidden my-auto"
+        className="relative w-full max-w-3xl bg-white rounded-[2.5rem] border border-[#E8D8CC] shadow-2xl overflow-y-auto max-h-[90dvh] my-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}

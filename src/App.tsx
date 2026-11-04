@@ -14,24 +14,17 @@ import AuthWrapper from './components/AuthWrapper';
 import Layout from './components/Layout';
 import AdminPortal from './pages/AdminPortal';
 
-// Online Admin from stanes
-import OnlineDashboard from './pages/online/admin/Dashboard';
-import OnlineInventory from './pages/online/admin/Inventory';
-import OnlineSettings from './pages/online/admin/Settings';
-import OnlineAddItem from './pages/online/admin/AddItem';
-import OnlineAdminDashboard from './pages/online/admin/AdminDashboard';
-import OnlineLedger from './pages/online/admin/Ledger';
-
-// Offline Admin from stanes
-import OfflineDashboard from './pages/offline/Dashboard';
-import OfflineInventory from './pages/offline/Inventory';
-import OfflineSettings from './pages/offline/Settings';
-import OfflineAddItem from './pages/offline/AddItem';
-import OfflineAdminDashboard from './pages/offline/AdminDashboard';
-import OfflineLedger from './pages/offline/Ledger';
+// Admin Components
+import AdminDashboardView from './components/admin/Dashboard';
+import AdminInventory from './components/admin/Inventory';
+import AdminSettings from './components/admin/Settings';
+import AdminAddItem from './components/admin/AddItem';
+import AdminManagementDesk from './components/admin/AdminDashboard';
+import AdminLedger from './components/admin/Ledger';
 
 import Profile from './pages/Profile';
 import Receipt from './pages/Receipt';
+import TermsAndConditions from './pages/TermsAndConditions';
 import ScrollToTop from './components/ScrollToTop';
 
 function App() {
@@ -75,41 +68,50 @@ function App() {
             path="/receipt"
             element={<Receipt />}
           />
+          <Route
+            path="/terms"
+            element={
+              <>
+                <MobileBottomNav />
+                <TermsAndConditions />
+              </>
+            }
+          />
 
-          {/* Offline Admin from stanes */}
+          {/* Offline Admin (Counter / POS) */}
           <Route
             path="/adminoffline/*"
             element={
               <AuthWrapper>
                 <Routes>
                   <Route path="/" element={<Layout />}>
-                    <Route index element={<OfflineDashboard />} />
+                    <Route index element={<AdminDashboardView />} />
                     <Route path="orders" element={<Navigate to="../dashboard" replace />} />
-                    <Route path="inventory" element={<OfflineInventory />} />
-                    <Route path="settings" element={<OfflineSettings />} />
-                    <Route path="add-item" element={<OfflineAddItem />} />
-                    <Route path="dashboard" element={<OfflineAdminDashboard isOrdersOnly={false} />} />
-                    <Route path="ledger" element={<OfflineLedger />} />
+                    <Route path="inventory" element={<AdminInventory />} />
+                    <Route path="settings" element={<AdminSettings />} />
+                    <Route path="add-item" element={<AdminAddItem />} />
+                    <Route path="dashboard" element={<AdminManagementDesk isOrdersOnly={false} />} />
+                    <Route path="ledger" element={<AdminLedger />} />
                   </Route>
                 </Routes>
               </AuthWrapper>
             }
           />
 
-          {/* Online Admin from stanes */}
+          {/* Online Admin (Storefront Management) */}
           <Route
             path="/adminonline/*"
             element={
               <AuthWrapper>
                 <Routes>
                   <Route path="/" element={<Layout />}>
-                    <Route index element={<OnlineDashboard />} />
-                    <Route path="orders" element={<OnlineAdminDashboard isOrdersOnly={true} />} />
-                    <Route path="inventory" element={<OnlineInventory />} />
-                    <Route path="settings" element={<OnlineSettings />} />
-                    <Route path="add-item" element={<OnlineAddItem />} />
-                    <Route path="dashboard" element={<OnlineAdminDashboard isOrdersOnly={false} />} />
-                    <Route path="ledger" element={<OnlineLedger />} />
+                    <Route index element={<AdminDashboardView />} />
+                    <Route path="orders" element={<AdminManagementDesk isOrdersOnly={true} />} />
+                    <Route path="inventory" element={<AdminInventory />} />
+                    <Route path="settings" element={<AdminSettings />} />
+                    <Route path="add-item" element={<AdminAddItem />} />
+                    <Route path="dashboard" element={<AdminManagementDesk isOrdersOnly={false} />} />
+                    <Route path="ledger" element={<AdminLedger />} />
                   </Route>
                 </Routes>
               </AuthWrapper>

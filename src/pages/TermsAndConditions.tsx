@@ -1,12 +1,8 @@
-import { useState } from "react";
-import Navbar from "@/components/Navbar";
-import CartDrawer from "@/components/CartDrawer";
 import { Link } from "react-router-dom";
 import { FileText, ShieldAlert, ArrowLeft } from "lucide-react";
+import { CartDrawer } from "@/components/storefront/CartDrawer";
 
 export default function TermsAndConditions() {
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
 
   const sections = [
     { id: "introduction", title: "1. Introduction & Acceptance" },
@@ -29,14 +25,26 @@ export default function TermsAndConditions() {
 
   return (
     <div className="min-h-screen bg-cream text-espresso flex flex-col font-sans">
-      <Navbar
-        onCartClick={() => setIsCartOpen(true)}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-      />
+      <header className="sticky top-0 z-40 bg-[#361B0E]/95 backdrop-blur-md border-b border-[#522914] px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-md">
+        <Link to="/" className="flex items-center gap-2 group">
+          <span className="font-serif italic text-2xl sm:text-3xl text-[#F9F4EE] group-hover:text-[#EAD9CF] transition-colors">
+            NayaKart
+          </span>
+          <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#4A2818] text-[#EAD9CF] border border-[#6B371B] font-sans font-medium hidden sm:inline-block">
+            Terms & Conditions
+          </span>
+        </Link>
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-[#F9F4EE] bg-[#4A2818] hover:bg-[#5C2E17] border border-[#6B371B] rounded-full transition-all shadow-xs"
+        >
+          <ArrowLeft className="w-3.5 h-3.5 text-[#EAD9CF]" />
+          <span>Back to Store</span>
+        </Link>
+      </header>
 
       {/* Main Content Area */}
-      <main className="flex-grow pt-28 pb-16 px-6 max-w-7xl mx-auto w-full">
+      <main className="flex-grow pt-8 pb-28 sm:pb-16 px-6 max-w-7xl mx-auto w-full">
         {/* Breadcrumbs */}
         <div className="mb-6 flex items-center gap-2 text-sm text-taupe">
           <Link to="/" className="hover:text-burnt-orange transition-colors flex items-center gap-1">
@@ -176,9 +184,9 @@ export default function TermsAndConditions() {
                 <h2 className="text-2xl font-bold text-espresso font-heading border-b border-espresso/10 pb-3 mb-4">
                   7. Limitation of Liability
                 </h2>
-                <div className="bg-espresso/5 border-l-4 border-burnt-orange p-4 rounded-r-xl mb-4 flex gap-3">
-                  <ShieldAlert className="w-6 h-6 text-burnt-orange shrink-0 mt-0.5" />
-                  <p className="text-sm text-espresso/90">
+                <div className="bg-[#4A2818]/5 border border-[#4A2818]/15 p-4.5 rounded-2xl mb-4 flex gap-3.5">
+                  <ShieldAlert className="w-5 h-5 text-burnt-orange shrink-0 mt-0.5" />
+                  <p className="text-sm text-espresso/90 leading-relaxed">
                     In no event shall NayaKart, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses.
                   </p>
                 </div>
@@ -270,7 +278,7 @@ export default function TermsAndConditions() {
         </div>
       </footer>
 
-      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      <CartDrawer />
     </div>
   );
 }

@@ -249,62 +249,65 @@ export default function Layout() {
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-28 md:pb-8">
         <Outlet />
       </main>
 
-      {/* Mobile-Only Bottom Navigation - Clean 5 tabs without duplicates */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#361B0E]/95 backdrop-blur-lg border-t border-[#522914] shadow-lg flex items-center justify-around py-2 px-1">
+      {/* Mobile-Only Bottom Navigation - iOS Safe Area Aware & HIG Compliant Touch Targets */}
+      <nav 
+        aria-label="Admin Navigation"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#361B0E]/95 backdrop-blur-lg border-t border-[#522914] shadow-2xl flex items-center justify-around pt-1.5 pb-[max(0.6rem,env(safe-area-inset-bottom))] px-2"
+      >
         <NavLink 
           to="." 
-          className={({ isActive }) => `flex flex-col items-center gap-1 text-[11px] font-semibold transition-colors ${isActive ? 'text-[#EAD9CF]' : 'text-[#D4A373]/70 hover:text-[#F9F4EE]'}`}
+          className={({ isActive }) => `flex flex-col items-center justify-center min-w-[50px] min-h-[44px] gap-1 text-[11px] font-semibold transition-colors ${isActive ? 'text-[#EAD9CF]' : 'text-[#D4A373]/70 hover:text-[#F9F4EE]'}`}
           end
         >
-          <Home size={20} />
+          <Home size={19} />
           <span>Dashboard</span>
         </NavLink>
 
         {isOnline && profile?.role === 'admin' ? (
           <NavLink 
             to="orders" 
-            className={({ isActive }) => `flex flex-col items-center gap-1 text-[11px] font-semibold transition-colors ${isActive || location.pathname.endsWith('/orders') || location.search.includes('tab=orders') ? 'text-[#EAD9CF]' : 'text-[#D4A373]/70 hover:text-[#F9F4EE]'}`}
+            className={({ isActive }) => `flex flex-col items-center justify-center min-w-[50px] min-h-[44px] gap-1 text-[11px] font-semibold transition-colors ${isActive || location.pathname.endsWith('/orders') || location.search.includes('tab=orders') ? 'text-[#EAD9CF]' : 'text-[#D4A373]/70 hover:text-[#F9F4EE]'}`}
           >
-            <ShoppingCart size={20} />
+            <ShoppingCart size={19} />
             <span>Orders</span>
           </NavLink>
         ) : !isOnline && profile?.role === 'admin' ? (
           <NavLink 
             to="ledger" 
-            className={({ isActive }) => `flex flex-col items-center gap-1 text-[11px] font-semibold transition-colors ${isActive ? 'text-[#EAD9CF]' : 'text-[#D4A373]/70 hover:text-[#F9F4EE]'}`}
+            className={({ isActive }) => `flex flex-col items-center justify-center min-w-[50px] min-h-[44px] gap-1 text-[11px] font-semibold transition-colors ${isActive ? 'text-[#EAD9CF]' : 'text-[#D4A373]/70 hover:text-[#F9F4EE]'}`}
           >
-            <BookOpen size={20} />
+            <BookOpen size={19} />
             <span>Ledger</span>
           </NavLink>
         ) : null}
 
         <NavLink 
           to="inventory" 
-          className={({ isActive }) => `flex flex-col items-center gap-1 text-[11px] font-semibold transition-colors ${isActive ? 'text-[#EAD9CF]' : 'text-[#D4A373]/70 hover:text-[#F9F4EE]'}`}
+          className={({ isActive }) => `flex flex-col items-center justify-center min-w-[50px] min-h-[44px] gap-1 text-[11px] font-semibold transition-colors ${isActive ? 'text-[#EAD9CF]' : 'text-[#D4A373]/70 hover:text-[#F9F4EE]'}`}
         >
-          <List size={20} />
+          <List size={19} />
           <span>Inventory</span>
         </NavLink>
 
         {profile?.role === 'admin' && (
           <NavLink 
             to="dashboard" 
-            className={({ isActive }) => `flex flex-col items-center gap-1 text-[11px] font-semibold transition-colors ${isActive && !location.pathname.endsWith('/orders') && !location.search.includes('tab=orders') ? 'text-[#EAD9CF]' : 'text-[#D4A373]/70 hover:text-[#F9F4EE]'}`}
+            className={({ isActive }) => `flex flex-col items-center justify-center min-w-[50px] min-h-[44px] gap-1 text-[11px] font-semibold transition-colors ${isActive && !location.pathname.endsWith('/orders') && !location.search.includes('tab=orders') ? 'text-[#EAD9CF]' : 'text-[#D4A373]/70 hover:text-[#F9F4EE]'}`}
           >
-            <Shield size={20} />
+            <Shield size={19} />
             <span>Admin</span>
           </NavLink>
         )}
 
         <NavLink 
           to="settings" 
-          className={({ isActive }) => `flex flex-col items-center gap-1 text-[11px] font-semibold transition-colors ${isActive ? 'text-[#EAD9CF]' : 'text-[#D4A373]/70 hover:text-[#F9F4EE]'}`}
+          className={({ isActive }) => `flex flex-col items-center justify-center min-w-[50px] min-h-[44px] gap-1 text-[11px] font-semibold transition-colors ${isActive ? 'text-[#EAD9CF]' : 'text-[#D4A373]/70 hover:text-[#F9F4EE]'}`}
         >
-          <Settings size={20} />
+          <Settings size={19} />
           <span>Settings</span>
         </NavLink>
       </nav>
